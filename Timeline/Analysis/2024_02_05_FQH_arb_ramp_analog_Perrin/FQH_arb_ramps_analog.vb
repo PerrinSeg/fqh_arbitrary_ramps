@@ -1,7 +1,7 @@
 '===================
 '=====Variables=====
-quic_init = 0.5 'modify
-quad_init = 0 'modify
+quic_init = 0.5
+quad_init = 0
 override_default = 1
 dur_idx = 1
 var_idx = 4
@@ -16,10 +16,14 @@ return_half = 0
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
 'arb ramp constants
-Dim rampSegPath As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
-Dim rampSegPath_return As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
-Dim lattice2_JtoDepth_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
-Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+'Dim rampSegPath As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
+'Dim rampSegPath_return As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
+'Dim lattice2_JtoDepth_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
+'Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
+Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
+Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
+Dim gauge_JtoVolt_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
 Dim n_variables As Integer = 6 ' number of channels used in the arbitrary ramp
 
 '----------------------------------------------------- End arbitrary ramp constants --------------------------------------------------------------
@@ -78,7 +82,7 @@ Dim twodphysics_start_time As Double = 0
 Dim quic_turnon_start_time As Double = twodphysics_start_time
 Dim quic_turnon_end_time As Double = quic_turnon_start_time + quic_ramp_dur ' raise from 0 to quic_init
 ' Turn on quad gradient
-Dim quad_turnon_start_time As Double = line_load_end_time
+Dim quad_turnon_start_time As Double = quic_turnon_start_time
 Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad_init
 
 '---------------------------------------------------------------------------------------------------------------------------------------------
@@ -87,10 +91,10 @@ Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad
 Dim limQuic As Double = 60
 Dim limQuad As Double = 50
 
-lattice2_JtoDepth_coeffs = LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
-gauge_JtoVolt_coeffs = LoadArrayFromFile(gauge_JtoVolt_coeff_path)
-Dim norder As Double = lattice2_JtoDepth_coeff_path.GetUpperBound(0)
-Console.WriteLine("max Chebyshev order: {0}", norder)
+'lattice2_JtoDepth_coeffs = LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
+'gauge_JtoVolt_coeffs = LoadArrayFromFile(gauge_JtoVolt_coeff_path)
+'Dim norder As Double = lattice2_JtoDepth_coeff_path.GetUpperBound(0)
+'Console.WriteLine("max Chebyshev order: {0}", norder)
 
 Dim ramp_start_time As Double = quic_turnon_end_time 'ramp delocalizes along y first, so it can start as soon as y tilt is ramped up
 Dim ramp_variables = LoadRampSegmentsFromFile(rampSegPath, n_variables)
@@ -141,32 +145,51 @@ Dim gauge_freq_ramp_forward_v As Double = gauge_freq_ramp_v(n_times)
 Dim quad_ramp_forward_v As Double = quad_ramp_v(n_times)
 Dim quic_ramp_forward_v As Double = quic_ramp_v(n_times)
 
+Dim ramp_end_time As Double
+Dim lattice1_ramp_end_v As Double
+Dim lattice2_ramp_end_j As Double
+Dim gauge_power_ramp_end_j As Double
+Dim gauge_freq_ramp_end_v As Double
+Dim quad_ramp_end_v As Double
+Dim quic_ramp_end_v As Double
+
+Dim ramp_t_return(-1) As Double
+Dim lattice1_ramp_v_return(-1) As Double
+Dim lattice2_ramp_j_return(-1) As Double
+Dim gauge_power_ramp_j_return(-1) As Double
+Dim gauge_freq_ramp_v_return(-1) As Double  
+Dim quad_ramp_v_return(-1) As Double
+Dim quic_ramp_v_return(-1) As Double
+
 If (is_return > 0) Then 'return ramp different? Replace with separate file?
-'get times for return ramp
-    If (reverse_ramp > 1)
-        Dim ramp_variables_return As Double()() = ramp_variables
-        Dim n_times_return As Integer = n_times
-        Dim ramp_durs_return As Double() = ramp_durs
+    'get times for return ramp
+    Dim ramp_variables_return As Double()()
+    Dim n_times_return As Integer
+    Dim ramp_durs_return As Double()
+
+    If (reverse_ramp > 0)
+        ramp_variables_return = ramp_variables
+        n_times_return = n_times
+        ramp_durs_return = ramp_durs
     Else
-        Dim ramp_variables_return = LoadRampSegmentsFromFile(rampSegPath_return, n_variables)
-        Dim n_times_return As Integer = ramp_variables_return(0).GetUpperBound(0)
+        ramp_variables_return = LoadRampSegmentsFromFile(rampSegPath_return, n_variables)
+        n_times_return = ramp_variables_return(0).GetUpperBound(0)
         Console.WriteLine("N times return: {0}", n_times_return) 
-        Dim ramp_durs_return As Double() = ramp_variables_return(0)
+        ramp_durs_return = ramp_variables_return(0)
     End If
 
-    Dim ramp_t_return(n_times_return) As Double
+    ReDim ramp_t_return(n_times_return)
     ramp_t_return(0) = ramp_forward_end_time
-    For index As Integer=1 To n_times_return
+    For index As Integer = 1 To n_times_return
         ramp_t_return(index) = ramp_t_return(index - 1) + ramp_durs_return(n_times + 1 - index)
     Next
-    Dim ramp_end_time As Double = ramp_t_return(n_times_return)
-
-    Dim lattice1_ramp_v_return(n_times_return) As Double
-    Dim lattice2_ramp_j_return(n_times_return) As Double
-    Dim gauge_power_ramp_j_return(n_times_return) As Double
-    Dim gauge_freq_ramp_v_return(n_times_return) As Double    
-    Dim quad_ramp_v_return(n_times_return) As Double
-    Dim quic_ramp_v_return(n_times_return) As Double
+    
+    ReDim lattice1_ramp_v_return(n_times_return)
+    ReDim lattice2_ramp_j_return(n_times_return)
+    ReDim gauge_power_ramp_j_return(n_times_return)
+    ReDim gauge_freq_ramp_v_return(n_times_return)  
+    ReDim quad_ramp_v_return(n_times_return)
+    ReDim quic_ramp_v_return(n_times_return)
 
     For index As Integer = 0 To n_times_return
         lattice1_ramp_v_return(index) = ramp_variables_return(1)(n_times - index)    
@@ -177,22 +200,22 @@ If (is_return > 0) Then 'return ramp different? Replace with separate file?
         quic_ramp_v_return(index) = ramp_variables_return(6)(n_times - index)
     Next
     
-    Dim lattice1_ramp_end_v As Double = lattice1_ramp_v_return(n_times_return)
-    Dim lattice2_ramp_end_j As Double = lattice2_ramp_j_return(n_times_return)
-    Dim gauge_power_ramp_end_j As Double = gauge_power_ramp_j_return(n_times_return)
-    Dim gauge_freq_ramp_end_v As Double = gauge_freq_ramp_v_return(n_times_return)
-    Dim quad_ramp_end_v As Double = quad_ramp_v_return(n_times_return)
-    Dim quic_ramp_end_v As Double = quic_ramp_v_return(n_times_return)
+    ramp_end_time = ramp_t_return(n_times_return)
+    lattice1_ramp_end_v = lattice1_ramp_v_return(n_times_return)
+    lattice2_ramp_end_j = lattice2_ramp_j_return(n_times_return)
+    gauge_power_ramp_end_j = gauge_power_ramp_j_return(n_times_return)
+    gauge_freq_ramp_end_v = gauge_freq_ramp_v_return(n_times_return)
+    quad_ramp_end_v = quad_ramp_v_return(n_times_return)
+    quic_ramp_end_v = quic_ramp_v_return(n_times_return)
 
 Else
-    Dim ramp_end_time As Double = ramp_forward_end_time
-    Dim lattice1_ramp_end_v As Double = lattice1_ramp_forward_v
-    Dim lattice2_ramp_end_j As Double = lattice2_ramp_forward_j
-    Dim gauge_power_ramp_end_j As Double = gauge_power_ramp_forward_j
-    Dim gauge_freq_ramp_end_v As Double = gauge_freq_ramp_forward_v
-    Dim quad_ramp_end_v As Double = quad_ramp_forward_v
-    Dim quic_ramp_end_v As Double = quic_ramp_forward_v
-
+    ramp_end_time = ramp_forward_end_time
+    lattice1_ramp_end_v = lattice1_ramp_forward_v
+    lattice2_ramp_end_j = lattice2_ramp_forward_j
+    gauge_power_ramp_end_j = gauge_power_ramp_forward_j
+    gauge_freq_ramp_end_v = gauge_freq_ramp_forward_v
+    quad_ramp_end_v = quad_ramp_forward_v
+    quic_ramp_end_v = quic_ramp_forward_v
 End If
 
 
@@ -213,20 +236,20 @@ End If
 
 '----------------------------------------------------- Pinning -------------------------------------------------------------------------------
 
-''(3) pinning
-'Dim freeze_lattice_ramp_dur As Double = 100
-'Dim pinning_dur As Double = 100
-'Dim pinning_start_time As Double = ramp_end_time + freeze_lattice_ramp_dur
-'Dim pinning_end_time As Double = pinning_start_time + pinning_dur
+'(3) pinning
+Dim freeze_lattice_ramp_dur As Double = 1000
+Dim pinning_dur As Double = 15000
+Dim pinning_start_time As Double = ramp_end_time + freeze_lattice_ramp_dur
+Dim pinning_end_time As Double = pinning_start_time + pinning_dur
 
-'Dim IT As Double = pinning_end_time
+Dim IT As Double = pinning_end_time
 
 
 '---------------------------------------------------------------------------------------------------------------------------------------------
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
 analogdata.DisableClkDist(0.95, 4.05)
-analogdata2.DisableClkDist(0.95, 4.05)
+'analogdata2.DisableClkDist(0.95, 4.05)
 
 
 '----------------------------------------------------- Arbitrary Ramps -----------------------------------------------------------------------
@@ -252,15 +275,15 @@ For index As Integer = 1 To n_times - 1
 Next
 
 'quic grad
-analogdata2.AddRamp(quic_ramp_v(0), quic_ramp_v(1), ramp_start_time, ramp_t(1), ps5_ao) 'ps5_ao
+analogdata.AddRamp(quic_ramp_v(0), quic_ramp_v(1), ramp_start_time, ramp_t(1), ps1_ao) 'ps5_ao
 For index As Integer = 1 To n_times - 1
-    analogdata2.AddRamp(quic_ramp_v(index), quic_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps5_ao) 'ps5_ao
+    analogdata.AddRamp(quic_ramp_v(index), quic_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps1_ao) 'ps5_ao
 Next
 
 'quad grad
-analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps8_ao) 'ps8_ao
+analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps3_ao) 'ps8_ao
 For index As Integer = 1 To n_times - 1
-    analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps8_ao) 'ps8_ao
+    analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps3_ao) 'ps8_ao
 Next
 
 'gauge detuning
@@ -288,12 +311,12 @@ If (is_return > 0) Then
 
     'quic grad
     For index As Integer = 0 To n_times - 1
-        analogdata2.AddRamp(quic_ramp_v_return(index), quic_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps5_ao) 'ps5_ao
+        analogdata.AddRamp(quic_ramp_v_return(index), quic_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps1_ao) 'ps5_ao
     Next
 
     'quad grad
     For index As Integer = 0 To n_times - 1
-        analogdata.AddRamp(quad_ramp_v_return(index), quad_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps8_ao) 'ps8_ao
+        analogdata.AddRamp(quad_ramp_v_return(index), quad_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps3_ao) 'ps8_ao
     Next
 
     'gauge detuning
@@ -307,13 +330,13 @@ End If
 
 '----------------------------------------------------- Pinning -------------------------------------------------------------------------------
 
-''Bring everything back up for pinning
-'' 2D1 
-''analogdata.AddSmoothRamp(lattice1_ramp_v(n_times), lattice1_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power)
-'analogdata.AddStep(lattice1_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power)
-'' 2D2 raise to final depth and hold
-'analogdata.AddSmoothRamp(lattice2_ramp_j(n_times), lattice2_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power2)
-'analogdata.AddStep(lattice2_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power2)
+'Bring everything back up for pinning
+' 2D1 
+'analogdata.AddSmoothRamp(lattice1_ramp_v(n_times), lattice1_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power)
+analogdata.AddStep(lattice1_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power)
+' 2D2 raise to final depth and hold
+analogdata.AddSmoothRamp(lattice2_ramp_j(n_times), lattice2_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power2)
+analogdata.AddStep(lattice2_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power2)
 
 
 '---------------------------------------------------------------------------------------------------------------------------------------------
