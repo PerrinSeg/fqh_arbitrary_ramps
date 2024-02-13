@@ -1,0 +1,18 @@
+Experiment Log
+C:\Users\Rb Lab\Documents\experiments\2024_01_31_FQH_test_ramp\
+
+1/31/2024 4:29:07 PM
+
+Experiment Program Used:
+C:\Users\Rb Lab\Documents\experiments\2024_01_26_FQH_ramp_test\FQH_arb_ramps_simple.vb
+
+Batch Length:  
+4
+
+==========================
+quic_init ,  quad_init ,  override_default ,  dur_idx ,  var_idx ,  var_value ,  dur_value ,  is_return ,
+--------------------------
+0.5,  0,  1,  1,  4,  3.66,  75.981, 0 ,
+0.5,  0,  0,  1,  4,  3.66,  75.981, 1 ,
+0.5,  0,  1,  2,  6,  10,  200, 0 ,
+0.5,  0,  0,  2,  6, 10,  200, 0 ,
