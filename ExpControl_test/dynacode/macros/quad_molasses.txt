@@ -1,0 +1,9 @@
+axial_molasses_shutter on
+ttl_molasses1 on
+ttl_molasses2 on
+ttl_133MHz on
+ttl_80MHz on
+axial_molasses_power -4.9
+quic_molasses_power -9.9
+molasses_aom1_rf200MHz 200
+molasses_aom2_rf120MHz 120

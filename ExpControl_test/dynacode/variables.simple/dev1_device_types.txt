@@ -1,0 +1,32 @@
+% Device definitions for serial outputs
+% Formatting requirements:
+% Tab delimited.
+% Only first two strings are interpreted.
+% Use '0x' prefix for hexadecimal representations.
+% '%' is the comment char.
+% first argument is channel number
+% second argument is device type
+% device ID: 
+%   - use 0 for unipolar DA, 
+%   - 1 for bipolar DA, 
+%   - 2 for PLL,
+%   - 3 for doubled bipolar DA,
+27 2
+13 1
+15 1
+9 1
+11 1
+5 3
+7 1
+1 1
+17 2
+19 2
+4 2
+26 1
+23 2
+21 2
+22 0
+28 0
+24 0
+25 1
+31 0

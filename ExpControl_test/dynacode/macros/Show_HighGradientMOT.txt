@@ -1,0 +1,4 @@
+ta_shutter on
+repump_shutter on
+mot_high_current on
+ps1_ao 1.0

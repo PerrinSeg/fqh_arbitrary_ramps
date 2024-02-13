@@ -1,0 +1,5 @@
+line_DMD_shutter on
+line_DMD_ttl on
+line_DMD_power 4
+axial795_rf80MHz 80
+lattices2D765_rf80MHz 80

@@ -1,0 +1,9 @@
+digitaldata.AddPulse(1, 0, 30) 'flush camera
+
+digitaldata.AddPulse(1, 1000-15, 1015) 'camera
+digitaldata.AddPulse(repump_shutter, 1000-20, 1000+20) 'imaging Shutter
+
+digitaldata.AddPulse(1, 2000-15, 2015) 'triggers camera.takes beam pic.
+digitaldata.AddPulse(repump_shutter, 2000-20, 2000+20) 'imaging shutter
+
+digitaldata.AddPulse(1, 3000, 3030) 'triggers camera. takes dark pic.

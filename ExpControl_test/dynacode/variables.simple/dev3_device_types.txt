@@ -1,0 +1,11 @@
+% Device definitions for serial outputs
+% Formatting requirements:
+% Tab delimited.
+% Only first two strings are interpreted.
+% Use '0x' prefix for hexadecimal representations.
+% '%' is the comment char.
+% device ID: use 0 for unipolar DA, 1 for bipolar DA, 2 for PLL */
+0 4
+1 5
+2 4
+3 4

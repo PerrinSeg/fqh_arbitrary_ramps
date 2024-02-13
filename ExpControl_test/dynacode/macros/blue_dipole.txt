@@ -1,0 +1,3 @@
+red_dipole_power 4.9
+blue_dipole_ttl on
+blue_dipole_shutter on

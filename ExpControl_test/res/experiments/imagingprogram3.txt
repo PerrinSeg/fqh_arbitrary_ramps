@@ -1,0 +1,14 @@
+digitaldata.AddPulse(1, 0, 30) 'flush camera
+
+digitaldata.AddPulse(1, 1000-15, 1015) 'camera
+digitaldata.AddPulse(mira_shutter, 1000-20, 1000+20) 'imaging Shutter
+digitaldata.AddPulse(mira_ttl, 1000, 1010)
+analogdata.AddStep(2.7, 1000, 1010, mira_power)
+
+digitaldata.AddPulse(1, 2000-15, 2015) 'triggers camera.takes beam pic.
+digitaldata.AddPulse(mira_shutter, 2000-20, 2000+20) 'imaging shutter
+digitaldata.AddPulse(mira_ttl, 2000, 2010)
+analogdata.AddStep(2.7 , 2000, 2010, mira_power)
+digitaldata.AddPulse(64,2000,2010)
+
+digitaldata.AddPulse(1, 3000, 3030) 'triggers camera. takes dark pic.

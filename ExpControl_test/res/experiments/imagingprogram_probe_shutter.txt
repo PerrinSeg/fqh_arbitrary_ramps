@@ -1,0 +1,15 @@
+            Dim IT As Double =-5500
+            'Absorption Imaging
+            digitaldata.AddPulse(1, 6500.2+IT-15-1000, 6500.2+IT-1000) 'flush camera
+            digitaldata.AddPulse(1, 6500.2 + IT - 15, 6500.2 + IT) 'camera
+            digitaldata.AddPulse(probe_shutter, 6500.2 + IT - 10, 6500.250 + IT) 'imaging Shutter
+            'digitaldata.AddPulse(33, 6500.2 + IT, 6500.250 + IT) '-80MHz TTL
+            digitaldata.AddPulse(38, 6500.2 + IT, 6500.250 + IT) 'imaging AOM 
+
+            Dim lasttime = 7550+IT
+            'Dark, Beam Images.
+            digitaldata.AddPulse(1, lasttime - 15, lasttime) 'triggers camera.takes beam pic.
+            digitaldata.AddPulse(probe_shutter, lasttime - 10, lasttime+0.050) 'imaging shutter
+	    'digitaldata.AddPulse(33, lasttime, lasttime+0.050)
+            digitaldata.AddPulse(38, lasttime, lasttime+0.050) 'imaging AOM
+	    digitaldata.AddPulse(1, lasttime+1000, lasttime+1015) 'triggers camera. takes dark pic.

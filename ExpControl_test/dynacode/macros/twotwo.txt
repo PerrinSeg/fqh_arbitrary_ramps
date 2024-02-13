@@ -1,0 +1,6 @@
+ta_shutter on
+ttl_80MHz on
+ttl_N133MHz on
+ttl_97MHz on
+imaging2aom on
+polarizer_shutter_22 on

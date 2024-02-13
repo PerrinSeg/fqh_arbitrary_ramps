@@ -1,0 +1,2 @@
+lattice2D765_shutter on
+lattice2D765_ttl on

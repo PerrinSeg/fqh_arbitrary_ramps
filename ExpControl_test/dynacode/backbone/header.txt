@@ -1,0 +1,14 @@
+Imports controldll
+Imports System
+Imports System.Math
+Imports controldll.SpectronServiceReference
+
+Public Class Experiment
+Private _last_time As Double = 51000
+
+    Public ReadOnly Property TotalTime() As Double
+        Get
+            Return Me._last_time
+        End Get
+    End Property
+

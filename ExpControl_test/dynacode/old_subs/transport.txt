@@ -1,0 +1,46 @@
+Dim ST As Double = time
+digitaldata.AddPulse(ps2_shunt, 0, ST) 'PS2 shunt
+digitaldata.AddPulse(ps3_shunt, 0, ST) 'PS3 shunt
+digitaldata.AddPulse(ps4_shunt, 0, ST) 'PS4 shunt
+
+digitaldata.AddPulse(push, ST, ST + t1) 'Push
+digitaldata.AddPulse(mot_high_current, ST, ST + t2) 'MOT
+digitaldata.AddPulse(transport_1 ,ST, ST + t3)'T1
+digitaldata.AddPulse(transport_2, ST+t1, ST+t4)'T2
+digitaldata.AddPulse(transport_3, ST+t2, ST+t5)'T3
+digitaldata.AddPulse(transport_4, ST+t3, ST+t6)'T4
+digitaldata.AddPulse(transport_5, ST+t4, ST+t7)'T5
+digitaldata.AddPulse(transport_6, ST+t5, ST+t8)'T6
+digitaldata.AddPulse(transport_7, ST+t6, ST+tc)'T7
+digitaldata.AddPulse(transport_8, ST+t7, ST+t10+th)'T8
+
+digitaldata.AddPulse(transport_9, ST+tc+th, ST+t11+th)'T9
+digitaldata.AddPulse(transport_10, ST+t9+th, ST+t12+th)'T10
+digitaldata.AddPulse(transport_11, ST+t10+th, ST+t13+th)'T11
+digitaldata.AddPulse(transport_12, ST+t11+th, ST+t14+th)'T12
+digitaldata.AddPulse(transport_13, ST+t12+th, ST+t15+th)'T13
+digitaldata.AddPulse(quad_fet, ST+t13+th, ST+t15+th)'Quad  
+
+digitaldata.AddPulse(ps1_shunt, ST+t5, ST+t6) 'PS1 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t1, ST+t3) 'PS2 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t6, ST+t7) 'PS2 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t10+th, ST+t11+th) 'PS2 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t3, ST+t4) 'PS3 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t7, ST+tc-10+th) 'PS3 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t11+th, ST+t12+th) 'PS3 shunt
+digitaldata.AddPulse(ps4_shunt, ST+t4, ST+t5) 'PS4 shunt
+digitaldata.AddPulse(ps4_shunt, ST+t8, ST+t10+th) 'PS4 shunt
+
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table1.csv", ST, ST + TT1, 60, 2, ps1_ao)'Transport atoms to corner
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table2.csv", ST, ST + TT1, 60, 2, ps2_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table3.csv", ST, ST + TT1, 100, 2, ps3_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table4.csv", ST, ST + TT1, 100, 2, ps4_ao)
+
+analogdata.AddRamp(2.45, 2.45*1.5, ST+TT1, ST+TT1+th, ps2_ao)'Ramps up corner quadrupole.
+
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table1.csv", ST + TT1 + th, ST + TT + th, 60/1.5, 2, ps1_ao)'Transport from corner to glass cell
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table2.csv", ST + TT1 + th, ST + TT + th, 60/1.5, 2, ps2_ao) 'Probably th should be erased from this block
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table3.csv", ST + TT1 + th, ST + TT + th, 100/1.5, 2, ps3_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table4.csv", ST + TT1 + th, ST + TT + th, 100/1.5, 2, ps4_ao)
+'Traditional transport is finished as of this point. 
+

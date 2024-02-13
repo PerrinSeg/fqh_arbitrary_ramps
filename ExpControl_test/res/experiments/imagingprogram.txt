@@ -1,0 +1,5 @@
+Dim IT As Double =1000
+digitaldata.AddPulse(1, IT-15-500, IT-500) 'flush camera
+digitaldata.AddPulse(1, IT-15, IT) 'camera
+digitaldata.AddPulse(1, IT+500-15, IT+500) 'triggers camera.takes beam pic.
+digitaldata.AddPulse(1, IT+1000-15, IT+1000) 'triggers camera. takes dark pic.

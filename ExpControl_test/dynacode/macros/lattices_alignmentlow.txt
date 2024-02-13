@@ -1,0 +1,13 @@
+lattice2D765_shutter on
+lattice2D765_shutter2 on
+lattice2D795_shutter off
+lattice2D765_power 2.5
+lattice2D765_power2 2.5
+lattice2D795_power 5
+lattice2D795_power2 5
+lattice2D795_ttl on
+lattice2D795_ttl2 on
+lattice2D765_ttl on
+lattice2D765_ttl2 on
+lattices2D765_rf80MHz 80
+lattice2D795_rf160MHz 160

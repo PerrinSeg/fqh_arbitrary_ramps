@@ -1,0 +1,5 @@
+axial795_shutter on
+ttl_molasses1 on
+ttl_molasses2 on
+ttl_133MHz on
+ttl_80MHz on

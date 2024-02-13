@@ -1,0 +1,3 @@
+lattice2D765_shutter2 on
+lattice2D765_ttl2 on
+lattice2D765_power2 6

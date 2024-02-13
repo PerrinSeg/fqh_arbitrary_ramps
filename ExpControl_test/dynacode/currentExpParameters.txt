@@ -1,0 +1,6 @@
+extra_simple_test_ramp
+quic_init  = 0.5
+dur_idx  = 1
+var_idx  = 1
+var_value  = 5.1
+dur_value  = 75.981

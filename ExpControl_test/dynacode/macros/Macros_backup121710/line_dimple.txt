@@ -1,0 +1,3 @@
+dimple_shutter on
+dimple_ttl on
+line_dimple_voltage 6

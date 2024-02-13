@@ -1,0 +1,6 @@
+always_on off
+always_off on
+lattice2D765_shutter on
+lattice2D765_ttl on
+lattice2D765_power 4
+lattices2D765_rf80MHz 80

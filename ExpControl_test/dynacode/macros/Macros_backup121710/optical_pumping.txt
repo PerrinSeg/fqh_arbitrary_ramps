@@ -1,0 +1,3 @@
+ttl_N78MHz on
+ttl_78MHz on
+polarizer_shutter_11 on

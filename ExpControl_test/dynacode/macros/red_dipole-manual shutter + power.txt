@@ -1,0 +1,3 @@
+red_dipole_power 6
+red_dipole_ttl on
+red_dipole_shutter on

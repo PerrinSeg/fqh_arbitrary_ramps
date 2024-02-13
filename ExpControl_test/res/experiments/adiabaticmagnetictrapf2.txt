@@ -1,0 +1,36 @@
+            'Dark, Beam Images.
+            digitaldata.AddPulse(1, 0, 10) 'triggers camera. takes dark pic.
+            digitaldata.AddPulse(1, 1000 - 10, 1000) 'triggers camera.takes beam pic.
+            digitaldata.AddPulse(46, 1000 - 5, 1000.005) 'imaging shutter
+            digitaldata.AddPulse(38, 1000, 1000.005) 'imaging AOM
+
+            'Turn on MOT
+            Dim MHT As Double = 700 'Magnetic trap hold time
+            digitaldata.AddPulse(3, 1500, 6500 - 4) 'MOT Current Supply
+            digitaldata.AddPulse(43, 1500, 6500 - 6.2) 'TA Shutter
+            digitaldata.AddPulse(44, 1500, 6600 + MHT) 'Repump Shutter
+
+            'Molasses + Optical Pumping
+            digitaldata.AddPulse(33, 6500, 6500.6) '-80MHz TTL
+            digitaldata.AddPulse(34, 6500, 6500.6) ' 97.5MHz TTL
+            digitaldata.AddPulse(35, 6500, 6500.6) ' -133MHz TTL
+            digitaldata.AddPulse(36, 6500, 6500.1 + MHT - 1) '78 MHz TTL
+            digitaldata.AddPulse(37, 6500, 6500.1) '-78MHz TTL
+            digitaldata.AddPulse(2, 6500 - 0.1, 6500 + 0.2) 'Optical Pumping B Field
+
+            'Magnetic Trapping
+            digitaldata.AddPulse(45, 6500 - 5, 6501) 'Optical Pumping Shutter
+            analogdata.AddRamp(0, -2, 6500 - 10, 6500, 4) 'MOT Detuning molasses
+            digitaldata.AddPulse(32, 6500, 6510) 'Scope Trigger
+            digitaldata.AddPulse(9, 0, 6500) 'PS1 Shunt
+            digitaldata.AddPulse(4, 6500.1, 6500.1 + MHT) 'MOT High Current
+            digitaldata.AddPulse(6, 6500.1, 6500.1 + MHT) 'Capacitor Discharge
+            analogdata.AddExpAndRamp(2, 2, 6500.1, 6500.1 + MHT - 100, 100, -30, 0, 2.17, 0)
+            analogdata.AddRamp(4.17, 2.5, 6500.1 + MHT - 100, 6500.1 + MHT + 100, 0)
+
+            'Absorption Imaging
+            Dim TOF As Double = 30
+            digitaldata.AddPulse(36, 6500.1 + MHT, 6600 + MHT) '78MHz TTL
+            digitaldata.AddPulse(1, 6500.1 + MHT - 9 + TOF, 6500.1 + MHT + TOF) 'camera
+            digitaldata.AddPulse(46, 6500.1 + MHT - 5 + TOF, 6500.105 + MHT + TOF) 'imaging Shutter
+            digitaldata.AddPulse(38, 6500.1 + MHT + TOF, 6500.105 + MHT + TOF) 'imaging AOM

@@ -1,0 +1,4 @@
+round_DMD_shutter on
+round_DMD_ttl on
+line_DMD_power 4.9
+axial795_rf80MHz 80

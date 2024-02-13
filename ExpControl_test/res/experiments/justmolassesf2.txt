@@ -1,0 +1,20 @@
+'Dark, Beam Images.
+digitaldata.AddPulse(1, 0, 10) 'triggers camera. takes dark pic.
+digitaldata.AddPulse(1, 1000 - 10, 1000) 'triggers camera.takes beam pic.
+digitaldata.AddPulse(46, 1000 - 5, 1000.005) 'imaging shutter
+digitaldata.AddPulse(33, 1000, 1000.005)
+digitaldata.AddPulse(38, 1000, 1000.005) 'imaging AOM
+
+'Turn on MOT
+digitaldata.AddPulse(3, 1500, 6500 - 4) 'MOT Current Supply
+digitaldata.AddPulse(43, 1500, 6500 - 6.2) 'TA Shutter
+digitaldata.AddPulse(44, 1500, 6650) 'Repump Shutter
+analogdata.AddRamp(0, 2, 6500 - 10, 6500, 4) 'MOT Detuning molasses
+
+'Absorption Imaging
+Dim TOF = 30
+digitaldata.AddPulse(36, 6500+TOF-2, 6500+TOF-1)
+digitaldata.AddPulse(1, 6500 + TOF - 10 + 0, 6500 + TOF) 'camera
+digitaldata.AddPulse(46, 6500 + TOF - 5 + 0, 6500.005 + TOF) 'imaging Shutter
+digitaldata.AddPulse(33, 6500 + TOF,6500.005 + TOF)
+digitaldata.AddPulse(38, 6500 + TOF, 6500.005 + TOF) 'imaging AOM

@@ -1,0 +1,202 @@
+'Load MOT and then do molasses
+digitaldata.AddPulse(mot_low_current, 0, mot_load_time - molasses_time) 'MOT Current Supply
+digitaldata.AddPulse(ta_shutter, 0, mot_load_time) 'TA Shutter
+digitaldata.AddPulse(repump_shutter, 0, mot_load_time) 'Repump Shutter
+analogdata.AddRamp(0, 2, mot_load_time - molasses_time - compressed_mot_time, mot_load_time, mot_detuning) 'MOT Detuning molasses
+
+'Optical Pumping
+digitaldata.AddPulse(ttl_80MHz, mot_load_time, mot_load_time+30) '-80MHz TTL(Switches light to 0th order AOM)
+digitaldata.AddPulse(ttl_97MHz, mot_load_time, mot_load_time+30) '97.5MHz TTL (Switches light to 0th order AOM)            
+digitaldata.AddPulse(ttl_N133MHz, mot_load_time, mot_load_time+optical_pumping_time) ' -133MHz TTL(2->2 AOM)
+digitaldata.AddPulse(ttl_N78MHz, mot_load_time, mot_load_time+optical_pumping_time-.02) ' -78MHz TTL (1->1 AOM)
+digitaldata.AddPulse(ttl_78MHz, mot_load_time, mot_load_time+60) '78MHz TTL to keep repump off until shutter closes
+digitaldata.AddPulse(optical_pumping, mot_load_time-.5, mot_load_time + 0.4) 'Optical Pumping B Field
+digitaldata.AddPulse(polarizer_shutter_11, mot_load_time - 60, mot_load_time+30) 'Optical Pumping Shutter
+
+'Magnetic Trapping
+Dim transport_start_time As Double = mot_load_time+.5+MHT
+digitaldata.AddPulse(ps1_shunt, 0, mot_load_time) 'PS1 Shunt
+digitaldata.AddPulse(ps2_shunt, 0, mot_load_time) 'PS2 Shunt
+digitaldata.AddPulse(ps3_shunt, 0, mot_load_time) 'PS3 Shunt
+digitaldata.AddPulse(ps4_shunt, 0, mot_load_time) 'PS4 Shunt
+digitaldata.AddPulse(mot_high_current, mot_load_time+.2, transport_start_time) 'MOT High Current
+digitaldata.AddPulse(cap_discharge, mot_load_time+.2, transport_start_time) 'Capacitor Discharge
+analogdata.AddExpAndRamp(2, 2, mot_load_time+.2, transport_start_time, 20, -30, 0, 1.33, 0)
+
+'Blow away atoms in f=2 if any
+digitaldata.AddPulse(ta_shutter, transport_start_time-35, transport_start_time-10)
+
+'Transport
+Dim ST As Double = transport_start_time  
+digitaldata.AddPulse(ps2_shunt, 0, ST) 'PS2 shunt
+digitaldata.AddPulse(ps3_shunt, 0, ST) 'PS3 shunt
+digitaldata.AddPulse(ps4_shunt, 0, ST) 'PS4 shunt
+
+digitaldata.AddPulse(push, ST, ST + t1) 'Push
+digitaldata.AddPulse(mot_high_current, ST, ST + t2) 'MOT
+digitaldata.AddPulse(transport_1 ,ST, ST + t3)'T1
+digitaldata.AddPulse(transport_2, ST+t1, ST+t4)'T2
+digitaldata.AddPulse(transport_3, ST+t2, ST+t5)'T3
+digitaldata.AddPulse(transport_4, ST+t3, ST+t6)'T4
+digitaldata.AddPulse(transport_5, ST+t4, ST+t7)'T5
+digitaldata.AddPulse(transport_6, ST+t5, ST+t8)'T6
+digitaldata.AddPulse(transport_7, ST+t6, ST+tc)'T7
+digitaldata.AddPulse(transport_8, ST+t7, ST+t10+th)'T8
+
+digitaldata.AddPulse(transport_9, ST+tc+th, ST+t11+th)'T9
+digitaldata.AddPulse(transport_10, ST+t9+th, ST+t12+th)'T10
+digitaldata.AddPulse(transport_11, ST+t10+th, ST+t13+th)'T11
+digitaldata.AddPulse(transport_12, ST+t11+th, ST+t14+th)'T12
+digitaldata.AddPulse(transport_13, ST+t12+th, ST+t15+th)'T13
+digitaldata.AddPulse(quad_fet, ST+t13+th, ST+t15+th)'Quad  
+
+digitaldata.AddPulse(ps1_shunt, ST+t5, ST+t6) 'PS1 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t1, ST+t3) 'PS2 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t6, ST+t7) 'PS2 shunt
+digitaldata.AddPulse(ps2_shunt, ST+t10+th, ST+t11+th) 'PS2 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t3, ST+t4) 'PS3 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t7, ST+tc-10+th) 'PS3 shunt
+digitaldata.AddPulse(ps3_shunt, ST+t11+th, ST+t12+th) 'PS3 shunt
+digitaldata.AddPulse(ps4_shunt, ST+t4, ST+t5) 'PS4 shunt
+digitaldata.AddPulse(ps4_shunt, ST+t8, ST+t10+th) 'PS4 shunt
+
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table1.csv", ST, ST + TT1, 60, 2, ps1_ao)'Transport atoms to corner
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table2.csv", ST, ST + TT1, 60, 2, ps2_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table3.csv", ST, ST + TT1, 100, 2, ps3_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part1table4.csv", ST, ST + TT1, 100, 2, ps4_ao)
+
+analogdata.AddRamp(2.45, 2.45*1.5, ST+TT1, ST+TT1+th, ps2_ao)'Ramps up corner quadrupole.
+
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table1.csv", ST + TT1 + th, ST + TT + th, 60/1.5, 2, ps1_ao)'Transport from corner to glass cell
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table2.csv", ST + TT1 + th, ST + TT + th, 60/1.5, 2, ps2_ao) 'Probably th should be erased from this block
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table3.csv", ST + TT1 + th, ST + TT + th, 100/1.5, 2, ps3_ao)
+analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\part2table4.csv", ST + TT1 + th, ST + TT + th, 100/1.5, 2, ps4_ao)
+'Traditional transport is finished as of this point. 
+
+
+
+'Definition of time variables(This nomenclature is very misleading and in some cases wrong. Fix at earliest convenience) 
+Dim transport_end_time As Double = ST+TT 'end of transport
+Dim quic_hold_time As Double = evaporation_time-quad_rampup_time-ioffe_creation_time
+Dim ioffe_ready_time As Double = transport_end_time+quad_rampup_time+ioffe_creation_time
+Dim evaporation_end_time As Double = ioffe_ready_time+quic_hold_time
+
+
+
+'Ramp up quadrupole and final transport coil prior to ramping on ioffe coil
+'analogdata.AddSmoothRamp(1.415,2.342,transport_end_time,transport_end_time+quad_rampup_time,ps1_ao)'Ramps quadrupole from final transport value to quic value(33.96->56.208)
+'analogdata.AddSmoothRamp(.2895,.585,transport_end_time,transport_end_time+quad_rampup_time,ps3_ao)'Ramps final transport(T13) to higher value to keep pace with quad rampup(11.58->23.4)
+
+'Ramps up T13 to proper value for Ioffe trap which is higher than in quadrupole configuration
+'analogdata.AddSmoothRamp(.585,.875,transport_end_time+quad_rampup_time,ioffe_ready_time,ps3_ao)'Ramps final transport(T13) to higher value to keep pace with quic rampup(23.4->35)
+'analogdata.AddStep(.875, ioffe_ready_time,evaporation_end_time+100+spherical_creation_time, ps3_ao)'Holds T13 on during evaporation(make sure T13 MOSFET is on during this time.)
+
+'Ramps us into Ioffe trap from quadrupole trap
+'analogdata.AddSmoothRamp(2.342,0, transport_end_time+quad_rampup_time, ioffe_ready_time, ps1_ao)'Ramp Down PS1
+'digitaldata.AddPulse(ps1_shunt, ioffe_ready_time+80, evaporation_end_time-110)'Shunts PS1 prior to loading spherical trap
+'analogdata.AddSmoothRamp(0.0417,2.342, transport_end_time+quad_rampup_time, ioffe_ready_time, ps2_ao)'Ramp Up PS2
+'digitaldata.AddPulse(quad_fet, transport_end_time, ioffe_ready_time+20)'quadrupole mosfet
+'analogdata.AddRamp(0,.0418, transport_end_time, transport_end_time+quad_rampup_time,ps2_ao)'fix windup problem. 
+
+
+
+
+
+Dim ew_transport_start_time=evaporation_end_time+100+spherical_creation_time
+Dim ew_transport_end_time=ew_transport_start_time+ew_transport_time
+
+'MOSFET Management for all QUIC trap coils and coils that control final position of atoms.
+'digitaldata.AddPulse(offset_fet, transport_end_time, ew_transport_start_time)'Offset FET
+'digitaldata.AddPulse(bias_enable,transport_end_time-1020,ew_transport_end_time+tpull)'Enables bias coils in helmholtz configuration
+'digitaldata.AddPulse(quic_fet, evaporation_end_time+100, ew_transport_end_time+tpull)'Lets us ramp into spherical trap and keep it on during ew transport
+
+'digitaldata.AddPulse(41,transport_end_time,ew_transport_end_time+tpull+100)'Keeps T13 on during evaporation and loading into evanescent trap
+'digitaldata.AddPulse(transport_13_toggle,ew_transport_start_time+ew_transport_time/2,ew_transport_end_time+tpull)'Flips Polarity of T13, when current is zero only plz!!!!
+
+'digitaldata.AddPulse(bias_to_quad,ew_transport_start_time+ew_transport_time/10,ew_transport_end_time+tpull)'Changes bias coil to quadrupole configuration
+'digitaldata.AddPulse(ps5_enable,transport_end_time-1020,ew_transport_end_time+tpull)'Enable PS5 to take control of bias coils.
+
+
+'analogdata.AddStep(2.342, ioffe_ready_time,evaporation_end_time+100, ps2_ao)'Holds cigar trap on during evaporation
+'analogdata.AddStep(2.342,evaporation_end_time+spherical_creation_time+100,ew_transport_end_time+tpull,ps1_ao)'Holds atoms in spherical trap
+
+
+'Switch to a spherical trap
+'analogdata.AddStep(windup_current*.04167, evaporation_end_time-100, evaporation_end_time, ps1_ao)'preload power supply to avoid windup problem
+'analogdata.AddStep(.004167, evaporation_end_time-1, evaporation_end_time+100, ps1_ao)'preload power supply to avoid windup problem
+'analogdata.AddSmoothRamp(2.342,0, evaporation_end_time+100, evaporation_end_time + spherical_creation_time+100, ps2_ao)
+'analogdata.AddSmoothRamp(.00417, 2.342,evaporation_end_time+100, evaporation_end_time + spherical_creation_time+100, ps1_ao)
+
+
+'Move atoms to proper position during ew_transport_time
+'analogdata.AddSmoothRamp(.875,0,ew_transport_start_time,ew_transport_start_time+ew_transport_time*9/20,ps3_ao)'Ramps final transport(T13) down to zero so we can change the sign with the h bridge
+'analogdata.AddSmoothRamp(0,t13_zed,ew_transport_start_time+ew_transport_time*11/20,ew_transport_end_time,ps3_ao)'Ramps final transport(T13) back up to move atoms past hemisphere
+'analogdata.AddSmoothRamp(0,quic_axis_position,ew_transport_start_time+ew_transport_time*11/20,ew_transport_end_time,ps5_ao)'ramps up bias coils in quadrupole configuration
+'digitaldata.AddPulse(ps2_shunt, ew_transport_start_time, ew_transport_start_time+ew_transport_time/11)'quadshim
+'analogdata.AddSmoothRamp(0, quad_axis_position, ew_transport_start_time+ew_transport_time/10,ew_transport_end_time, ps2_ao)'quadshim
+'digitaldata.AddPulse(quad_shim, ew_transport_start_time+ew_transport_time/10, ew_transport_end_time+tpull)'quadshim
+
+'digitaldata.AddPulse(imaging_coil,ew_transport_start_time,ew_transport_end_time+tpull+100)'Enable PS4 to take control of imaging coils.
+'analogdata.AddSmoothRamp(0, black_coil_zed, ew_transport_start_time, ew_transport_end_time , ps4_ao)
+'analogdata.AddSmoothRamp(black_coil_zed,0, ew_transport_end_time, ew_transport_end_time+tpull , ps4_ao)
+
+
+
+'Ramp zed fields back down prior to time of flight, hold other directions on
+'analogdata.AddSmoothRamp(t13_zed,0,ew_transport_end_time,ew_transport_end_time+tpull,ps3_ao)'Ramps final transport(T13) back up to move atoms past hemisphere
+'analogdata.AddStep(quad_axis_position,ew_transport_end_time,ew_transport_end_time+tpull,ps2_ao)'holds quad shim on while we ramp down.
+'analogdata.AddStep(quic_axis_position,ew_transport_end_time,ew_transport_end_time+tpull,ps5_ao)'holds quad shim on while we ramp down.
+
+
+
+
+'Trimming Bias Field
+analogdata.AddSmoothRamp(0,bias_current*5/100, transport_end_time-1000, transport_end_time-500,ps5_ao)
+analogdata.AddStep(bias_current*5/100, transport_end_time-500, evaporation_end_time+100+spherical_creation_time,ps5_ao)
+analogdata.AddSmoothRamp(bias_current*5/100,0, ew_transport_start_time,ew_transport_start_time+ew_transport_time*9/20,ps5_ao)
+
+
+'Evaporation
+digitaldata.AddPulse(evap_ttl, transport_end_time, transport_end_time+10)' Evaporation TTL Trigger
+digitaldata.AddPulse(evap_switch, transport_end_time, evaporation_end_time)'RF Switch FET
+
+
+'digitaldata.AddPulse(imaging_field, evaporation_end_time + 100, evaporation_end_time + 100+1.5)'This is shim coil directly opposite the ioffe coil.
+'digitaldata.AddPulse(quantization_quad_axis, evaporation_end_time + 101, evaporation_end_time + 100+100)
+
+evaporation_end_time=evaporation_end_time+100'has to do with windup dont change
+
+'Absorption Imaging
+
+Dim IT As Double = transport_end_time+TOF 'imaging time
+digitaldata.AddPulse(apogee_camera, IT-1000-shutter_time, IT-1000) 'flush camera
+digitaldata.AddPulse(apogee_camera, IT-shutter_time, IT) 'camera atoms image
+digitaldata.AddPulse(probe_shutter_2, IT-35, IT) 'imaging Shutter
+digitaldata.AddPulse(probe_shutter, IT-35, IT) 'imaging Shutter
+digitaldata.AddPulse(repump_shutter, IT-35, IT)
+digitaldata.AddPulse(ttl_78MHz, IT-40, IT-.15)
+digitaldata.AddPulse(ttl_78MHz, IT, IT+10) ' pump atoms from 1 to 2
+digitaldata.AddPulse(ttl_80MHz, IT, IT+imaging_time) '-80MHz TTL
+digitaldata.AddPulse(ttl_133MHz,IT, IT+imaging_time) 'imaging AOM 
+
+Dim last_time As Double = IT+1000
+'Dark, Beam Images.
+digitaldata.AddPulse(apogee_camera, last_time - shutter_time, last_time) 'triggers camera.takes beam pic.
+digitaldata.AddPulse(probe_shutter_2, last_time - 30, last_time+imaging_time) 'imaging shutter on x axis
+digitaldata.AddPulse(probe_shutter, last_time - 30, last_time+imaging_time) 'imaging shutter on z axis
+digitaldata.AddPulse(ttl_80MHz, last_time, last_time+imaging_time)
+digitaldata.AddPulse(ttl_133MHz, last_time, last_time+imaging_time) 'imaging AOM
+digitaldata.AddPulse(apogee_camera, last_time+1000, last_time+1000+shutter_time) 'triggers camera. takes dark pic.
+
+
+'Triggers for viewing
+'digitaldata.AddPulse(64,mot_load_time,mot_load_time+100)
+'digitaldata.AddPulse(64, evaporation_end_time+spherical_creation_time, evaporation_end_time+spherical_creation_time+200)
+'digitaldata.AddPulse(64, evaporation_end_time+100, evaporation_end_time+500)
+'digitaldata.AddPulse(64, ioffe_ready_time, ioffe_ready_time+10)
+'digitaldata.AddPulse(64, IT-1000,IT+100)
+digitaldata.AddPulse(64, transport_end_time+3000,transport_end_time+100)
+
+
+
+'digitaldata.AddPulse(rf_switch_2,0,6000)'test RF swtich to AM modulation

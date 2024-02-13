@@ -1,0 +1,15 @@
+**** This document records changes made to code in expcontrol folder ****
+
+
+
+**** 2 April 2009 *****
+- Add subroutine in clsInteractive.vb file for interactive control of Keithley generators. Command line initiator Hermes
+
+**** 3 April 2009 ******
+- Modified codeModeGenerator.vb and modMain.vb to allow running of Keithley control from code. Syntax for running in code
+Hermes.AddStep(5,begin_time,end_time,channel) : no spaces
+- For each Keithley channel used, output is trigger by a digital channel. 
+- Include trigger by Hermes.AddTrigger(digital box 2 channel, keithley channel)
+
+**** 15 July 2012 ******
+- Added some line continuation chars "_" to 'modCodeGenerator.vb' for reading clarity

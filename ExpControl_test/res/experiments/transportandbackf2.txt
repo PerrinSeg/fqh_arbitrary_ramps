@@ -1,0 +1,81 @@
+            'Dark, Beam Images.
+            digitaldata.AddPulse(1, 0, 10) 'triggers camera. takes dark pic.
+            digitaldata.AddPulse(1, 1000 - 10, 1000) 'triggers camera.takes beam pic.
+            digitaldata.AddPulse(46, 1000 - 5, 1000.005) 'imaging shutter
+	    digitaldata.AddPulse(33, 1000, 1000.005)
+            digitaldata.AddPulse(38, 1000, 1000.005) 'imaging AOM
+
+            'Turn on MOT
+            digitaldata.AddPulse(3, 1500, 6500 - 4) 'MOT Current Supply
+            digitaldata.AddPulse(43, 1500, 6502) 'TA Shutter
+            digitaldata.AddPulse(44, 1500, 6500) 'Repump Shutter
+            analogdata.AddRamp(0, 2, 6500 - 10, 6500, 4) 'MOT Detuning molasses
+
+            'Molasses + Optical Pumping
+            Dim MHT As Double = 100
+            Dim TT As Double = 3403
+            Dim TOF As Double = 10
+            Dim IT As Double = MHT + TOF + TT
+            digitaldata.AddPulse(33, 6500, 6531) '-80MHz TTL
+            digitaldata.AddPulse(34, 6500, 6500.6) ' 97.5MHz TTL
+            digitaldata.AddPulse(35, 6500, 6500.6) ' -133MHz TTL
+            digitaldata.AddPulse(37, 6500, 6500.05) '-78MHz TTL
+            digitaldata.AddPulse(2, 6500 - 0.1, 6500 + 0.2) 'Optical Pumping B Field
+
+            'Magnetic Trapping
+            digitaldata.AddPulse(45, 6500 - 5, 6501) 'Optical Pumping Shutter
+            digitaldata.AddPulse(9, 0, 6500) 'PS1 Shunt
+            digitaldata.AddPulse(4, 6500.1, 6500.1 + MHT) 'MOT High Current
+            digitaldata.AddPulse(6, 6500.1, 6500.1 + MHT) 'Capacitor Discharge
+            analogdata.AddExpAndRamp(2, 2, 6500.1, 6500.1 + MHT, 20, -30, 0, 0.36, 0)
+
+            'Transport
+            Dim ST As Double = 6500.1 + MHT
+            digitaldata.AddPulse(8, 0, ST) 'PS2 shunt
+            digitaldata.AddPulse(10, 0, ST) 'PS3 shunt
+            digitaldata.AddPulse(11, 0, ST) 'PS4 shunt
+            digitaldata.AddPulse(14, ST, ST + 250.3) 'Push
+	    digitaldata.AddPulse(4, ST, ST + 307.9) 'MOT
+            digitaldata.AddPulse(15 ,ST, ST + 367.2)'T1
+            digitaldata.AddPulse(16, ST+250.3, ST+417.3)'T2
+            digitaldata.AddPulse(18, ST+307.9, ST+471.9)'T3
+            digitaldata.AddPulse(19, ST+367.2, ST+524.5)'T4
+            digitaldata.AddPulse(20, ST+417.3, ST+587.6)'T5
+            digitaldata.AddPulse(21, ST+471.9, ST+684.7)'T6
+            digitaldata.AddPulse(22, ST+524.5, ST+1045.6)'T7
+            digitaldata.AddPulse(23, ST+587.6, ST+1147.5)'T8
+            digitaldata.AddPulse(24, ST+684.7, ST+1229.5)'T9
+            digitaldata.AddPulse(25, ST+1045.6, ST+1298.3)'T10
+            digitaldata.AddPulse(26, ST+1147.5, ST+1376.8)'T11
+            digitaldata.AddPulse(27, ST+1229.5, ST+1479.1)'T12
+            digitaldata.AddPulse(28, ST+1298.3, ST+1701)'T13
+            digitaldata.AddPulse(29, ST+1376.8, ST+2026.3)'Quad
+            digitaldata.AddPulse(28, ST+1701, ST+2104.7)'T13
+            digitaldata.AddPulse(27, ST+1923.9, ST+2173.5)'T12
+            digitaldata.AddPulse(26, ST+2026.3, ST+2255.5)'T11
+            digitaldata.AddPulse(25, ST+2104.7, ST+2357.4)'T10
+            digitaldata.AddPulse(24, ST+2173.5, ST+2718.3)'T9
+            digitaldata.AddPulse(23, ST+2255.5, ST+2815.4)'T8
+            digitaldata.AddPulse(22, ST+2357.4, ST+2878.5)'T7
+            digitaldata.AddPulse(21, ST+2718.3, ST+2931.1)'T6
+            digitaldata.AddPulse(20, ST+2815.4, ST+2985.7)'T5
+            digitaldata.AddPulse(19, ST+2878.5, ST+3035.8)'T4
+            digitaldata.AddPulse(18, ST+2931.1, ST+3095.1)'T3
+            digitaldata.AddPulse(16, ST+2985.7, ST+3152.7)'T2
+            digitaldata.AddPulse(15, ST+3035.8, ST+3403)'T1
+            digitaldata.AddPulse(4, ST+3095.1, ST+3403)'MOT
+            digitaldata.AddPulse(14, ST+3152.7, ST+3403)'Push
+            analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\table1.csv", ST, ST + TT, 60, 2, 0)
+            analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\table2.csv", ST, ST + TT, 60, 2, 1)
+            analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\table3.csv", ST, ST + TT, 100, 1, 2)
+            analogdata.AddFromFile("C:\Documents and Settings\Waseem\My Documents\Visual Studio 2005\Projects\ExpControl\mathematica\table4.csv", ST, ST + TT, 100, 1, 3)
+
+            'Absorption Imaging
+            digitaldata.AddPulse(36, 6500, 6500.1 + IT - 2) '78MHz TTL
+            digitaldata.AddPulse(44, 6500.1 + IT-TOF - 50, 6500.1 + IT) 'Repump Shutter
+            digitaldata.AddPulse(36, 6500.1 + IT-1, 6500.1 + IT + 50) '78MHz TTL
+            digitaldata.AddPulse(64, 6500.1, 6510.1)
+            digitaldata.AddPulse(1, 6500.1 + IT - 10, 6500.1 + IT) 'camera
+            digitaldata.AddPulse(46, 6500.1 + IT - 5, 6500.105 + IT) 'imaging Shutter
+            digitaldata.AddPulse(33, 6500.1 + IT, 6500.105 + IT) '-80MHz TTL
+            digitaldata.AddPulse(38, 6500.1 + IT, 6500.105 + IT) 'imaging AOM 

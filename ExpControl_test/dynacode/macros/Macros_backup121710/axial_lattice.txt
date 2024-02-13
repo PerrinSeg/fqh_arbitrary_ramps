@@ -1,0 +1,3 @@
+axial_lattice_shutter on
+ttl_axial_lattice on
+axial_lattice_power 6

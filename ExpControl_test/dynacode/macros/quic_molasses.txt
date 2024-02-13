@@ -1,0 +1,10 @@
+quic_molasses_shutter on
+ttl_molasses1 on
+ttl_molasses2 on
+ttl_133MHz on
+ttl_80MHz on
+quic_molasses_power -9.99
+molasses_aom1_rf200MHz 200
+molasses_aom2_rf120MHz 120
+galvo_voltage_small 0
+galvo_voltage_big 0

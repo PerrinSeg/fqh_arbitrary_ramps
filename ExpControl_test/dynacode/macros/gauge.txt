@@ -1,0 +1,10 @@
+gauge1_rf80MHz 80
+gauge1_power 4.99
+gauge2_power 4.99
+gauge2_rf_fm 1.26923
+gauge1_PZTx 5
+gauge1_PZTy 5
+gauge2_PZTx 5
+gauge2_PZTy 5
+gauge_shutter on
+gauge_ttl on

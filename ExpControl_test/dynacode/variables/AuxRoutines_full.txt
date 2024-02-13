@@ -1,0 +1,15 @@
+analogdata.SetFreq(160, lattice2D795_rf160MHz)
+analogdata.SetFreq(80, lattices2D765_rf80MHz)
+analogdata.SetFreq(80, axial795_rf80MHz)
+analogdata.SetFreq(200, molasses_aom1_rf200MHz)
+analogdata2.SetFreq(120, molasses_aom2_rf120MHz)
+'analogdata.SetFreq(160, molasses_aom1_rf200MHz) 'for molasses TOF alignment
+'analogdata2.SetFreq(160, molasses_aom2_rf120MHz) 'for molasses TOF alignment
+analogdata2.SetFreq(80, gauge1_rf80MHz)
+analogdata.SetFreq(80, auxRF)
+analogdata.SetPLLRN(942, 7325, 19)
+analogdata.SetPLLRN(936, 7279, 17)
+'dds.SetDDSFreq(100,3,123.456)
+'dds.SetDDSFreq(100,2,123.456)
+'dds.SetDDSFreq(100,1,123.456)
+'dds.SetDDSFreq(100,0,123.456)

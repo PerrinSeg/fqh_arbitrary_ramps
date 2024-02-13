@@ -1,0 +1,4 @@
+axial795_shutter on
+axial795_ttl on
+axial795_power 4.15
+axial795_rf80MHz 80

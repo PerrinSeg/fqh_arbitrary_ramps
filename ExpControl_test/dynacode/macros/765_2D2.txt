@@ -1,0 +1,4 @@
+lattice2D765_shutter2 on
+lattice2D765_ttl2 on
+lattice2D765_power2 4.99
+lattices2D765_rf80MHz 80

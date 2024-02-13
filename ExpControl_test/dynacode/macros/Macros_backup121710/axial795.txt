@@ -1,0 +1,3 @@
+axial795_shutter on
+axial795_ttl on
+axial795_power 7

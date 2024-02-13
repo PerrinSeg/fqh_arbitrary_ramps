@@ -1,0 +1,4 @@
+lattice2D795_shutter on
+lattice2D795_ttl2 on
+lattice2D795_power2 3.85
+lattice2D795_rf160MHz 160

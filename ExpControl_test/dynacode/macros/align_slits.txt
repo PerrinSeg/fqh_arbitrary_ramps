@@ -1,0 +1,13 @@
+lattice2D765_shutter on
+lattice2D765_ttl on
+lattice2D765_power 4
+lattice2D765_shutter2 on
+lattice2D765_ttl2 on
+lattice2D765_power2 4
+lattice2D795_shutter on
+lattice2D795_ttl on
+lattice2D795_power 4
+lattice2D795_shutter on
+lattice2D795_ttl2 on
+lattice2D795_power2 4
+flip_mount_795_ttl on

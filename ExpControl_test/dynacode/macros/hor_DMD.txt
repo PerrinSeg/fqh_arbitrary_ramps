@@ -1,0 +1,3 @@
+hor_DMD_power 4.99
+hor_DMD_shutter on
+hor_DMD_ttl on
