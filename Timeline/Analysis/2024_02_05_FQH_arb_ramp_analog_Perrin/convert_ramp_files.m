@@ -236,6 +236,7 @@ end
 % legend('Location','best')
 
 
+
 %% Interpolate quic depth 
 
 quiclim = 60;
@@ -276,7 +277,13 @@ v0yfcn = a1*(lambertw(-1,-(2*x/a2)^(2/3)/3 * pi^(1/3)))^2;
 % xlabel('J_y (Hz)')
 % ylabel('V_0 quic (E_r)')
 
-% fit using Cheyshev polynomials
+%% Try fit 
+depth_from_tunnel_old = @(t) -0.70255 + 14.1054 * exp(-t / 0.0000553825) + 10.497 * exp(-t / 0.108124) + 10.6318 * exp(-t / 0.00203487) + 9.01271 * exp(-t / 0.0124361) + 12.449 * exp(-t / 0.000336428);
+depth_from_tunnel_str = 'a1 + a2*exp(-x/(1240*a3)) + a4*exp(-x/(1240*a5)) + a6*exp(-x/(1240*a7)) + a8*exp(-x/(1240*a9)) + a10*exp(-x/(1240*a11))';
+startvals = [-0.70255, 14.1054, 0.0000553825, 10.497, 0.108124, 10.6318, 0.00203487, 9.01271, 0.0124361, 12.449, 0.000336428];
+f = fit(quicJ_aux(2:end)', quicdepth_er_2(2:end)', depth_from_tunnel_str, 'Start', startvals)
+
+%% fit using Cheyshev polynomials
 syms s
 v0yfcn_aux = @(x) a1 * lambertw( -1, -(quiclim/a2 * (x + 1)).^(2/3) * pi^(1/3)/3 ).^2;
 quicDepthEst = zeros(1,length(quicJ_aux));
@@ -300,19 +307,20 @@ tl = tiledlayout('flow','tilespacing','compact');
 ax1 = nexttile;
 hold on
 plot(quicJ_aux, v0yfcn_aux(quicJ_aux/(quiclim/2)-1),'DisplayName', 'analytic')
-% plot(quicJ_aux, jToDepthFun(quicJ_aux),'--')
 plot(quicJ_aux, quicDepthEst, '-', 'DisplayName', 'Cheby approx')
 plot(quictunneling, quicdepth,'o', 'DisplayName', 'numeric endpts')
 % plot(quicJ_endpts, Teval, '.b', 'DisplayName', 'taylor estimated endpts')
 plot(quicJ_endpts, quicDepthEstFun(quicJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
+% plot(quicJ_aux, depth_from_tunnel_old(quicJ_aux/Er), '--', 'DisplayName','old depth from tunnel')
+plot(quicJ_aux, f(quicJ_aux), '--b', 'DisplayName','new fit to old depth from tunnel')
 ylabel('V_0 quic (E_r)')
 legend('location','best')
 
 ax2 = nexttile;
 hold on
-plot(quicJ_aux, quicDepthEst-real(jyToDepthFun(quicJ_aux)))
-% plot(quicJ_endpts, Teval-jyToDepthFun(quicJ_endpts), '.b')
+plot(quicJ_aux, quicDepthEst-quicdepth_er_2)
 plot(quicJ_endpts, quicDepthEstFun(quicJ_endpts)-real(jyToDepthFun(quicJ_endpts)), '.r')
+plot(quicJ_aux, f(quicJ_aux)-quicdepth_er_2', '--b', 'DisplayName','new fit to old depth from tunnel')
 yline(0,'--')
 ylabel('V_0 quic error (E_r)')
 ylim([-2,2])
@@ -324,8 +332,7 @@ linkaxes([ax1,ax2],'x')
 %% Save polynomial coeffs
 % TO DO: export coefficients to txt file, write NI fcn to read them in and construct polynomials
 
-cy
-
+cy = coeffvalues(f)
 % save as txt file 
 save_coeffs_quic = 1;
 if save_coeffs_quic
@@ -358,7 +365,6 @@ quadV_endpts = quadvolts;
 tic
 syms s
 jxfcn = @(vx)  b1 * besselj( 1, b2*10.^(2*vx) );
-% quadDepthEst = zeros(1,length(quadJ_aux));
 cx = zeros(1,norder);
 quadDepthFactors = sym([]);
 for j = 0:norder-1
@@ -369,7 +375,6 @@ for j = 0:norder-1
         cx(j+1) = cx(j+1) + ckj;
     end
     cx(j+1) = 2/norder * cx(j+1);
-    % quadDepthEst = quadDepthEst + cx(j+1)*chebyshevT(j, quadJ_aux/(quiclim/2)-1);
     quadDepthFactors(j+1) = cx(j+1)*chebyshevT(j, s/(quadlim/2)-1);
 end
 quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
