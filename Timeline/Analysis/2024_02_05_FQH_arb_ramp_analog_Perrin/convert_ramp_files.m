@@ -307,23 +307,23 @@ tl = tiledlayout('flow','tilespacing','compact');
 ax1 = nexttile;
 hold on
 plot(quicJ_aux, v0yfcn_aux(quicJ_aux/(quiclim/2)-1),'DisplayName', 'analytic')
-plot(quicJ_aux, quicDepthEst, '-', 'DisplayName', 'Cheby approx')
+% plot(quicJ_aux, quicDepthEst, '-', 'DisplayName', 'Cheby approx')
 plot(quictunneling, quicdepth,'o', 'DisplayName', 'numeric endpts')
 % plot(quicJ_endpts, Teval, '.b', 'DisplayName', 'taylor estimated endpts')
-plot(quicJ_endpts, quicDepthEstFun(quicJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
+plot(quicJ_endpts, f(quicJ_endpts),'.r', 'DisplayName', 'exp fit estimated endpts')
 % plot(quicJ_aux, depth_from_tunnel_old(quicJ_aux/Er), '--', 'DisplayName','old depth from tunnel')
-plot(quicJ_aux, f(quicJ_aux), '--b', 'DisplayName','new fit to old depth from tunnel')
+plot(quicJ_aux, f(quicJ_aux), '--r', 'DisplayName','new fit to old depth from tunnel')
 ylabel('V_0 quic (E_r)')
 legend('location','best')
 
 ax2 = nexttile;
 hold on
-plot(quicJ_aux, quicDepthEst-quicdepth_er_2)
-plot(quicJ_endpts, quicDepthEstFun(quicJ_endpts)-real(jyToDepthFun(quicJ_endpts)), '.r')
-plot(quicJ_aux, f(quicJ_aux)-quicdepth_er_2', '--b', 'DisplayName','new fit to old depth from tunnel')
-yline(0,'--')
+% plot(quicJ_aux, quicDepthEst-quicdepth_er_2)
+plot(quicJ_aux, f(quicJ_aux)-quicdepth_er_2', '-r', 'DisplayName','new fit to old depth from tunnel')
+plot(quicJ_endpts, f(quicJ_endpts)-real(jyToDepthFun(quicJ_endpts)), '.r')
+yline(0,':')
 ylabel('V_0 quic error (E_r)')
-ylim([-2,2])
+% ylim([-2,2])
 
 xlabel(tl, 'J_y (Hz)')
 title(tl, ['Up to order ' num2str(norder)])
@@ -380,6 +380,9 @@ end
 quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
 quadDepthEst = quadDepthEstFun(quadJ_aux);
 toc
+
+figure
+plot(10.^(2*quadV_aux), jxfcn(quadV_aux))
 
 % Plot
 figure
