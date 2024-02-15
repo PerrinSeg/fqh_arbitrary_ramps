@@ -127,15 +127,15 @@ Dim ramp_forward_end_time As Double = ramp_t(n_times)
 
 Dim lattice1_ramp_v(n_times) As Double
 Dim lattice2_ramp_j(n_times) As Double
-
 lattice2_ramp_j = ramp_variables(3)/1240 ' in units of E_r
+
 Dim gauge_freq_ramp_v(n_times) As Double
 For index As Integer = 0 To n_times
     lattice1_ramp_v(index) = DepthToVolts(ramp_variables(1)(index), lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
     gauge_freq_ramp_v(index) = BeatVolt(ramp_variables(4)(index))
 Next
 
-Dim gauge_power_ramp_j As Double() = ramp_variables(2)
+Dim gauge_power_ramp_j As Double() = ramp_variables(2)/1240 'units of E_r
 Dim quad_ramp_v As Double() = ramp_variables(5)  ' 0th value is "quad_init"
 Dim quic_ramp_v As Double() = ramp_variables(6)  ' 0th value is "quic_init"
 
@@ -264,15 +264,15 @@ For index As Integer = 1 To n_times - 1
 Next
 
 'gauge power
-analogdata.AddRamp(gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power)
+analogdata.AddRamp(gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
 For index As Integer = 1 To n_times - 1
     analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
 Next
 
 '2D2 lattice power
-analogdata.AddLogRamp(lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2D765_power2) 'tunneling should be in units of Er... convert in matlab file? (current conversion uses Hz)
+analogdata.AddTunnelRamp(lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2D765_power2) 'tunneling should be in units of Er... convert in matlab file? (current conversion uses Hz)
 For index As Integer = 1 To n_times - 1
-    analogdata.AddLogRamp(lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2D765_power2)
+    analogdata.AddTunnelRamp(lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2D765_power2)
 Next
 
 'quic grad
