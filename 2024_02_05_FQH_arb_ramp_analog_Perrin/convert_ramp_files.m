@@ -27,7 +27,7 @@ ramp_amps_hz = ramp_amps*J0;
 
 %% Plot raw values
 
-plot_figure = 1;
+plot_figure = 0;
 save_figure = 0;
 if plot_figure
     figure
@@ -176,7 +176,7 @@ fclose(fid);
 
 %% Plot final values
 
-plot_figure = 1;
+plot_figure = 0;
 save_figure = 0;
 if plot_figure
     figure
@@ -279,60 +279,61 @@ v0yfcn = a1*(lambertw(-1,-(2*x/a2)^(2/3)/3 * pi^(1/3)))^2;
 
 %% Try fit 
 depth_from_tunnel_old = @(t) -0.70255 + 14.1054 * exp(-t / 0.0000553825) + 10.497 * exp(-t / 0.108124) + 10.6318 * exp(-t / 0.00203487) + 9.01271 * exp(-t / 0.0124361) + 12.449 * exp(-t / 0.000336428);
-depth_from_tunnel_str = 'a1 + a2*exp(-x/(1240*a3)) + a4*exp(-x/(1240*a5)) + a6*exp(-x/(1240*a7)) + a8*exp(-x/(1240*a9)) + a10*exp(-x/(1240*a11))';
+depth_from_tunnel_str = 'a1 + a2*exp(-x/(1240*a3)) + a4*exp(-x/(1240*a5)) + a6*exp(-x/(1240*a7)) + a8*exp(-x/(1240*a9)) + b1*exp(-x/(1240*b2))';
 startvals = [-0.70255, 14.1054, 0.0000553825, 10.497, 0.108124, 10.6318, 0.00203487, 9.01271, 0.0124361, 12.449, 0.000336428];
-f = fit(quicJ_aux(2:end)', quicdepth_er_2(2:end)', depth_from_tunnel_str, 'Start', startvals)
+fy = fit(quicJ_aux(2:end)', quicdepth_er_2(2:end)', depth_from_tunnel_str, 'Start', startvals)
 
 %% fit using Cheyshev polynomials
-syms s
-v0yfcn_aux = @(x) a1 * lambertw( -1, -(quiclim/a2 * (x + 1)).^(2/3) * pi^(1/3)/3 ).^2;
-quicDepthEst = zeros(1,length(quicJ_aux));
+% syms s
+% v0yfcn_aux = @(x) a1 * lambertw( -1, -(quiclim/a2 * (x + 1)).^(2/3) * pi^(1/3)/3 ).^2;
+% quicDepthEst = zeros(1,length(quicJ_aux));
+% 
+% cy = zeros(1,norder);
+% quicDepthFactors = sym([]);
+% for j = 0:norder-1
+%     for k = 1:norder
+%         ckj =  real(v0yfcn_aux( cos(pi*(k-1/2)/norder) )) * cos(pi*j*(k-1/2)/norder);
+%         cy(j+1) = cy(j+1) + ckj;
+%     end
+%     cy(j+1) = 2/norder * cy(j+1);
+%     quicDepthEst = quicDepthEst + cy(j+1)*chebyshevT(j, quicJ_aux/(quiclim/2)-1);
+%     quicDepthFactors(j+1) = cy(j+1)*chebyshevT(j, s/(quiclim/2)-1);
+% end
+% quicDepthEst = quicDepthEst - 1/2 * cy(1);
+% quicDepthEstFun = @(x) subs(sum(quicDepthFactors) - 1/2 * cy(1), s, x);
 
-cy = zeros(1,norder);
-quicDepthFactors = sym([]);
-for j = 0:norder-1
-    for k = 1:norder
-        ckj =  real(v0yfcn_aux( cos(pi*(k-1/2)/norder) )) * cos(pi*j*(k-1/2)/norder);
-        cy(j+1) = cy(j+1) + ckj;
-    end
-    cy(j+1) = 2/norder * cy(j+1);
-    quicDepthEst = quicDepthEst + cy(j+1)*chebyshevT(j, quicJ_aux/(quiclim/2)-1);
-    quicDepthFactors(j+1) = cy(j+1)*chebyshevT(j, s/(quiclim/2)-1);
-end
-quicDepthEst = quicDepthEst - 1/2 * cy(1);
-quicDepthEstFun = @(x) subs(sum(quicDepthFactors) - 1/2 * cy(1), s, x);
-
+%% Plot
 figure
 tl = tiledlayout('flow','tilespacing','compact');
 ax1 = nexttile;
 hold on
-plot(quicJ_aux, v0yfcn_aux(quicJ_aux/(quiclim/2)-1),'DisplayName', 'analytic')
-% plot(quicJ_aux, quicDepthEst, '-', 'DisplayName', 'Cheby approx')
+plot(quicJ_aux, quicdepth_er_2,'DisplayName', 'analytic')
+plot(quicJ_aux, fy(quicJ_aux), '--', 'DisplayName','new fit to old depth from tunnel')
 plot(quictunneling, quicdepth,'o', 'DisplayName', 'numeric endpts')
+plot(quicJ_endpts, fy(quicJ_endpts),'.', 'DisplayName', 'exp fit estimated endpts')
+% plot(quicJ_aux, quicDepthEst, '-', 'DisplayName', 'Cheby approx')
 % plot(quicJ_endpts, Teval, '.b', 'DisplayName', 'taylor estimated endpts')
-plot(quicJ_endpts, f(quicJ_endpts),'.r', 'DisplayName', 'exp fit estimated endpts')
 % plot(quicJ_aux, depth_from_tunnel_old(quicJ_aux/Er), '--', 'DisplayName','old depth from tunnel')
-plot(quicJ_aux, f(quicJ_aux), '--r', 'DisplayName','new fit to old depth from tunnel')
 ylabel('V_0 quic (E_r)')
 legend('location','best')
 
 ax2 = nexttile;
 hold on
 % plot(quicJ_aux, quicDepthEst-quicdepth_er_2)
-plot(quicJ_aux, f(quicJ_aux)-quicdepth_er_2', '-r', 'DisplayName','new fit to old depth from tunnel')
-plot(quicJ_endpts, f(quicJ_endpts)-real(jyToDepthFun(quicJ_endpts)), '.r')
+plot(quicJ_aux, fy(quicJ_aux)-quicdepth_er_2', '-', 'DisplayName','new fit to old depth from tunnel')
+plot(quicJ_endpts, fy(quicJ_endpts)-real(jyToDepthFun(quicJ_endpts)), '.')
 yline(0,':')
 ylabel('V_0 quic error (E_r)')
 % ylim([-2,2])
 
 xlabel(tl, 'J_y (Hz)')
-title(tl, ['Up to order ' num2str(norder)])
+% title(tl, ['Up to order ' num2str(norder)])
 linkaxes([ax1,ax2],'x')
 
 %% Save polynomial coeffs
 % TO DO: export coefficients to txt file, write NI fcn to read them in and construct polynomials
 
-cy = coeffvalues(f)
+cy = coeffvalues(fy)
 % save as txt file 
 save_coeffs_quic = 1;
 if save_coeffs_quic
@@ -349,73 +350,138 @@ b2 = 1.399 * 10^-6;
 quadlim = 50;
 quadJ_aux = linspace(0, quadlim, 500);
 
+jxfcn = @(vx)  b1 * besselj( 1, b2*10.^(2*vx) );
 % quadCalibJ = [27.7261+28.2612/2, 40.6189, 50.4666, 56.4366, 61.2801, 62.3651];
 % quadCalibV = [2.8000, 2.8800, 2.9400, 2.9800, 3.0200, 3.0500];
-quadV_aux = zeros(size(quadJ_aux));
-quadV_aux(1) = 0;
-tic
-for i = 2:length(quadJ_aux)
-    quadV_aux(i) = vpasolve( quadJ_aux(i) == b1 * besselj(1, b2*10.^(2.*v)), v, [0, 3.05] );
-end
-toc
+% quadV_aux = zeros(size(quadJ_aux));
+% quadV_aux(1) = 0;
+% tic
+% for i = 2:length(quadJ_aux)
+%     quadV_aux(i) = vpasolve( quadJ_aux(i) == b1 * besselj(1, b2*10.^(2.*v)), v, [0, 3.05] );
+% end
+% toc
 quadJ_endpts = quadtunneling;
 quadV_endpts = quadvolts;
 
-%
-tic
-syms s
-jxfcn = @(vx)  b1 * besselj( 1, b2*10.^(2*vx) );
-cx = zeros(1,norder);
-quadDepthFactors = sym([]);
-for j = 0:norder-1
-    for k = 1:norder
-        jx_k = cos(pi*(k-1/2)/norder);
-        v0x_k = vpasolve(jx_k == jxfcn(v)*2/quadlim-1, v, [0,3.05]);
-        ckj =  real(v0x_k) * cos(pi*j*(k-1/2)/norder);
-        cx(j+1) = cx(j+1) + ckj;
-    end
-    cx(j+1) = 2/norder * cx(j+1);
-    quadDepthFactors(j+1) = cx(j+1)*chebyshevT(j, s/(quadlim/2)-1);
-end
-quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
-quadDepthEst = quadDepthEstFun(quadJ_aux);
-toc
+quadV_aux = linspace(0,3,200);
+quadJ_aux = jxfcn(quadV_aux);
 
+%%
 figure
-plot(10.^(2*quadV_aux), jxfcn(quadV_aux))
+hold on
+plot(quadV_aux, quadJ_aux, '-')
+
+%% Try fit 
+% depth_from_tunnel_quad_str = 'a1 + a2*exp(-x/(1240*a3)) + a4*exp(-x/(1240*a5)) + a6*exp(-x/(1240*a7)) + a8*exp(-x/(1240*a9)) + b1*exp(-x/(1240*b2))';
+% depth_from_tunnel_quad = @(a, x) a(1) + a(2)*exp(-x/(1240*a(3))) + a(4)*exp(-x/(1240*a(5))) + a(6)*exp(-x/(1240*a(7))) + a(8)*exp(-x/(1240*a(9))) + a(10)*exp(-x/(1240*a(11)));
+% depth_from_tunnel_quad_str = 'a1 + a2*log(x/(1240*a3)) + a4*log(x/(1240*a5)) + a6*log(x/(1240*a7)) + a8*log(x/(1240*a9)) + b1*log(x/(1240*b2))';
+% startvals = [4.938, -2.147, 0.3683, -0.2356, 0.02113, -0.4514, 0.001, 0, 0.0124361, -0.3, 0.0003];
+% startvals = [4.938, -2.147, 0.3683, -0.2356, 0.02113, -0.4514, 0.001, 0, 0.0124361];
+
+depth_from_tunnel_quad = @(a, x) a(1) + a(2)*log(x/1240*a(3)) + a(4)*exp(x/1240*a(5)) + a(6)*exp(x/1240*a(7));
+depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240*a3) + a4*exp(x/1240*a5) + a6*exp(x/1240*a7)';
+startvals = [2, 0.2, 0.1, 0, 1, 0, 1];
+lowerbnd = [-Inf, -Inf, 0, -Inf, -Inf, -Inf, -Inf];
+figure
+hold on
+plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux))
+plot(quadJ_aux, quadV_aux, '--')
+
+fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Start', startvals,'Lower',lowerbnd)
+% fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_str, 'Start', startvals)
+% 
+figure
+hold on
+% for i = 1:20
+%     % plot(quadJ_aux, log(i*quadJ_aux/1240))
+%     plot(quadJ_aux, i*log(quadJ_aux/1240))
+% end
+% plot(quadJ_aux, fx(quadJ_aux),'-')
+plot(quadJ_aux, quadV_aux,'--')
 
 % Plot
-figure
-tl2 = tiledlayout('flow','tilespacing','compact');
+plot_figure =1;
+if plot_figure
+    figure
+    tl2 = tiledlayout('flow','tilespacing','compact');
+    
+    ax1 = nexttile;
+    hold on
+    plot(quadJ_aux, fx(quadJ_aux), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
+    plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
+    plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
+    ylabel('Gauge power quad (V)')
+    legend('location','best')
+    
+    ax2 = nexttile;
+    hold on
+    plot(quadJ_aux, fx(quadJ_aux)'-quadV_aux)
+    plot(quadJ_endpts, fx(quadJ_endpts)-quadV_endpts, '.')
+    yline(0,'--')
+    ylabel('Gauge power quad error (V)')
+    ylim([-0.02,0.02])
+    
+    xlabel(tl2, 'J_x (Hz)')
+    % title(tl2, ['Up to order ' num2str(norder)])
+    linkaxes([ax1,ax2],'x')
+end
 
-ax1 = nexttile;
-hold on
-plot(quadJ_aux, quadV_aux,'DisplayName', 'numeric')
-plot(quadJ_aux, quadDepthEst, 'DisplayName', 'Cheby approx')
-plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
-plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
-ylabel('Gauge power quad (V)')
-legend('location','best')
+%%
+% tic
+% syms s
 
-ax2 = nexttile;
-hold on
-plot(quadJ_aux, quadDepthEst-quadV_aux)
-plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts)-quadV_endpts, '.r')
-yline(0,'--')
-ylabel('Gauge power quad error (V)')
-ylim([-0.1,0.1])
-
-xlabel(tl2, 'J_x (Hz)')
-title(tl2, ['Up to order ' num2str(norder)])
-linkaxes([ax1,ax2],'x')
-% TO DO: export coefficients to txt file, write NI fcn to read them in and
-% construct polynomials
+% cx = zeros(1,norder);
+% quadDepthFactors = sym([]);
+% for j = 0:norder-1
+%     for k = 1:norder
+%         jx_k = cos(pi*(k-1/2)/norder);
+%         v0x_k = vpasolve(jx_k == jxfcn(v)*2/quadlim-1, v, [0,3.05]);
+%         ckj =  real(v0x_k) * cos(pi*j*(k-1/2)/norder);
+%         cx(j+1) = cx(j+1) + ckj;
+%     end
+%     cx(j+1) = 2/norder * cx(j+1);
+%     quadDepthFactors(j+1) = cx(j+1)*chebyshevT(j, s/(quadlim/2)-1);
+% end
+% quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
+% quadDepthEst = quadDepthEstFun(quadJ_aux);
+% toc
+% 
+% figure
+% plot(10.^(2*quadV_aux), jxfcn(quadV_aux))
+% 
+% % Plot
+% figure
+% tl2 = tiledlayout('flow','tilespacing','compact');
+% 
+% ax1 = nexttile;
+% hold on
+% plot(quadJ_aux, quadV_aux,'DisplayName', 'numeric')
+% plot(quadJ_aux, quadDepthEst, 'DisplayName', 'Cheby approx')
+% plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
+% plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
+% ylabel('Gauge power quad (V)')
+% legend('location','best')
+% 
+% ax2 = nexttile;
+% hold on
+% plot(quadJ_aux, quadDepthEst-quadV_aux)
+% plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts)-quadV_endpts, '.r')
+% yline(0,'--')
+% ylabel('Gauge power quad error (V)')
+% ylim([-0.1,0.1])
+% 
+% xlabel(tl2, 'J_x (Hz)')
+% title(tl2, ['Up to order ' num2str(norder)])
+% linkaxes([ax1,ax2],'x')
+% % TO DO: export coefficients to txt file, write NI fcn to read them in and
+% % construct polynomials
 
 
 %% Save polynomial coeffs
 % TO DO: export coefficients to txt file, write NI fcn to read them in and construct polynomials
 
-cx
+cx = coeffvalues(fx)
 % save as txt file 
 save_coeffs_quad = 1;
 if save_coeffs_quad
