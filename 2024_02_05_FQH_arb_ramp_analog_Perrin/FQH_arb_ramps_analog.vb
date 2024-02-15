@@ -20,10 +20,12 @@ return_half = 0
 'Dim rampSegPath_return As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
 'Dim lattice2_JtoDepth_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
 'Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+
 Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
 Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
 Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
 Dim gauge_JtoVolt_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+
 Dim n_variables As Integer = 6 ' number of channels used in the arbitrary ramp
 
 '----------------------------------------------------- End arbitrary ramp constants --------------------------------------------------------------
@@ -88,15 +90,20 @@ Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad
 '---------------------------------------------------------------------------------------------------------------------------------------------
 '----------------------------------------------------- Arb ramp time definitions -------------------------------------------------------------
 '(3) Arbitrary ramp
+'TO DO: move ramp variable definitions to top, keep time definitions here!
+
 Dim limQuic As Double = 60
 Dim limQuad As Double = 50
 
-'lattice2_JtoDepth_coeffs = LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
-'gauge_JtoVolt_coeffs = LoadArrayFromFile(gauge_JtoVolt_coeff_path)
-'Dim norder As Double = lattice2_JtoDepth_coeff_path.GetUpperBound(0)
-'Console.WriteLine("max Chebyshev order: {0}", norder)
+Dim lattice2_JtoDepth_coeffs As Double()= LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
+Dim nterms_2D2 As Double = lattice2_JtoDepth_coeffs.GetUpperBound(0)
+Console.WriteLine("number of lattice depth expansion terms (minus 1): {0}", nterms_2D2)
 
-Dim ramp_start_time As Double = quic_turnon_end_time 'ramp delocalizes along y first, so it can start as soon as y tilt is ramped up
+Dim gauge_JtoVolt_coeffs As Double() = LoadArrayFromFile(gauge_JtoVolt_coeff_path)
+Dim nterms_gauge As Double = gauge_JtoVolt_coeffs.GetUpperBound(0)
+Console.WriteLine("number of gauge power expansion terms (minus 1): {0}", nterms_gauge)
+
+Dim ramp_start_time As Double = quic_turnon_end_time
 Dim ramp_variables = LoadRampSegmentsFromFile(rampSegPath, n_variables)
 Dim n_times As Integer = ramp_variables(0).GetUpperBound(0)
 Console.WriteLine("N times: {0}", n_times)
@@ -161,11 +168,11 @@ Dim gauge_power_ramp_j_return(-1) As Double
 Dim gauge_freq_ramp_v_return(-1) As Double  
 Dim quad_ramp_v_return(-1) As Double
 Dim quic_ramp_v_return(-1) As Double
+Dim n_times_return As Integer
 
 If (is_return > 0) Then 'return ramp different? Replace with separate file?
     'get times for return ramp
-    Dim ramp_variables_return As Double()()
-    Dim n_times_return As Integer
+    Dim ramp_variables_return As Double()()   
     Dim ramp_durs_return As Double()
 
     If (reverse_ramp > 0)
@@ -219,12 +226,24 @@ Else
     quic_ramp_end_v = quic_ramp_forward_v
 End If
 
+Dim lattice1_ramp_start_v = lattice1_ramp_v(0)
+
+'Dim gauge_power_start_v As Double = GaugeJtoVolt(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs)
+'Dim gauge_power_ramp_end_v As Double = GaugeJtoVolt(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs)
+
+'Dim lattice2_ramp_start_v As Double = JtoVolt(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+'Dim lattice2_ramp_end_v As Double = JtoVolt(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+
+Dim gauge_freq_ramp_start_v As Double = gauge_freq_ramp_v(0)
+Dim quad_ramp_start_v As Double = quad_ramp_v(0)
+Dim quic_ramp_start_v As Double = quic_ramp_v(0)
+
 
 ' Final values:
 ' ramp_end_time
 ' lattice1_ramp_end_v
-' gauge_power_ramp_end_j
-' lattice2_ramp_end_j
+' gauge_power_ramp_end_v
+' lattice2_ramp_end_v
 ' gauge_freq_ramp_end_v
 ' quad_ramp_end_v
 ' quic_ramp_end_v
@@ -264,15 +283,15 @@ For index As Integer = 1 To n_times - 1
 Next
 
 'gauge power
-analogdata.AddRamp(gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
+analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
 For index As Integer = 1 To n_times - 1
-    analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
+    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
 Next
 
 '2D2 lattice power
-analogdata.AddTunnelRamp(lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2D765_power2) 'tunneling should be in units of Er... convert in matlab file? (current conversion uses Hz)
+analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
 For index As Integer = 1 To n_times - 1
-    analogdata.AddTunnelRamp(lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2D765_power2)
+    analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
 Next
 
 'quic grad
@@ -302,12 +321,12 @@ If (is_return > 0) Then
 
     'gauge power
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddRamp(gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
+        analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
     Next
 
     '2D2 lattice power
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddLogRamp(lattice2_ramp_j_return(index), lattice2_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), lattice2D765_power2)
+        analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j_return(index), lattice2_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
     Next
 
     'quic grad
