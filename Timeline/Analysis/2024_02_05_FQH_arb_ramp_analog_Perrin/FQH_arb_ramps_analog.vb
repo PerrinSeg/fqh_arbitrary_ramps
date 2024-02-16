@@ -93,10 +93,7 @@ Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad
 '(3) Arbitrary ramp
 'TO DO: move ramp variable definitions to top, keep time definitions here!
 
-Dim limQuic As Double = 60
-Dim limQuad As Double = 50
-
-Dim lattice2_JtoDepth_coeffs As Double()= LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
+Dim lattice2_JtoDepth_coeffs As Double() = LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
 Dim nterms_2D2 As Double = lattice2_JtoDepth_coeffs.GetUpperBound(0)
 Console.WriteLine("number of lattice depth expansion terms (minus 1): {0}", nterms_2D2)
 
@@ -113,14 +110,16 @@ Console.WriteLine("N times: {0}", n_times)
 If override_default > 0
     If dur_idx <= n_times Then
         ramp_variables(0)(dur_idx) = dur_value
+        Console.WriteLine("overwriting ramp_variables(0)({0}) = {1}.", dur_idx, dur_value)
         If var_idx <= n_variables Then
             ramp_variables(var_idx)(dur_idx) = var_value
+            Console.WriteLine("overwriting ramp_variables({0})({1}) = {2}.", var_idx, dur_idx, var_value)
         Else
-            'Console.WriteLine("Bad value for var_idx = {0}, must be <= {1}. Default voltage value will not be overwritten.", var_idx, n_variables)
+            Console.WriteLine("Bad value for var_idx = {0}, must be <= {1}. Default voltage value will not be overwritten.", var_idx, n_variables)
             Microsoft.VisualBasic.Interaction.MsgBox("Bad value for var_idx. Default voltage value will not be overwritten.")
         End If
     Else
-        'Console.WriteLine("Bad value for dur_idx = {0}, must be <= {1}. Default values will not be overwritten.", dur_idx, n_times)
+        Console.WriteLine("Bad value for dur_idx = {0}, must be <= {1}. Default values will not be overwritten.", dur_idx, n_times)
         Microsoft.VisualBasic.Interaction.MsgBox("Bad value for dur_idx. Default values will not be overwritten.")
     End If
 End If
@@ -133,17 +132,20 @@ For index As Integer = 1 To n_times
 Next
 Dim ramp_forward_end_time As Double = ramp_t(n_times)
 
+Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
+
 Dim lattice1_ramp_v(n_times) As Double
+Dim gauge_power_ramp_j(n_times) As Double
 Dim lattice2_ramp_j(n_times) As Double
-lattice2_ramp_j = ramp_variables(3)/1240 ' in units of E_r
 
 Dim gauge_freq_ramp_v(n_times) As Double
 For index As Integer = 0 To n_times
     lattice1_ramp_v(index) = DepthToVolts(ramp_variables(1)(index), lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+    gauge_power_ramp_j(index) = ramp_variables(2)(index)/1240 'units of E_r    
+    lattice2_ramp_j(index) = ramp_variables(3)(index)/1240 'units of E_r    
     gauge_freq_ramp_v(index) = BeatVolt(ramp_variables(4)(index))
 Next
 
-Dim gauge_power_ramp_j As Double() = ramp_variables(2)/1240 'units of E_r
 Dim quad_ramp_v As Double() = ramp_variables(5)  ' 0th value is "quad_init"
 Dim quic_ramp_v As Double() = ramp_variables(6)  ' 0th value is "quic_init"
 
@@ -182,11 +184,10 @@ If (is_return > 0) Then 'return ramp different? Replace with separate file?
         ramp_durs_return = ramp_durs
     Else
         ramp_variables_return = LoadRampSegmentsFromFile(rampSegPath_return, n_variables)
-        n_times_return = ramp_variables_return(0).GetUpperBound(0)
-        Console.WriteLine("N times return: {0}", n_times_return) 
+        n_times_return = ramp_variables_return(0).GetUpperBound(0)        
         ramp_durs_return = ramp_variables_return(0)
     End If
-
+    Console.WriteLine("N times return: {0}", n_times_return) 
     ReDim ramp_t_return(n_times_return)
     ramp_t_return(0) = ramp_forward_end_time
     For index As Integer = 1 To n_times_return
@@ -202,8 +203,8 @@ If (is_return > 0) Then 'return ramp different? Replace with separate file?
 
     For index As Integer = 0 To n_times_return
         lattice1_ramp_v_return(index) = DepthToVolts(ramp_variables_return(1)(n_times_return - index), lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)  
-        gauge_power_ramp_j_return(index) = ramp_variables_return(2)(n_times_return - index)        
-        lattice2_ramp_j_return(index) = ramp_variables_return(3)(n_times_return - index)
+        gauge_power_ramp_j_return(index) = ramp_variables_return(2)(n_times_return - index)/1240 'in E_r       
+        lattice2_ramp_j_return(index) = ramp_variables_return(3)(n_times_return - index)/1240 'in E_r
         gauge_freq_ramp_v_return(index) = BeatVolt(ramp_variables(4)(n_times_return - index))
         quad_ramp_v_return(index) = ramp_variables_return(5)(n_times_return - index)
         quic_ramp_v_return(index) = ramp_variables_return(6)(n_times_return - index)
@@ -239,6 +240,9 @@ Dim gauge_freq_ramp_start_v As Double = gauge_freq_ramp_v(0)
 Dim quad_ramp_start_v As Double = quad_ramp_v(0)
 Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 
+'Console.WriteLine("quad_ramp_start_v: {0}", quad_ramp_start_v)
+'Console.WriteLine("quad_ramp_end_v: {0}", quad_ramp_end_v)
+'Console.WriteLine("quad_ramp_v(n_times-4): {0}", quad_ramp_v(n_times-4))
 
 ' Final values:
 ' ramp_end_time
@@ -251,6 +255,8 @@ Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 
 'ramp ends on last value: need to ramp down to turn off
 'need to add freeze lattice
+
+Console.WriteLine("ramp end time = {0}", ramp_end_time)
 '---------------------------------------------------------------------------------------------------------------------------------------------
 '----------------------------------------------------- End arb ramp time defs ----------------------------------------------------------------
 
@@ -259,7 +265,7 @@ Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 
 '(3) pinning
 Dim freeze_lattice_ramp_dur As Double = 1000
-Dim pinning_dur As Double = 15000
+Dim pinning_dur As Double = 10000
 Dim pinning_start_time As Double = ramp_end_time + freeze_lattice_ramp_dur
 Dim pinning_end_time As Double = pinning_start_time + pinning_dur
 
@@ -284,9 +290,14 @@ For index As Integer = 1 To n_times - 1
 Next
 
 'gauge power
-analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
-For index As Integer = 1 To n_times - 1
-    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
+'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
+'For index As Integer = 1 To n_times - 1
+'    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
+'    Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
+'Next
+For index As Integer = 0 To n_times - 1
+    analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
+    Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
 Next
 
 '2D2 lattice power
@@ -305,6 +316,7 @@ Next
 analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps3_ao) 'ps8_ao
 For index As Integer = 1 To n_times - 1
     analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps3_ao) 'ps8_ao
+    'Console.WriteLine("new quad ramp V: {0}", quad_ramp_v(index+1))
 Next
 
 'gauge detuning
@@ -321,8 +333,11 @@ If (is_return > 0) Then
     Next
 
     'gauge power
+    'For index As Integer = 0 To n_times_return - 1
+    '    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
+    'Next
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
+        analogdata.AddRamp(gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
     Next
 
     '2D2 lattice power
@@ -350,13 +365,16 @@ End If
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
 '----------------------------------------------------- Pinning -------------------------------------------------------------------------------
+analogdata.AddRamp(quad_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps3_ao)
+analogdata.AddRamp(quic_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps1_ao)
 
+'pinning_start_time = ramp_end_time
 'Bring everything back up for pinning
 ' 2D1 
 'analogdata.AddSmoothRamp(lattice1_ramp_v(n_times), lattice1_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power)
 analogdata.AddStep(lattice1_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power)
 ' 2D2 raise to final depth and hold
-analogdata.AddSmoothRamp(lattice2_ramp_j(n_times), lattice2_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power2)
+'analogdata.AddSmoothRamp(lattice2_ramp_j(n_times), lattice2_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power2)
 analogdata.AddStep(lattice2_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power2)
 
 

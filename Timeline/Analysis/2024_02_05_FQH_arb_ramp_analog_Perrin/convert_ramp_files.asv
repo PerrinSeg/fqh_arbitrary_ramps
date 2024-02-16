@@ -176,7 +176,7 @@ fclose(fid);
 
 %% Plot final values
 
-plot_figure = 0;
+plot_figure = 1;
 save_figure = 0;
 if plot_figure
     figure
@@ -346,7 +346,7 @@ end
 
 b1 = 108.4;
 b2 = 1.399 * 10^-6;
-quadlim = 60;
+% quadlim = 50;
 jxfcn = @(vx)  b1 * besselj( 1, b2*10.^(2*vx) );
 
 % quadCalibJ = [27.7261+28.2612/2, 40.6189, 50.4666, 56.4366, 61.2801, 62.3651];
@@ -382,18 +382,15 @@ quadlim = quadJ_aux(end);
 % startvals = [4, 0.2, 0.1, 0, 1, 0, 1];
 % lowerbnd = [-Inf, -Inf, 0, -Inf, -Inf, -Inf, -Inf];
 
-depth_from_tunnel_quad = @(a, x) a(1) + a(2)*exp(-x/1240*a(3)) + a(4)*exp(-x/1240*a(5)) + a(6)*exp(-x/1240*a(7));
-depth_from_tunnel_quad_str = 'a1 + a2*exp(-x/1240*a3) + a4*exp(-x/1240*a5) + a6*exp(-x/1240*a7)';
-startvals = [2.5, -2.6001, 360, 0.3, -10, 0, 1];
-lowerbnd = [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf];
+depth_from_tunnel_quad = @(a, x) a(1) + a(2)*exp(-x/1240/a(3)) + a(4)*exp(-x/1240/a(5)) + a(6)*exp(-x/1240/a(7)) + a(8)*exp(-x/1240/a(9)) + a(10)*exp(-x/1240/a(11));
+depth_from_tunnel_quad_str = 'a1 + a2*exp(-x/1240/a3) + a4*exp(-x/1240/a5) + a6*exp(-x/1240/a7) + a8*exp(-x/1240/a9) + b1*exp(-x/1240/b2)';
+startvals = [4, 0.2, 0.1, 0, 1, 0, 1, 0, 1, 0, 1];
+lowerbnd = [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf];
 figure
 hold on
-plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux), 'DisplayName', 'start values')
-plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'target')
-xlabel('J_x (Hz)')
-ylabel('gauge voltage (V)')
+plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux), 'DisplayName', 'star')
+plot(quadJ_aux, quadV_aux, '--')
 title('fit startvals test')
-legend('location','best')
 
 fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Start', startvals,'Lower',lowerbnd)
 % fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_str, 'Start', startvals)
@@ -419,7 +416,7 @@ if plot_figure
     plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
     plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
     plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
-    ylabel('Gauge voltage quad (V)')
+    ylabel('Gauge power quad (V)')
     legend('location','best')
     
     ax2 = nexttile;
@@ -436,54 +433,54 @@ if plot_figure
 end
 
 %% chebyshev polynomials quad
-% tic
-% syms s
-% 
-% cx = zeros(1,norder);
-% quadDepthFactors = sym([]);
-% for j = 0:norder-1
-%     for k = 1:norder
-%         jx_k = cos(pi*(k-1/2)/norder);
-%         v0x_k = vpasolve(jx_k == jxfcn(v)*2/quadlim-1, v, [0,3.05]);
-%         ckj =  real(v0x_k) * cos(pi*j*(k-1/2)/norder);
-%         cx(j+1) = cx(j+1) + ckj;
-%     end
-%     cx(j+1) = 2/norder * cx(j+1);
-%     quadDepthFactors(j+1) = cx(j+1)*chebyshevT(j, s/(quadlim/2)-1);
-% end
-% quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
-% quadDepthEst = quadDepthEstFun(quadJ_aux);
-% toc
-% 
-% % figure
-% % plot(10.^(2*quadV_aux), jxfcn(quadV_aux))
-% 
-% % Plot
+tic
+syms s
+
+cx = zeros(1,norder);
+quadDepthFactors = sym([]);
+for j = 0:norder-1
+    for k = 1:norder
+        jx_k = cos(pi*(k-1/2)/norder);
+        v0x_k = vpasolve(jx_k == jxfcn(v)*2/quadlim-1, v, [0,3.05]);
+        ckj =  real(v0x_k) * cos(pi*j*(k-1/2)/norder);
+        cx(j+1) = cx(j+1) + ckj;
+    end
+    cx(j+1) = 2/norder * cx(j+1);
+    quadDepthFactors(j+1) = cx(j+1)*chebyshevT(j, s/(quadlim/2)-1);
+end
+quadDepthEstFun = @(x) subs( sum(quadDepthFactors) - 1/2 * cx(1), s, x );
+quadDepthEst = quadDepthEstFun(quadJ_aux);
+toc
+
 % figure
-% tl2 = tiledlayout('flow','tilespacing','compact');
-% 
-% ax1 = nexttile;
-% hold on
-% plot(quadJ_aux, quadDepthEst, 'DisplayName', 'Cheby approx')
-% plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
-% plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
-% plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
-% ylabel('Gauge power quad (V)')
-% legend('location','best')
-% 
-% ax2 = nexttile;
-% hold on
-% plot(quadJ_aux, quadDepthEst-quadV_aux)
-% plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts)-quadV_endpts, '.r')
-% yline(0,'--')
-% ylabel('Gauge power quad error (V)')
-% % ylim([-0.1,0.1])
-% 
-% xlabel(tl2, 'J_x (Hz)')
-% title(tl2, ['Cheby quad, up to order ' num2str(norder)])
-% linkaxes([ax1,ax2],'x')
-% % TO DO: export coefficients to txt file, write NI fcn to read them in and
-% % construct polynomials
+% plot(10.^(2*quadV_aux), jxfcn(quadV_aux))
+
+% Plot
+figure
+tl2 = tiledlayout('flow','tilespacing','compact');
+
+ax1 = nexttile;
+hold on
+plot(quadJ_aux, quadDepthEst, 'DisplayName', 'Cheby approx')
+plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
+plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
+plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts),'.r', 'DisplayName', 'cheby estimated endpts')
+ylabel('Gauge power quad (V)')
+legend('location','best')
+
+ax2 = nexttile;
+hold on
+plot(quadJ_aux, quadDepthEst-quadV_aux)
+plot(quadJ_endpts, quadDepthEstFun(quadJ_endpts)-quadV_endpts, '.r')
+yline(0,'--')
+ylabel('Gauge power quad error (V)')
+% ylim([-0.1,0.1])
+
+xlabel(tl2, 'J_x (Hz)')
+title(tl2, ['Cheby quad, up to order ' num2str(norder)])
+linkaxes([ax1,ax2],'x')
+% TO DO: export coefficients to txt file, write NI fcn to read them in and
+% construct polynomials
 
 
 %% Save polynomial coeffs
@@ -534,34 +531,33 @@ depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240*a3) + a4*exp(x/1240*a5) + a6*ex
 % depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240/a3) + a4*exp(-x/1240/a5) + a6*exp(-x/1240/a7)';
 startvals = [4, 0.2, 0.1, 0, 1, 0, 1];
 lowerbnd = [-Inf, -Inf, 0, -Inf, -Inf, -Inf, -Inf];
+figure
+hold on
+plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux))
+plot(quadJ_aux, quadV_aux, '--')
+title('fit startvals test 2')
 
-% figure
-% hold on
-% plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux))
-% plot(quadJ_aux, quadV_aux, '--')
-% title('fit startvals test 2')
-
-fx2 = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Start', startvals,'Lower',lowerbnd)
+fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Start', startvals,'Lower',lowerbnd)
 
 % Plot
-plot_figure =0;
+plot_figure =1;
 if plot_figure
     figure
     tl2 = tiledlayout('flow','tilespacing','compact');
     
     ax1 = nexttile;
     hold on
-    plot(quadJ_aux, fx2(quadJ_aux), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux, fx(quadJ_aux), '-', 'DisplayName', 'exp approx')
     plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
     plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
-    plot(quadJ_endpts, fx2(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
+    plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
     ylabel('Gauge power quad (V)')
     legend('location','best')
     
     ax2 = nexttile;
     hold on
-    plot(quadJ_aux, fx2(quadJ_aux)'-quadV_aux)
-    plot(quadJ_endpts, fx2(quadJ_endpts)-quadV_endpts, '.')
+    plot(quadJ_aux, fx(quadJ_aux)'-quadV_aux)
+    plot(quadJ_endpts, fx(quadJ_endpts)-quadV_endpts, '.')
     yline(0,'--')
     ylabel('Gauge power quad error (V)')
     % ylim([-0.02,0.02])
