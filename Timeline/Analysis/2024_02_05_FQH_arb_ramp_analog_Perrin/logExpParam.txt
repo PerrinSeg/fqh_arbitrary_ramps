@@ -1,19 +1,19 @@
 Experiment Log
-C:\Users\Rb Lab\Documents\experiments\2024_01_31_FQH_test_ramp\
+C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Analysis\2024_02_05_FQH_arb_ramp_analog_Perrin\
 
-1/31/2024 4:29:07 PM
+2/19/2024 11:37:35 AM
 
 Experiment Program Used:
-C:\Users\Rb Lab\Documents\experiments\2024_01_26_FQH_ramp_test\FQH_arb_ramps_analog.vb
+C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Analysis\2024_02_05_FQH_arb_ramp_analog_Perrin\FQH_arb_ramps_analog.vb
 
 Batch Length:  
-4
+5
 
 ==========================
-quic_init ,  quad_init ,  override_default ,  dur_idx ,  var_idx ,  var_value ,  dur_value ,  is_return ,  reverse_ramp ,  return_half ,
+quic_init ,  quad_init ,  override_default ,  dur_idx ,  var_idx ,  var_value ,  dur_value ,  stop_index ,  is_return ,  reverse_ramp ,  return_half ,  
 --------------------------
-0.5,  0,  0,  1,  4,  3.66,  75.981, 0, 0, 0
-0.5,  0,  0,  1,  4,  3.66,  75.981, 1, 0, 0
-0.5,  0,  0,  1,  4,  3.66,  75.981, 1, 1, 0
-0.5,  0,  1,  2,  6,  10,  200, 0, 0, 0, 0
-0.5,  0,  0,  2,  6, 10,  200, 0, 0, 0, 0
+0.5,  0,  0,  1,  4,  3.66,  75.981,  10,  0,  0,  0,  
+0.5,  0,  0,  1,  4,  3.66,  75.981,  10,  1,  1,  0,  
+0.5,  0,  0,  1,  4,  3.66,  75.981,  10,  1,  1,  1,  
+0.5,  0,  1,  5,  6,  0.2,  100,  10,  0,  0,  0,  
+0.5,  0,  0,  1,  4,  3.66,  75.981,  10,  1,  0,  1,  

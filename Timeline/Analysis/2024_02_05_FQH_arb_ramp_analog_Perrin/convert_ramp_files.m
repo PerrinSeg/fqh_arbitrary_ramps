@@ -213,27 +213,6 @@ if plot_figure
     end
 end
 
-%% get interpolated ramps
-% rampt_full = zeros(ntimes, 100)
-ramp_amps_full = [];
-rampt_full = [];
-dt = 1;
-for i = 1:ntimes-1
-    rampt_interp = ramp_time_ms(i):dt:ramp_time_ms(i+1); 
-    ramp_amps_slopes = (ramp_amps_convert(i+1,:)-ramp_amps_convert(i,:))./(ramp_time_ms(i+1)-ramp_time_ms(i));
-    ramp_amps_interp = zeros(numel(rampt_interp), numel(ramp_amps_slopes));
-    for j = 1:numel(ramp_amps_slopes)
-        ramp_amps_interp(:,j) = ramp_amps_slopes(j) .* (rampt_interp-rampt_interp(1)) + ramp_amps_convert(i,j);
-    end
-    ramp_amps_full = [ramp_amps_full; ramp_amps_interp];
-    rampt_full = [rampt_full, rampt_interp];
-end
-
-% figure
-% plot(rampt_full, ramp_amps_full(:,6),'DisplayName', 'Interpolated')
-% hold on
-% plot(ramp_time_ms, ramp_amps_convert(:,6),'DisplayName', 'Raw')
-% legend('Location','best')
 
 
 %% Interpolate quic depth 
@@ -248,6 +227,7 @@ a2 = Er*quicDepthCal;
 quicJ_aux = linspace(0,quiclim,200);
 
 % comparing quic analytic to numeric calc
+jyfcn = @(x) quicDepthCal .* 4/sqrt(pi) .* Er .* x.^(3/4) .* exp(-2.*x.^(1/2));
 jyToDepthFun = @(j0) a1*(lambertw(-1,-(2*j0./a2).^(2/3)/3 * pi^(1/3))).^2;
 quicdepth_er_2 = real(jyToDepthFun(quicJ_aux));
 quicJ_endpts = quictunneling;
@@ -386,6 +366,7 @@ depth_from_tunnel_quad = @(a, x) a(1) + a(2)*exp(-x/1240*a(3)) + a(4)*exp(-x/124
 depth_from_tunnel_quad_str = 'a1 + a2*exp(-x/1240*a3) + a4*exp(-x/1240*a5) + a6*exp(-x/1240*a7)';
 startvals = [2.5, -2.6001, 360, 0.3, -10, 0, 1];
 lowerbnd = [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf];
+
 figure
 hold on
 plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux), 'DisplayName', 'start values')
@@ -408,24 +389,27 @@ fx = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Star
 % plot(quadJ_aux, quadV_aux,'--')
 
 %% Plot
-plot_figure =1;
+plot_figure = 1;
 if plot_figure
+    quadJ_aux_er = quadJ_aux/1240;
+    quadJ_endpts_er = quadJ_endpts/1240;
+
     figure
     tl2 = tiledlayout('flow','tilespacing','compact');
     
     ax1 = nexttile;
     hold on
-    plot(quadJ_aux, fx(quadJ_aux), '-', 'DisplayName', 'exp approx')
-    plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
-    plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
-    plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
+    plot(quadJ_aux_er, fx(quadJ_aux), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux_er, quadV_aux, '--', 'DisplayName', 'numeric')
+    plot(quadJ_endpts_er, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
+    plot(quadJ_endpts_er, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
     ylabel('Gauge voltage quad (V)')
     legend('location','best')
     
     ax2 = nexttile;
     hold on
-    plot(quadJ_aux, fx(quadJ_aux)'-quadV_aux)
-    plot(quadJ_endpts, fx(quadJ_endpts)-quadV_endpts, '.')
+    plot(quadJ_aux_er, fx(quadJ_aux)'-quadV_aux)
+    plot(quadJ_endpts_er, fx(quadJ_endpts)-quadV_endpts, '.')
     yline(0,'--')
     ylabel('Gauge power quad error (V)')
     % ylim([-0.02,0.02])
@@ -499,15 +483,23 @@ if save_coeffs_quad
 end
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 %% interpolate quad depth another try
 
 b1 = 108.4;
 b2 = 1.399 * 10^-6;
 quadlim = 50;
 % quadJ_aux = linspace(0, quadlim, 500);
-voltToDepthx = @(v) 10.^(2*vx);
-depthToJxfcn = @(v0)  b1 * besselj( 1, b2*10.^(2*vx) );
+voltToDepthx = @(v) 10.^(2*v);
+depthToVoltx = @(d) (1/2)*log10(d);
+depthToJxfcn = @(v0)  b1 * besselj( 1, b2*v0 );
 
+% figure 
+% hold on
+% plot(voltToDepthx(quadV_aux), depthToJxfcn(voltToDepthx(quadV_aux)) )
+% plot(voltToDepthx(quadV_aux), jxfcn(quadV_aux), '--')
+
+%
 % quadV_aux = zeros(size(quadJ_aux));
 % quadV_aux(1) = 0;
 % tic
@@ -517,8 +509,10 @@ depthToJxfcn = @(v0)  b1 * besselj( 1, b2*10.^(2*vx) );
 % toc
 quadJ_endpts = quadtunneling;
 quadV_endpts = quadvolts;
+quadDepth_endpts = voltToDepthx(quadV_endpts);
 
-quadV_aux = linspace(0,3,200);
+quadV_aux = linspace(0,3,500);
+quadDepth_aux = voltToDepthx(quadV_aux);
 quadJ_aux = jxfcn(quadV_aux);
 
 % Try fit 
@@ -528,40 +522,49 @@ quadJ_aux = jxfcn(quadV_aux);
 % startvals = [4.938, -2.147, 0.3683, -0.2356, 0.02113, -0.4514, 0.001, 0, 0.0124361, -0.3, 0.0003];
 % startvals = [4.938, -2.147, 0.3683, -0.2356, 0.02113, -0.4514, 0.001, 0, 0.0124361];
 
-depth_from_tunnel_quad = @(a, x) a(1) + a(2)*log(x/1240*a(3)) + a(4)*exp(x/1240*a(5)) + a(6)*exp(x/1240*a(7));
-depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240*a3) + a4*exp(x/1240*a5) + a6*exp(x/1240*a7)';
-% depth_from_tunnel_quad = @(a, x) a(1) + a(2)*log(x/1240*a(3)) + a(4)*exp(-x/1240/a(5)) + a(6)*exp(-x/1240/a(7));
-% depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240/a3) + a4*exp(-x/1240/a5) + a6*exp(-x/1240/a7)';
-startvals = [4, 0.2, 0.1, 0, 1, 0, 1];
-lowerbnd = [-Inf, -Inf, 0, -Inf, -Inf, -Inf, -Inf];
+% depth_from_tunnel_quad = @(a, x) a(1) + a(2)*log(x/1240*a(3)) + a(4)*exp(x/1240*a(5)) + a(6)*exp(x/1240*a(7));
+% depth_from_tunnel_quad_str = 'a1 + a2*log(x/1240*a3) + a4*exp(x/1240*a5) + a6*exp(x/1240*a7)';
+% startvals = [4, 0.2, 0.1, 0, 1, 0, 1];
+% lowerbnd = [-Inf, -Inf, 0, -Inf, -Inf, -Inf, -Inf];
 
-% figure
-% hold on
-% plot(quadJ_aux, depth_from_tunnel_quad(startvals,quadJ_aux))
-% plot(quadJ_aux, quadV_aux, '--')
-% title('fit startvals test 2')
+% depth_from_tunnel_quad2 = @(a, x) a(1) + a(2)*exp(-x/1240*a(3)) + a(4)*exp(-x/1240*a(5)) + a(6)*exp(-x/1240*a(7));
+% depth_from_tunnel_quad_str2 = 'a1 + a2*exp(-x/1240*a3) + a4*exp(-x/1240*a5) + a6*exp(-x/1240*a7)';
+% startvals2 = [-2000, 8000, -100, 300, -10, 0, 1];
+% lowerbnd2 = [-Inf, -Inf, -Inf, -Inf, -Inf, -Inf, -Inf];
 
-fx2 = fit(quadJ_aux(2:end)', quadV_aux(2:end)', depth_from_tunnel_quad_str, 'Start', startvals,'Lower',lowerbnd)
+depth_from_tunnel_quad2 = @(a, x) a(1) + a(2)*(x/1240) + a(3)*(x/1240).^2 + a(4)*(x/1240).^3;
+depth_from_tunnel_quad_str2 = 'a1 + a2*(x/1240) + a3*(x/1240).^2 + a4*(x/1240)^3';
+startvals2 = [0, 11000, 10, 2]*1240;
+lowerbnd2 = [-Inf, -Inf, -Inf, -Inf];
+
+figure
+hold on
+plot(quadJ_aux, depth_from_tunnel_quad2(startvals2,quadJ_aux))
+plot(quadJ_aux, quadDepth_aux, '--')
+title('fit startvals test 2')
+
+fx2 = fit(quadJ_aux', quadDepth_aux', depth_from_tunnel_quad_str2, 'Start', startvals2,'Lower',lowerbnd2)
 
 % Plot
-plot_figure =0;
+plot_figure =1;
 if plot_figure
+
     figure
     tl2 = tiledlayout('flow','tilespacing','compact');
     
     ax1 = nexttile;
     hold on
-    plot(quadJ_aux, fx2(quadJ_aux), '-', 'DisplayName', 'exp approx')
-    plot(quadJ_aux, quadV_aux, '--', 'DisplayName', 'numeric')
-    plot(quadJ_endpts, quadV_endpts,'o', 'DisplayName', 'numeric endpts')
-    plot(quadJ_endpts, fx2(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
+    plot(quadJ_aux, depthToVoltx(fx2(quadJ_aux)), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux, depthToVoltx(quadDepth_aux), '--', 'DisplayName', 'numeric')
+    plot(quadJ_endpts, depthToVoltx(quadDepth_endpts),'o', 'DisplayName', 'numeric endpts')
+    plot(quadJ_endpts, depthToVoltx( fx2(quadJ_endpts)),'.', 'DisplayName', 'exp estimated endpts')
     ylabel('Gauge power quad (V)')
     legend('location','best')
     
     ax2 = nexttile;
     hold on
-    plot(quadJ_aux, fx2(quadJ_aux)'-quadV_aux)
-    plot(quadJ_endpts, fx2(quadJ_endpts)-quadV_endpts, '.')
+    plot(quadJ_aux, depthToVoltx(fx2(quadJ_aux))'-depthToVoltx(quadDepth_aux))
+    plot(quadJ_endpts, depthToVoltx(fx2(quadJ_endpts))-quadV_endpts, '.')
     yline(0,'--')
     ylabel('Gauge power quad error (V)')
     % ylim([-0.02,0.02])
@@ -571,51 +574,91 @@ if plot_figure
     linkaxes([ax1,ax2],'x')
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% convert back to Hz and compare
 
-% %% quic tunneling
-% 
-% quicdepth_v0 = ramp_amps_full(:,3);
-% quicJ = 1229*4/sqrt(pi)*124/100.*quicdepth_er.^(3/4).*exp(-2.*quicdepth_er.^(1/2));
-% % quicJ_endpts = 1229*4/sqrt(pi)*124/100.*ramp_amps_convert(:,3).^(3/4).*exp(-2.*ramp_amps_convert(:,3).^(1/2));
-% 
-% % figure
-% % plot(rampt_full, quicJ, 'DisplayName','final')
-% % hold on 
-% % plot(ramp_time_ms, ramp_amps_hz(:,2), '.--', 'DisplayName','target')
-% % % plot(ramp_time_ms, quicJ_endpts, 'o', 'DisplayName','final points')
-% % legend('location','best')
-% 
-% 
-% %% quad tunneling
-% 
-% quaddepth_v = ramp_amps_full(:,2);
-% quadJ = 108.4 .* besselj(1, 1.399 .* 10.^(2.*quaddepth_v-6));
-% 
-% % figure
-% % plot(rampt_full, quadJ, 'DisplayName','final')
-% % hold on 
-% % plot(ramp_time_ms, ramp_amps_hz(:,1), '.--', 'DisplayName','target')
-% % plot(ramp_time_ms, quadJ_endpts, 'o', 'DisplayName','final points')
-% % legend('location','best')
-% 
+%% get interpolated ramps
+% rampt_full = zeros(ntimes, 100)
+ramp_amps_full = [];
+rampt_full = [];
+dt = 0.5;
+for i = 1:ntimes-1
+    rampt_interp = ramp_time_ms(i):dt:ramp_time_ms(i+1); 
+    ramp_amps_slopes = (ramp_amps_convert(i+1,:)-ramp_amps_convert(i,:))./(ramp_time_ms(i+1)-ramp_time_ms(i));
+    ramp_amps_interp = zeros(numel(rampt_interp), numel(ramp_amps_slopes));
+    for j = 1:numel(ramp_amps_slopes)
+        ramp_amps_interp(:,j) = ramp_amps_slopes(j) .* (rampt_interp-rampt_interp(1)) + ramp_amps_convert(i,j);
+    end
+    ramp_amps_full = [ramp_amps_full; ramp_amps_interp];
+    rampt_full = [rampt_full, rampt_interp];
+end
+
 % figure
-% tl = tiledlayout('flow','TileSpacing','compact','Padding','tight');
-% 
-% ax1 = nexttile;
+% plot(rampt_full, ramp_amps_full(:,6),'DisplayName', 'Interpolated')
+% hold on
+% plot(ramp_time_ms, ramp_amps_convert(:,6),'DisplayName', 'Raw')
+% legend('Location','best')
+
+% quic tunneling
+quicJ_full = ramp_amps_full(:,3);
+lattice2_calib_volt = 3.56;
+lattice2_calib_depth = 72.5;
+lattice2_voltage_offset = -0.05;
+depthToVolts2 = @(x) lattice2_voltage_offset + lattice2_calib_volt + 1/2 * log10(x/lattice2_calib_depth);
+% quicJ = 1229*4/sqrt(pi)*124/100.*quicdepth_er.^(3/4).*exp(-2.*quicdepth_er.^(1/2));
+% quicJ_endpts = 1229*4/sqrt(pi)*124/100.*ramp_amps_convert(:,3).^(3/4).*exp(-2.*ramp_amps_convert(:,3).^(1/2));
+quic_depth_interp = fy(quicJ_full);
+% quic_V_interp = depthToVolts2(quic_depth_interp);
+
+% figure
 % plot(rampt_full, quicJ, 'DisplayName','final')
 % hold on 
 % plot(ramp_time_ms, ramp_amps_hz(:,2), '.--', 'DisplayName','target')
+% % plot(ramp_time_ms, quicJ_endpts, 'o', 'DisplayName','final points')
 % legend('location','best')
-% ylabel('J quic (Hz)')
-% 
-% ax2 = nexttile;
+
+
+% quad tunneling
+quadJ_full = ramp_amps_full(:,2);
+% quadJ = 108.4 .* besselj(1, 1.399 .* 10.^(2.*quaddepth_v-6));
+quad_depth_interp = fx(quadJ_full);
+% figure
 % plot(rampt_full, quadJ, 'DisplayName','final')
 % hold on 
 % plot(ramp_time_ms, ramp_amps_hz(:,1), '.--', 'DisplayName','target')
+% plot(ramp_time_ms, quadJ_endpts, 'o', 'DisplayName','final points')
 % legend('location','best')
-% ylabel('J quad (Hz)')
-% 
-% xlabel(tl,'time (ms)')
-% title(tl,'backward conversions')
-% linkaxes([ax1,ax2],'x')
+
+plot_figure = 1;
+if plot_figure
+    figure
+    tl = tiledlayout('flow','TileSpacing','compact','Padding','tight');
+    
+    ax1 = nexttile;
+    hold on 
+    % plot(rampt_full, quicJ_full, 'DisplayName','final old')
+    plot(rampt_full, jyfcn(quic_depth_interp), 'DisplayName', 'final')
+    plot(ramp_time_ms, ramp_amps_hz(:,2), '.--', 'DisplayName','target')
+    plot(ramp_time_ms, jyfcn(fy(quicJ_endpts)), '.r','DisplayName','endpts calculated')
+    legend('location','best')
+    ylabel('J quic (Hz)')
+    
+    ax2 = nexttile;
+    hold on 
+    plot(rampt_full, jxfcn(quad_depth_interp), 'DisplayName','final')
+    plot(ramp_time_ms, jxfcn(fx(ramp_amps_hz(:,1))), 'DisplayName','target+conversion')
+    plot(ramp_time_ms, ramp_amps_hz(:,1), '.--', 'DisplayName','target')
+    legend('location','best')
+    ylabel('J quad (Hz)')
+    
+    xlabel(tl,'time (ms)')
+    title(tl,'backward conversions')
+    linkaxes([ax1,ax2],'x')
+end
+
+%%
+figure
+hold on
+plot(rampt_full, quad_depth_interp, 'DisplayName','final')
+plot(ramp_time_ms, fx(ramp_amps_hz(:,1)), '.--', 'DisplayName','target')

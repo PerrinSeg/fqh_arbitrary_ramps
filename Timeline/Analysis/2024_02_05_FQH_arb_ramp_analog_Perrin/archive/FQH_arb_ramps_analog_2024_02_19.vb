@@ -2,16 +2,14 @@
 '=====Variables=====
 quic_init = 0.5
 quad_init = 0
-override_default = 0
+override_default = 1
 dur_idx = 1
 var_idx = 4
 var_value = 3.66
 dur_value = 75.981
-stop_index = 10
 is_return = 0
 reverse_ramp = 0
 return_half = 0
-
 '=====Variables=====
 
 '----------------------------------------------------- Arbitrary ramp constants --------------------------------------------------------------
@@ -30,11 +28,7 @@ Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitH
 Dim gauge_JtoVolt_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
 
 Dim n_variables As Integer = 6 ' number of channels used in the arbitrary ramp
-Dim half_index As Integer = 4 ' point at which y delocalization finishes and x delocalization starts
-Dim half_index_return As Integer = 4 ' point at which y delocalization finishes and x delocalization starts for return ramp
-If reverse_ramp > 0 Then
-    half_index_return = half_index
-End If
+
 '----------------------------------------------------- End arbitrary ramp constants --------------------------------------------------------------
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -60,6 +54,16 @@ Dim lowered_walls1_volt As Double = 3.1
 Dim shunt_switch_dur As Double = 10
 Dim coil_ramp_dur As Double = 30
 
+'Cutting constants
+Dim gravity_offsets_switch_dur As Double = 10
+Dim twod_ramp_dur As Double = 5
+Dim anticonfine_volt As Double = 2.5
+Dim anticonfine_ramp_dur As Double = 1
+Dim lattice1_amb_volt As Double = 1.4
+Dim lattice2_amb_volt As Double = 1.8
+Dim anticonfine_dur_vert As Double = 40
+Dim anticonfine_dur_horz As Double = 40
+
 'DMD specific durations
 Dim PID_response_dur As Double = 1 'needed to fix spikes in line_DMD
 Dim loadline_DMD_volt_vert As Double = 3.3
@@ -70,9 +74,26 @@ lowered_lattice1_volt = DepthToVolts(lowered_lattice1_depth, lattice1_calib_dept
 Dim lowered_lattice2_volt As Double 
 lowered_lattice2_volt = DepthToVolts(lowered_lattice2_depth, lattice2_calib_depth, lattice2_calib_volt, lattice2_voltage_offset)
 
-'----------------------------------------------------- Variable definitions for sequence -----------------------------------------------------
+'----------------------------------------------------- Time Definitions PLACEHOLDER ----------------------------------------------------------
 
-Dim lattice2_JtoDepth_coeffs As Double() = LoadArrayFromFile(lattice2_JtoDepth_coeff_path)
+Dim twodphysics_start_time As Double = 0
+
+'----------------------------------------------------- Time Definitions for Sequence ---------------------------------------------------------
+'initialize values of everything needed for ramp...should end on values for start of ramp
+'(1) Ramp up everything to the initial values (may need to remove for final sequence, just for testing purposes)
+' Turn on quic gradient
+Dim quic_turnon_start_time As Double = twodphysics_start_time
+Dim quic_turnon_end_time As Double = quic_turnon_start_time + quic_ramp_dur ' raise from 0 to quic_init
+' Turn on quad gradient
+Dim quad_turnon_start_time As Double = quic_turnon_start_time
+Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad_init
+
+'---------------------------------------------------------------------------------------------------------------------------------------------
+'----------------------------------------------------- Arb ramp time definitions -------------------------------------------------------------
+'(3) Arbitrary ramp
+'TO DO: move ramp variable definitions to top, keep time definitions here!
+
+Dim lattice2_JtoDepth_coeffs As Double() = LoadArrayFromFile(lattice2_JtoDepth_coeff_path) 'TO DO: write this sub!
 Dim nterms_2D2 As Double = lattice2_JtoDepth_coeffs.GetUpperBound(0)
 Console.WriteLine("number of lattice depth expansion terms (minus 1): {0}", nterms_2D2)
 
@@ -80,12 +101,13 @@ Dim gauge_JtoVolt_coeffs As Double() = LoadArrayFromFile(gauge_JtoVolt_coeff_pat
 Dim nterms_gauge As Double = gauge_JtoVolt_coeffs.GetUpperBound(0)
 Console.WriteLine("number of gauge power expansion terms (minus 1): {0}", nterms_gauge)
 
+Dim ramp_start_time As Double = quic_turnon_end_time
 Dim ramp_variables = LoadRampSegmentsFromFile(rampSegPath, n_variables)
 Dim n_times As Integer = ramp_variables(0).GetUpperBound(0)
 Console.WriteLine("N times: {0}", n_times)
 
 ' overwrite appropriate variables
-If override_default > 0 Then
+If override_default > 0
     If dur_idx <= n_times Then
         ramp_variables(0)(dur_idx) = dur_value
         Console.WriteLine("overwriting ramp_variables(0)({0}) = {1}.", dur_idx, dur_value)
@@ -102,19 +124,20 @@ If override_default > 0 Then
     End If
 End If
 
-' stop the ramp early
-If return_half > 0 Then
-    Console.WriteLine("truncating ramp at half index {0}", half_index)
-    n_times = half_index
-ElseIf stop_index < n_times Then
-    Console.WriteLine("truncating ramp at point {0}", stop_index)
-    n_times = stop_index
-End If
-
 Dim ramp_durs As Double() = ramp_variables(0)
+Dim ramp_t(n_times) As Double
+ramp_t(0) = ramp_start_time
+For index As Integer = 1 To n_times
+    ramp_t(index) = ramp_t(index - 1) + ramp_durs(index)
+Next
+Dim ramp_forward_end_time As Double = ramp_t(n_times)
+
+Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
+
 Dim lattice1_ramp_v(n_times) As Double
 Dim gauge_power_ramp_j(n_times) As Double
 Dim lattice2_ramp_j(n_times) As Double
+
 Dim gauge_freq_ramp_v(n_times) As Double
 For index As Integer = 0 To n_times
     lattice1_ramp_v(index) = DepthToVolts(ramp_variables(1)(index), lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
@@ -133,6 +156,7 @@ Dim gauge_freq_ramp_forward_v As Double = gauge_freq_ramp_v(n_times)
 Dim quad_ramp_forward_v As Double = quad_ramp_v(n_times)
 Dim quic_ramp_forward_v As Double = quic_ramp_v(n_times)
 
+Dim ramp_end_time As Double
 Dim lattice1_ramp_end_v As Double
 Dim lattice2_ramp_end_j As Double
 Dim gauge_power_ramp_end_j As Double
@@ -140,13 +164,11 @@ Dim gauge_freq_ramp_end_v As Double
 Dim quad_ramp_end_v As Double
 Dim quic_ramp_end_v As Double
 
-'return
-Dim ramp_durs_return As Double()
-'Dim ramp_durs_return(-1) As Double
+Dim ramp_t_return(-1) As Double
 Dim lattice1_ramp_v_return(-1) As Double
 Dim lattice2_ramp_j_return(-1) As Double
 Dim gauge_power_ramp_j_return(-1) As Double
-Dim gauge_freq_ramp_v_return(-1) As Double 
+Dim gauge_freq_ramp_v_return(-1) As Double  
 Dim quad_ramp_v_return(-1) As Double
 Dim quic_ramp_v_return(-1) As Double
 Dim n_times_return As Integer
@@ -154,24 +176,24 @@ Dim n_times_return As Integer
 If (is_return > 0) Then 'return ramp different? Replace with separate file?
     'get times for return ramp
     Dim ramp_variables_return As Double()()   
-    
-    If (reverse_ramp > 0) Then
+    Dim ramp_durs_return As Double()
+
+    If (reverse_ramp > 0)
         ramp_variables_return = ramp_variables
         n_times_return = n_times
         ramp_durs_return = ramp_durs
     Else
         ramp_variables_return = LoadRampSegmentsFromFile(rampSegPath_return, n_variables)
-        n_times_return = ramp_variables_return(0).GetUpperBound(0)  
+        n_times_return = ramp_variables_return(0).GetUpperBound(0)        
         ramp_durs_return = ramp_variables_return(0)
     End If
-    Console.WriteLine("n_times_return: {0}", n_times_return) 
+    Console.WriteLine("N times return: {0}", n_times_return) 
+    ReDim ramp_t_return(n_times_return)
+    ramp_t_return(0) = ramp_forward_end_time
+    For index As Integer = 1 To n_times_return
+        ramp_t_return(index) = ramp_t_return(index - 1) + ramp_durs_return(n_times_return + 1 - index)
+    Next
     
-    If return_half > 0 Then
-        n_times_return = half_index_return
-        Console.WriteLine("new n_times_return = {0}", half_index_return)
-    End If
-
-    'ramp_durs_return = ramp_variables_return(0)
     ReDim lattice1_ramp_v_return(n_times_return)
     ReDim lattice2_ramp_j_return(n_times_return)
     ReDim gauge_power_ramp_j_return(n_times_return)
@@ -181,13 +203,14 @@ If (is_return > 0) Then 'return ramp different? Replace with separate file?
 
     For index As Integer = 0 To n_times_return
         lattice1_ramp_v_return(index) = DepthToVolts(ramp_variables_return(1)(n_times_return - index), lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)  
-        gauge_power_ramp_j_return(index) = ramp_variables_return(2)(n_times_return - index)/1240 'in units of E_r       
-        lattice2_ramp_j_return(index) = ramp_variables_return(3)(n_times_return - index)/1240 'in units of E_r
+        gauge_power_ramp_j_return(index) = ramp_variables_return(2)(n_times_return - index)/1240 'in E_r       
+        lattice2_ramp_j_return(index) = ramp_variables_return(3)(n_times_return - index)/1240 'in E_r
         gauge_freq_ramp_v_return(index) = BeatVolt(ramp_variables(4)(n_times_return - index))
         quad_ramp_v_return(index) = ramp_variables_return(5)(n_times_return - index)
         quic_ramp_v_return(index) = ramp_variables_return(6)(n_times_return - index)
     Next
-
+    
+    ramp_end_time = ramp_t_return(n_times_return)
     lattice1_ramp_end_v = lattice1_ramp_v_return(n_times_return)
     lattice2_ramp_end_j = lattice2_ramp_j_return(n_times_return)
     gauge_power_ramp_end_j = gauge_power_ramp_j_return(n_times_return)
@@ -195,7 +218,8 @@ If (is_return > 0) Then 'return ramp different? Replace with separate file?
     quad_ramp_end_v = quad_ramp_v_return(n_times_return)
     quic_ramp_end_v = quic_ramp_v_return(n_times_return)
 
-Else    
+Else
+    ramp_end_time = ramp_forward_end_time
     lattice1_ramp_end_v = lattice1_ramp_forward_v
     lattice2_ramp_end_j = lattice2_ramp_forward_j
     gauge_power_ramp_end_j = gauge_power_ramp_forward_j
@@ -206,12 +230,11 @@ End If
 
 Dim lattice1_ramp_start_v = lattice1_ramp_v(0)
 
-'Dim gauge_power_ramp_start_v As Double = GaugeJToVolt(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge)
-'Dim gauge_power_ramp_end_v As Double = GaugeJToVolt(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge)
-'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
-'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
-'Dim lattice2_ramp_start_v As Double = JToVolt(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
-'Dim lattice2_ramp_end_v As Double = JToVolt(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+'Dim gauge_power_start_v As Double = GaugeJToVolt(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs,n_variables+1)
+'Dim gauge_power_ramp_end_v As Double = GaugeJToVolt(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs,n_variables+1)
+
+'Dim lattice2_ramp_start_v As Double = JToVolt(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, 11, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+'Dim lattice2_ramp_end_v As Double = JToVolt(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, 11, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
 
 Dim gauge_freq_ramp_start_v As Double = gauge_freq_ramp_v(0)
 Dim quad_ramp_start_v As Double = quad_ramp_v(0)
@@ -233,53 +256,7 @@ Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 'ramp ends on last value: need to ramp down to turn off
 'need to add freeze lattice
 
-
-'----------------------------------------------------- Time Definitions PLACEHOLDER ----------------------------------------------------------
-
-Dim twodphysics_start_time As Double = 0
-
-'----------------------------------------------------- Time Definitions for Sequence ---------------------------------------------------------
-'initialize values of everything needed for ramp...should end on values for start of ramp
-
-'Ramp up everything to the initial values (may need to remove for final sequence, just for testing purposes)
-' Turn on quic gradient
-Dim quic_turnon_start_time As Double = twodphysics_start_time
-Dim quic_turnon_end_time As Double = quic_turnon_start_time + quic_ramp_dur ' raise from 0 to quic_init
-' Turn on quad gradient
-Dim quad_turnon_start_time As Double = quic_turnon_start_time
-Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad_init
-
-
-'---------------------------------------------------------------------------------------------------------------------------------------------
-'----------------------------------------------------- Arb ramp time definitions -------------------------------------------------------------
-
-'Arbitrary ramp
-Dim ramp_start_time As Double = quic_turnon_end_time
-Dim ramp_end_time As Double
-Dim ramp_t(n_times) As Double
-ramp_t(0) = ramp_start_time
-For index As Integer = 1 To n_times
-    ramp_t(index) = ramp_t(index - 1) + ramp_durs(index)
-Next
-Dim ramp_forward_end_time As Double = ramp_t(n_times)
-Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
-
-'return
-Dim ramp_t_return(-1) As Double
-If is_return > 0 Then
-    ReDim ramp_t_return(n_times_return)
-    ramp_t_return(0) = ramp_forward_end_time
-    For index As Integer = 1 To n_times_return
-        ramp_t_return(index) = ramp_t_return(index - 1) + ramp_durs_return(n_times_return + 1 - index)
-        'Console.WriteLine("ramp return index: {0}, ramp duration index: {1}", index, n_times_return+1-index)
-    Next
-    ramp_end_time = ramp_t_return(n_times_return)
-Else
-    ramp_end_time = ramp_forward_end_time
-End If
 Console.WriteLine("ramp end time = {0}", ramp_end_time)
-
-
 '---------------------------------------------------------------------------------------------------------------------------------------------
 '----------------------------------------------------- End arb ramp time defs ----------------------------------------------------------------
 
@@ -320,7 +297,7 @@ Next
 'Next
 For index As Integer = 0 To n_times - 1
     analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
-    'Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
+    Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
 Next
 
 '2D2 lattice power
