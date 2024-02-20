@@ -3,10 +3,10 @@
 quic_init = 0.5
 quad_init = 0
 override_default = 0
-dur_idx = 1
-var_idx = 4
-var_value = 3.66
-dur_value = 75.981
+dur_idx = 7
+var_idx = 5
+var_value = 0.2
+dur_value = 200
 stop_index = 10
 is_return = 0
 reverse_ramp = 0
@@ -35,6 +35,11 @@ Dim half_index_return As Integer = 4 ' point at which y delocalization finishes 
 If reverse_ramp > 0 Then
     half_index_return = half_index
 End If
+
+Dim gauge_calib_volt As Double = 3.34 'accuracy of depth to volt calibration doesn't matter much as long as consistant values are used here and in matlab file. Accuracy of conversion is still limited by quantum walk calibration.
+Dim gauge_calib_depth As Double = 7.4/1.24 ' same for this value...
+
+
 '----------------------------------------------------- End arbitrary ramp constants --------------------------------------------------------------
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -206,8 +211,8 @@ End If
 
 Dim lattice1_ramp_start_v = lattice1_ramp_v(0)
 
-Dim gauge_power_ramp_start_v As Double = GaugeJToVolts(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge)
-Dim gauge_power_ramp_end_v As Double = GaugeJToVolts(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge)
+Dim gauge_power_ramp_start_v As Double = GaugeJToVolts(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt)
+Dim gauge_power_ramp_end_v As Double = GaugeJToVolts(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt)
 Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
 Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
 Dim lattice2_ramp_start_v As Double = JToVolts(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
@@ -314,31 +319,34 @@ Next
 
 'gauge power
 'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(1), ramp_start_time, ramp_t(1), gauge1_power) 'needs its own function
-'For index As Integer = 1 To n_times - 1
-'    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
-'    Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
-'Next
 For index As Integer = 0 To n_times - 1
-    analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
-    'Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
+    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(0), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power
+    'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power)
+    'analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, gauge1_power)
+    'Console.WriteLine("    new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
+    'Console.WriteLine("                     and V: {0}", GaugeJToVolts(gauge_power_ramp_j(index + 1), gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt))
 Next
+'For index As Integer = 0 To n_times - 1
+'    analogdata.AddRamp(gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge1_power)
+'    'Console.WriteLine("new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
+'Next
 
 '2D2 lattice power
-analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
-For index As Integer = 1 To n_times - 1
-    analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
+'analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_max, lattice2_ramp_j(1), ramp_start_time, ramp_t(1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
+For index As Integer = 0 To n_times - 1
+    analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, ps3_ao) 'lattice2D765_power2
 Next
 
 'quic grad
-analogdata.AddRamp(quic_ramp_v(0), quic_ramp_v(1), ramp_start_time, ramp_t(1), ps1_ao) 'ps5_ao
-For index As Integer = 1 To n_times - 1
+'analogdata.AddRamp(quic_ramp_v(0), quic_ramp_v(1), ramp_start_time, ramp_t(1), ps1_ao) 'ps5_ao
+For index As Integer = 0 To n_times - 1
     analogdata.AddRamp(quic_ramp_v(index), quic_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps1_ao) 'ps5_ao
 Next
 
 'quad grad
-analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps3_ao) 'ps8_ao
+analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps8_ao) 'ps8_ao
 For index As Integer = 1 To n_times - 1
-    analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps3_ao) 'ps8_ao
+    analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps8_ao) 'ps8_ao
     'Console.WriteLine("new quad ramp V: {0}", quad_ramp_v(index+1))
 Next
 
@@ -360,12 +368,12 @@ If (is_return > 0) Then
     '    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
     'Next
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddRamp(gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge1_power)
+        analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), lattice2_voltage_offset, gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power
     Next
 
     '2D2 lattice power
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j_return(index), lattice2_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
+        analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j_return(index), lattice2_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, ps3_ao) 'lattice2D765_power2
     Next
 
     'quic grad
@@ -375,7 +383,7 @@ If (is_return > 0) Then
 
     'quad grad
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddRamp(quad_ramp_v_return(index), quad_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps3_ao) 'ps8_ao
+        analogdata.AddRamp(quad_ramp_v_return(index), quad_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps8_ao) 'ps8_ao
     Next
 
     'gauge detuning
@@ -388,8 +396,8 @@ End If
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
 '----------------------------------------------------- Pinning -------------------------------------------------------------------------------
-analogdata.AddRamp(quad_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps3_ao)
-analogdata.AddRamp(quic_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps1_ao)
+analogdata.AddRamp(quad_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps8_ao) 'ps8_ao
+analogdata.AddRamp(quic_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps1_ao) 'ps5_ao
 
 'pinning_start_time = ramp_end_time
 'Bring everything back up for pinning
@@ -398,7 +406,7 @@ analogdata.AddRamp(quic_ramp_end_v, 0, ramp_end_time, pinning_start_time, ps1_ao
 analogdata.AddStep(lattice1_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power)
 ' 2D2 raise to final depth and hold
 'analogdata.AddSmoothRamp(lattice2_ramp_j(n_times), lattice2_max_volt, ramp_end_time, pinning_start_time, lattice2D765_power2)
-analogdata.AddStep(lattice2_max_volt, pinning_start_time, pinning_end_time, lattice2D765_power2)
+analogdata.AddStep(lattice2_max_volt, pinning_start_time, pinning_end_time, ps3_ao) 'lattice2D765_power2
 
 
 '---------------------------------------------------------------------------------------------------------------------------------------------
