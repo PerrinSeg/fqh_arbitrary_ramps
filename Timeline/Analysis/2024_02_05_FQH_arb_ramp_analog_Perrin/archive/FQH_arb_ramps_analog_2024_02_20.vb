@@ -206,12 +206,12 @@ End If
 
 Dim lattice1_ramp_start_v = lattice1_ramp_v(0)
 
-Dim gauge_power_ramp_start_v As Double = GaugeJToVolts(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge)
-Dim gauge_power_ramp_end_v As Double = GaugeJToVolts(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge)
-Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
-Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
-Dim lattice2_ramp_start_v As Double = JToVolts(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
-Dim lattice2_ramp_end_v As Double = JToVolts(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+'Dim gauge_power_ramp_start_v As Double = GaugeJToVolt(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge)
+'Dim gauge_power_ramp_end_v As Double = GaugeJToVolt(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge)
+'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
+'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
+'Dim lattice2_ramp_start_v As Double = JToVolt(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
+'Dim lattice2_ramp_end_v As Double = JToVolt(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, nterms_2D2, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
 
 Dim gauge_freq_ramp_start_v As Double = gauge_freq_ramp_v(0)
 Dim quad_ramp_start_v As Double = quad_ramp_v(0)
