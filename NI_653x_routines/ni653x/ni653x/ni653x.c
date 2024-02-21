@@ -69,7 +69,7 @@ double BlueDeconfinement(double v);
 double round(double val);
 double depth_from_tunnel_calibrated(double a[11], double t);
 double gauge_volt_from_tunnel_calibrated(double a[7], double t);
-double gauge_depth_from_tunnel_calibrated(double a[], double t);
+double gauge_depth_from_tunnel_calibrated(double a[4], double t);
 
 int32 CVICALLBACK DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData);
 
@@ -1997,10 +1997,10 @@ _declspec (dllexport) void insert_tunneling_ramp(double conversion_coeffs[11],
     }
 }
 
-_declspec (dllexport) void insert_tunneling_gauge_ramp2(double conversion_coeffs[],
+_declspec (dllexport) void insert_tunneling_gauge_ramp2(double conversion_coeffs[4],
     double start_tunneling, double stop_tunneling,
     double t_start, double t_stop,
-    double voltage_offset, double calib_volt, double calib_depth,
+    double calib_volt, double calib_depth,
     int dat_chan, uInt32* NI_waveform)
 {
     /* insert ramp in lattice PD voltage that is linear in tunneling*/
@@ -2025,7 +2025,7 @@ _declspec (dllexport) void insert_tunneling_gauge_ramp2(double conversion_coeffs
         u = start_tunneling + slope * (j - j_start);
         x = gauge_depth_from_tunnel_calibrated(conversion_coeffs, u);
         if (x > 0) {
-            y = voltage_offset + calib_volt + 0.5 * log10(x / calib_depth);
+            y = calib_volt + 0.5 * log10(x / calib_depth);
         }
         else {
             y = 0;
@@ -3283,7 +3283,7 @@ double gauge_volt_from_tunnel_calibrated(double a[7], double t) {
     return d;
 }
 
-double gauge_depth_from_tunnel_calibrated(double a[], double t) {
+double gauge_depth_from_tunnel_calibrated(double a[4], double t) {
     /* (2024/02/15) updated version of depth_from_tunnel that takes a matrix of coefficients
      * derived by fitting the sum of exponentials to numerical data from the latest gauge voltage to depth calibration. */
 

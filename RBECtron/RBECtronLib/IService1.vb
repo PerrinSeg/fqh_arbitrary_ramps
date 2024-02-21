@@ -226,9 +226,8 @@ Public Interface ISpectron
     Sub AddTunnelGaugeRamp2(ByVal conversion_coeffs As Double(), _
                             ByVal start_tunneling As Double, ByVal stop_tunneling As Double, _
                             ByVal t_start As Double, ByVal t_stop As Double, _
-                            ByVal voltage_offset As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, _
+                            ByVal calib_volt As Double, ByVal calib_depth As Double, _
                             ByVal dat_chan As Integer)
-
 
     <OperationContract()> _
     Sub AddTunnelGaugeRamp(ByVal conversion_coeffs As Double(), _

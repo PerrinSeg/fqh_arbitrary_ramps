@@ -712,7 +712,6 @@
         <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
         <xs:element minOccurs="0" name="t_start" type="xs:double" />
         <xs:element minOccurs="0" name="t_stop" type="xs:double" />
-        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
         <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
         <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
         <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
