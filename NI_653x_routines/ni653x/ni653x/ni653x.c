@@ -1997,15 +1997,14 @@ _declspec (dllexport) void insert_tunneling_ramp(double conversion_coeffs[11],
     }
 }
 
-_declspec (dllexport) void insert_tunneling_gauge_ramp2(double conversion_coeffs[4],
+_declspec (dllexport) void insert_tunneling_gauge_ramp(double conversion_coeffs[4],
     double start_tunneling, double stop_tunneling,
     double t_start, double t_stop,
     double calib_volt, double calib_depth,
     int dat_chan, uInt32* NI_waveform)
 {
-    /* insert ramp in lattice PD voltage that is linear in tunneling*/
-       /* consider using a trick from Hacker's Delight */
-       /* perhaps precalculate 'BPW/SMP_CLK' */
+    /* insert ramp in gauge PD voltage that is linear in tunneling*/
+
     int j;                      /* loop index */
     int j_start = digitize_time(t_start);
     int j_stop = digitize_time(t_stop);
@@ -2030,43 +2029,6 @@ _declspec (dllexport) void insert_tunneling_gauge_ramp2(double conversion_coeffs
         else {
             y = 0;
         }       
-        NI_waveform[BPW * (n_offset + j) + (dat_chan % NUMCHANNELS)] = convert_func(y);
-    }
-}
-
-_declspec (dllexport) void insert_tunneling_gauge_ramp(double conversion_coeffs[4],
-    double start_tunneling, double stop_tunneling,
-    double t_start, double t_stop,
-    double calib_volt, double calib_depth,
-    int dat_chan, uInt32* NI_waveform)
-{
-    /* insert ramp in gauge PD voltage that is linear in tunneling
-     * file to generate coefficients from calibration equation: convert_ramp_files.m */
-       
-    int j;                      /* loop index */
-    int j_start = digitize_time(t_start);
-    int j_stop = digitize_time(t_stop);
-    double slope = (stop_tunneling - start_tunneling) / ((t_stop - t_start) * SMP_CLK / BPW / 1000);
-    double x;
-    double y;
-    double u;
-
-    unsigned int (*convert_func)(double);
-    convert_func = get_convert_func(dat_chan);
-
-    if (j_stop > j_last) {
-        j_last = j_stop;
-    }
-
-    for (j = j_start; j < j_stop; j++) {
-        u = start_tunneling + slope * (j - j_start);
-        x = gauge_depth_from_tunnel_calibrated(conversion_coeffs, u);
-        if (x > 0) {
-            y = calib_volt + 0.5 * log10(x / calib_depth);
-        }
-        else {
-            y = 0;
-        }
         NI_waveform[BPW * (n_offset + j) + (dat_chan % NUMCHANNELS)] = convert_func(y);
     }
 }

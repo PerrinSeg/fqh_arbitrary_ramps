@@ -704,29 +704,10 @@
       <xs:sequence />
     </xs:complexType>
   </xs:element>
-  <xs:element name="AddTunnelGaugeRamp2">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q2:ArrayOfdouble" />
-        <xs:element minOccurs="0" name="start_tunneling" type="xs:double" />
-        <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
-        <xs:element minOccurs="0" name="t_start" type="xs:double" />
-        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
-        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
-        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
-        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="AddTunnelGaugeRamp2Response">
-    <xs:complexType>
-      <xs:sequence />
-    </xs:complexType>
-  </xs:element>
   <xs:element name="AddTunnelGaugeRamp">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q3:ArrayOfdouble" />
+        <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q2:ArrayOfdouble" />
         <xs:element minOccurs="0" name="start_tunneling" type="xs:double" />
         <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
         <xs:element minOccurs="0" name="t_start" type="xs:double" />

@@ -191,9 +191,6 @@ Namespace SpectronServiceReference
         <System.ServiceModel.OperationContractAttribute(Action:="http://tempuri.org/ISpectron/AddTunnelRamp", ReplyAction:="http://tempuri.org/ISpectron/AddTunnelRampResponse")>  _
         Sub AddTunnelRamp(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal voltage_offset As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer)
         
-        <System.ServiceModel.OperationContractAttribute(Action:="http://tempuri.org/ISpectron/AddTunnelGaugeRamp2", ReplyAction:="http://tempuri.org/ISpectron/AddTunnelGaugeRamp2Response")>  _
-        Sub AddTunnelGaugeRamp2(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer)
-        
         <System.ServiceModel.OperationContractAttribute(Action:="http://tempuri.org/ISpectron/AddTunnelGaugeRamp", ReplyAction:="http://tempuri.org/ISpectron/AddTunnelGaugeRampResponse")>  _
         Sub AddTunnelGaugeRamp(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer)
         
@@ -482,10 +479,6 @@ Namespace SpectronServiceReference
         
         Public Sub AddTunnelRamp(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal voltage_offset As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer) Implements SpectronServiceReference.ISpectron.AddTunnelRamp
             MyBase.Channel.AddTunnelRamp(conversion_coeffs, start_tunneling, stop_tunneling, t_start, t_stop, voltage_offset, calib_volt, calib_depth, dat_chan)
-        End Sub
-        
-        Public Sub AddTunnelGaugeRamp2(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer) Implements SpectronServiceReference.ISpectron.AddTunnelGaugeRamp2
-            MyBase.Channel.AddTunnelGaugeRamp2(conversion_coeffs, start_tunneling, stop_tunneling, t_start, t_stop, calib_volt, calib_depth, dat_chan)
         End Sub
         
         Public Sub AddTunnelGaugeRamp(ByVal conversion_coeffs() As Double, ByVal start_tunneling As Double, ByVal stop_tunneling As Double, ByVal t_start As Double, ByVal t_stop As Double, ByVal calib_volt As Double, ByVal calib_depth As Double, ByVal dat_chan As Integer) Implements SpectronServiceReference.ISpectron.AddTunnelGaugeRamp

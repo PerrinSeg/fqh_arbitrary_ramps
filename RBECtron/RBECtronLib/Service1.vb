@@ -257,19 +257,11 @@ Module modSpectron
     End Sub
 
     <DllImport(DLLpath)> _
-    Public Sub insert_tunneling_gauge_ramp2(ByVal conversion_coeffs As Double(), _
-                                            ByVal start_tunneling As Double, ByVal stop_tunneling As Double, _
-                                            ByVal t_start As Double, ByVal t_stop As Double, _
-                                            ByVal calib_volt As Double, ByVal calib_depth As Double, _
-                                            ByVal dat_chan As Integer, ByVal NI_waveform As IntPtr)
-    End Sub
-
-     <DllImport(DLLpath)> _
     Public Sub insert_tunneling_gauge_ramp(ByVal conversion_coeffs As Double(), _
                                            ByVal start_tunneling As Double, ByVal stop_tunneling As Double, _
                                            ByVal t_start As Double, ByVal t_stop As Double, _
                                            ByVal calib_volt As Double, ByVal calib_depth As Double, _
-                                           ByVal dat_chan As Double, ByVal NI_waveform As IntPtr)
+                                           ByVal dat_chan As Integer, ByVal NI_waveform As IntPtr)
     End Sub
 
     <DllImport(DLLpath)>
@@ -741,28 +733,16 @@ Public Class SpectronService
                               dat_chan + _NUMCHANNELS * (_card_number - 1), _NI_waveform)
     End Sub
 
-     Public Sub AddTunnelGaugeRamp2(ByVal conversion_coeffs As Double(), _
+     Public Sub AddTunnelGaugeRamp(ByVal conversion_coeffs As Double(), _
                                     ByVal start_tunneling As Double, ByVal stop_tunneling As Double, _
                                     ByVal t_start As Double, ByVal t_stop As Double, _
                                     ByVal calib_volt As Double, ByVal calib_depth As Double, _
-                                    ByVal dat_chan As Integer) Implements ISpectron.AddTunnelGaugeRamp2
-        insert_tunneling_gauge_ramp2(conversion_coeffs, _
+                                    ByVal dat_chan As Integer) Implements ISpectron.AddTunnelGaugeRamp
+        insert_tunneling_gauge_ramp(conversion_coeffs, _
                                      start_tunneling, stop_tunneling, _
                                      t_start, t_stop, _
                                      calib_volt, calib_depth, _
                                      dat_chan + _NUMCHANNELS * (_card_number - 1), _NI_waveform)
-    End Sub
-
-    Public Sub AddTunnelGaugeRamp(ByVal conversion_coeffs As Double(), _
-                                  ByVal start_tunneling As Double, ByVal stop_tunneling As Double, _
-                                  ByVal t_start As Double, ByVal t_stop As Double, _
-                                  ByVal calib_volt As Double, ByVal calib_depth As Double, _
-                                  ByVal dat_chan As Integer) Implements ISpectron.AddTunnelGaugeRamp
-        insert_tunneling_gauge_ramp(conversion_coeffs, _
-                                    start_tunneling, stop_tunneling, _
-                                    t_start, t_stop, _
-                                    calib_volt, calib_depth, _
-                                    dat_chan + _NUMCHANNELS * (_card_number - 1), _NI_waveform)
     End Sub
 
     Public Sub AddInterpolatedRampUsingFile(ByVal filename As String,

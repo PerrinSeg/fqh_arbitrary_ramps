@@ -317,10 +317,7 @@ Next
 
 'gauge power
 For index As Integer = 0 To n_times - 1
-    'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, 0, 0.0323, ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(0), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    analogdata.AddTunnelGaugeRamp2(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao)
+    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao)
 Next
 
 '2D2 lattice power
@@ -334,14 +331,11 @@ For index As Integer = 0 To n_times - 1
 Next
 
 'quad grad
-'analogdata.AddRamp(quad_ramp_v(0), quad_ramp_v(1), ramp_start_time, ramp_t(1), ps8_ao) 'ps8_ao
 For index As Integer = 0 To n_times - 1
     analogdata.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps8_ao) 'ps8_ao
-    'Console.WriteLine("new quad ramp V: {0}", quad_ramp_v(index+1))
 Next
 
 'gauge detuning
-'analogdata.AddRamp(0, gauge_freq_ramp_v(1), ramp_start_time, ramp_t(1), gauge2_rf_fm)
 For index As Integer = 0 To n_times - 1
     analogdata.AddRamp(gauge_freq_ramp_v(index), gauge_freq_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), gauge2_rf_fm)
 Next
@@ -354,11 +348,8 @@ If (is_return > 0) Then
     Next
 
     'gauge power
-    'For index As Integer = 0 To n_times_return - 1
-    '    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    'Next
     For index As Integer = 0 To n_times_return - 1
-        analogdata.AddTunnelGaugeRamp2(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power    
+        analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power    
     Next
 
     '2D2 lattice power
