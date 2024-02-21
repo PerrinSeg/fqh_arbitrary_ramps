@@ -1,0 +1,983 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:8000/SpectronService/Spectron?xsd=xsd2" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:element name="allocate_NI_waveform">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="words" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="allocate_NI_waveformResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="configure_653x">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deviceName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="trigger" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="clock" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="words" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="configure_653xResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="initialize_data">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deviceName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="max_words" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="initialize_dataResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="transpose_data">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="transpose_dataResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="write_to_653x">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="write_to_653xResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="write_to_653xResult" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="release_data">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="release_dataResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="release_task">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="release_taskResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DisableClkDist">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DisableClkDistResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreqSweep">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="dds_chan" type="xs:int" />
+        <xs:element minOccurs="0" name="start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="sweep_duration" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreqSweepResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreqSweepFast">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="dds_chan" type="xs:int" />
+        <xs:element minOccurs="0" name="start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="sweep_duration" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreqSweepFastResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreq">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="dds_chan" type="xs:int" />
+        <xs:element minOccurs="0" name="voltage" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetDDSFreqResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetFreq">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="freq" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetFreqResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetFreqTime">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="freq" type="xs:double" />
+        <xs:element minOccurs="0" name="set_time" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetFreqTimeResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetPLLRN">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="RCounter" type="xs:int" />
+        <xs:element minOccurs="0" name="NCounter" type="xs:int" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetPLLRNResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetPLLRNTime">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="RCounter" type="xs:int" />
+        <xs:element minOccurs="0" name="NCounter" type="xs:int" />
+        <xs:element minOccurs="0" name="set_time" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetPLLRNTimeResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetVoltage">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="voltage" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SetVoltageResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddStep">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="step_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddStepResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddDebugStep">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="step_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddDebugStepResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="base_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="offset_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="time_constant" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExpResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExpSane">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="v0" type="xs:double" />
+        <xs:element minOccurs="0" name="vf" type="xs:double" />
+        <xs:element minOccurs="0" name="tau_ms" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExpSaneResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExpAndRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="base_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="offset_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="tramp" type="xs:double" />
+        <xs:element minOccurs="0" name="time_const" type="xs:double" />
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddExpAndRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelSine">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz" type="xs:double" />
+        <xs:element minOccurs="0" name="phase" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelSineResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelSineRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_start" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="slope" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelSineRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddAxialExpRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_2Ddepth" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_2Ddepth" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="axial_calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="axial_calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddAxialExpRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSine">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset" type="xs:double" />
+        <xs:element minOccurs="0" name="amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSineResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3Return">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="hold_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3ReturnResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3NoReturn">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="hold_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3NoReturnResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3PhaseReturn">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi_start" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="hold_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3PhaseReturnResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3PhaseNoReturn">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi_start" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="ramp_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="hold_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3PhaseNoReturnResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogSine3">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogSine3Response">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogSine3Phase">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="t_ref" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogSine3PhaseResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="lattice_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_1" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_2" type="xs:double" />
+        <xs:element minOccurs="0" name="rel_amp_3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_Hz_3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="tunneling_init" type="xs:double" />
+        <xs:element minOccurs="0" name="tunneling_final" type="xs:double" />
+        <xs:element minOccurs="0" name="detuning_Hz_init" type="xs:double" />
+        <xs:element minOccurs="0" name="detuning_Hz_final" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="t_ref" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampLogSine3Response">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSine3">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset" type="xs:double" />
+        <xs:element minOccurs="0" name="amp1" type="xs:double" />
+        <xs:element minOccurs="0" name="amp2" type="xs:double" />
+        <xs:element minOccurs="0" name="amp3" type="xs:double" />
+        <xs:element minOccurs="0" name="freq1" type="xs:double" />
+        <xs:element minOccurs="0" name="freq2" type="xs:double" />
+        <xs:element minOccurs="0" name="freq3" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSine3Response">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSinePhase">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset" type="xs:double" />
+        <xs:element minOccurs="0" name="amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq" type="xs:double" />
+        <xs:element minOccurs="0" name="phase_pi" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSinePhaseResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSineFlip">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset" type="xs:double" />
+        <xs:element minOccurs="0" name="amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="fract" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSineFlipResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSineRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="offset" type="xs:double" />
+        <xs:element minOccurs="0" name="amp" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_start" type="xs:double" />
+        <xs:element minOccurs="0" name="freq_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSineRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogRampRedDipole">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="red_start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="red_start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_start_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_stop_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddLogRampRedDipoleResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q1:ArrayOfdouble" />
+        <xs:element minOccurs="0" name="start_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelGaugeRamp2">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q2:ArrayOfdouble" />
+        <xs:element minOccurs="0" name="start_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="voltage_offset" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelGaugeRamp2Response">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelGaugeRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q3="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="conversion_coeffs" nillable="true" type="q3:ArrayOfdouble" />
+        <xs:element minOccurs="0" name="start_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_tunneling" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_volt" type="xs:double" />
+        <xs:element minOccurs="0" name="calib_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddTunnelGaugeRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddInterpolatedRampUsingFile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="filename" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddInterpolatedRampUsingFileResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSmoothRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSmoothRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddAFMRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="t_ramp" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddAFMRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSmoothBox">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_dur" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSmoothBoxResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="background_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="final_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampRedDipole">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="red_start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="red_start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_start_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_stop_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampRedDipoleResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="AddRampRedDipoleResult" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampRedDipoleBkwd">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="red_start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="red_start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_start_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_stop_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddRampRedDipoleBkwdResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="AddRampRedDipoleBkwdResult" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSRedDipole">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="red_start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="red_start_freq" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_start_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="lattice_stop_depth" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddSRedDipoleResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="AddSRedDipoleResult" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFancySmoothRamp">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="start_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="stop_volts" type="xs:double" />
+        <xs:element minOccurs="0" name="alpha" type="xs:double" />
+        <xs:element minOccurs="0" name="beta" type="xs:double" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFancySmoothRampResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromFile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="filename" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="max_current" type="xs:double" />
+        <xs:element minOccurs="0" name="num_psu" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromFileResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromTransportFile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="filename" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="max_current" type="xs:double" />
+        <xs:element minOccurs="0" name="num_psu" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromTransportFileResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromBinaryTransportFile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="filename" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="t_start" type="xs:double" />
+        <xs:element minOccurs="0" name="t_stop" type="xs:double" />
+        <xs:element minOccurs="0" name="dat_chan" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddFromBinaryTransportFileResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Add">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="n1" type="xs:double" />
+        <xs:element minOccurs="0" name="n2" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AddResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="AddResult" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetTotalTime">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetTotalTimeResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="GetTotalTimeResult" type="xs:double" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

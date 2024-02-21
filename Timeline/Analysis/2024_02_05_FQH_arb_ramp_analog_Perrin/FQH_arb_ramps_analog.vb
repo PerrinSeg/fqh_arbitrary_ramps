@@ -319,8 +319,7 @@ Next
 For index As Integer = 0 To n_times - 1
     'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, 0, 0.0323, ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
     'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(0), gauge_power_ramp_j(0), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    'analogdata.AddTunnelGaugeRamp(lattice2_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
-    'analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), 0, gauge_calib_volt, gauge_calib_depth, ps1_ao)
+    'analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
     analogdata.AddTunnelGaugeRamp2(gauge_JtoVolt_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), 0, gauge_calib_volt, gauge_calib_depth, ps1_ao)
     'Console.WriteLine("    new gauge power ramp J: {0}", gauge_power_ramp_j(index + 1))
     'Console.WriteLine("                     and V: {0}", GaugeJToVolts(gauge_power_ramp_j(index + 1), gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt))

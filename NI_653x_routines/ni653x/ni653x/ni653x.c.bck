@@ -1,0 +1,1558 @@
+/*********************************************************************
+*
+* ANSI C Example program:
+*    ContWriteDigPort-ExtClk.c
+*
+* Example Category:
+*    DO
+*
+* Description:
+*    This example demonstrates how to output a continuous digital
+*    pattern using an external clock.
+*
+* Instructions for Running:
+*    1. Select the Physical Channel to correspond to where your
+*       signal is output on the DAQ device.
+*    2. Select the Clock Source for the generation.
+*    3. Specify the Rate of the output digital pattern.
+*    4. Enter the digital pattern data.
+*
+* Steps:
+*    1. Create a task.
+*    2. Create an Digital Output Channel.
+*    3. Call the DAQmxCfgSampClkTiming function which sets the sample
+*       clock rate. Additionally, set the sample mode to continuous.
+*    4. Write the data to the output buffer.
+*    5. Call the Start function to start the task.
+*    6. Wait until the user presses the Stop button.
+*    7. Call the Clear Task function to clear the Task.
+*    8. Display an error if any.
+*
+* I/O Connections Overview:
+*    Make sure your signal output terminal matches the Physical
+*    Channel I/O Control. Also, make sure your external clock
+*    terminal matches the Clock Source Control. For further
+*    connection information, refer to your hardware reference manual.
+*
+*********************************************************************/
+
+#include <windows.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <NIDAQmx.h>
+#include <string.h>
+#include <stdlib.h>
+#include <omp.h>
+#include <math.h>
+#include <time.h>
+#include <C:\Users\greinerlab\Documents\RbRepository\software\exp_control\NI_653x_routines\exp_def.h>
+#include <C:\Users\greinerlab\Documents\RbRepository\software\exp_control\NI_653x_routines\exp_var.h>
+
+//#define DEBUG_CHANNELS 0
+//#define DEBUG_TRANSPOSE 0
+//#define DEBUG_REG_EDITS 0
+//#define DEBUGCS 0
+//#define SINGLETHREAD 0
+#define OPENMP_FOR 0
+#define NTHREADS 8
+#define BLOCKSIZE 10000
+#define PIPE_DREAMS
+
+#define DAQmxErrChk(functionCall) if( DAQmxFailed(error=(functionCall)) ) goto Error; else
+#define swap(a0, a1, j, m) t = (a0 ^ (a1 >>j)) & m; \
+                           a0 = a0 ^ t; \
+                           a1 = a1 ^ (t << j);
+
+void insert_reg_edits(uInt32 NI_waveform[], unsigned int AD_reg_edits[][2], int nedits);
+void raise_line(uInt32 NI_waveform[], int chan);
+void insert_clock(uInt32 NI_waveform[]);
+void interleave_zero(unsigned int *x);
+void transpose32c(uInt32 A[32], uInt32 B[32]);
+void print_bit_matrix(uInt32 array[], int sample_number);
+void print_bit_matrixT(uInt32 array[], int sample_number);
+unsigned int AD_convert(double voltage);
+double DA_convert(unsigned int dig_volt);
+int digitize_time(double real_time);
+double tunnel_from_depth(double d);
+double volt_from_tunnel(double d);
+double volt_from_tunnel_shallow(double d);
+double depth_from_tunnel(double d);
+double axialdepth_from_2d_depth(double d);
+double mod_start_voltage(double offset_depth, double rel_amp, double phase, double calib_volt, double slope);
+double mod_end_voltage(double offset_depth, double rel_amp, double phase, double freq_Hz, double duration, double calib_volt, double slope);
+double InteractionRatio(double v);
+double BlueDeconfinement(double v);
+/*void insert_linear_ramp(double t_start, double t_stop, double y_start, double y_stop, 
+                        uInt32 NI_waveform[], int dat_chan, int cs_chan, int n_offset);
+void insert_sine(double t_start, double t_stop, double amp, double freq, double offset,
+                        uInt32 NI_waveform[], int dat_chan, int cs_chan, int n_offset);*/
+double round(double val);
+
+int32 CVICALLBACK DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData);
+
+BOOL WINAPI  DllMain (
+            HANDLE    hModule,
+            DWORD     dwFunction,
+            LPVOID    lpNot)
+{
+    return TRUE;
+}
+
+int nsamples;
+int n_offset;
+
+_declspec (dllexport) TaskHandle configure_653x(char* dev, char *trigger, char *clock, int exp_nsamples) {
+	int32 error = 0;
+	char errBuff[2048] = {'\0'};
+    TaskHandle taskHandle = 0;
+
+	nsamples = exp_nsamples;
+
+	/*********************************************/
+	// DAQmx Configure Code
+	/*********************************************/
+	DAQmxErrChk (DAQmxCreateTask("",&taskHandle));
+	DAQmxErrChk (DAQmxCreateDOChan(taskHandle,dev,"",DAQmx_Val_ChanForAllLines));
+#ifndef PIPE_DREAMS
+	DAQmxErrChk (DAQmxCfgSampClkTiming(taskHandle, 
+                                       clock, 
+                                       SMP_CLK, 
+                                       DAQmx_Val_Rising, 
+                                       DAQmx_Val_FiniteSamps,
+                                       exp_nsamples*BPW));
+	//DAQmxErrChk (DAQmxCfgOutputBuffer (taskHandle, 10000000) );
+	//DAQmxErrChk (DAQmxCfgOutputBuffer (taskHandle, total_cycles*BPW) );
+#endif 
+
+#ifdef PIPE_DREAMS
+	if (clock != NULL) {
+		/* If clock is specified, use that clock and export it on "RTSI7" */
+		DAQmxErrChk (DAQmxCfgPipelinedSampClkTiming(taskHandle, 
+													clock, 
+													SMP_CLK,
+													DAQmx_Val_Rising,
+													DAQmx_Val_ContSamps,
+													exp_nsamples*BPW));
+		DAQmxErrChk (DAQmxExportSignal (taskHandle, DAQmx_Val_SampleClock , "RTSI7") );
+		DAQmxErrChk (DAQmxSetExportedSampClkOutputTerm  (taskHandle, "RTSI7") );
+		printf("Expect clock input from %s, which will be exported on RTSI7.\n", clock);
+	} else {
+		/* If no clock is specified, assume clock is on "RTSI7" */
+		DAQmxErrChk (DAQmxCfgPipelinedSampClkTiming(taskHandle, 
+													"RTSI7", 
+													SMP_CLK,
+													DAQmx_Val_Rising,
+													DAQmx_Val_ContSamps,
+													exp_nsamples*BPW));
+		printf("Clock sourced from RTSI7.\n");
+	}
+	
+	DAQmxErrChk (DAQmxSetWriteWaitMode(taskHandle, DAQmx_Val_Poll));
+	if (exp_nsamples*BPW < 25*BLOCKSIZE) {
+		/* large buffer for interactive mode. there is no crazy streaming for interactive mode. */
+		DAQmxErrChk (DAQmxCfgOutputBuffer (taskHandle, 20*BLOCKSIZE) );
+	} else {
+		DAQmxErrChk (DAQmxCfgOutputBuffer (taskHandle, 2*BLOCKSIZE) );
+	}
+
+	DAQmxErrChk (DAQmxSetSampClkUnderflowBehavior(taskHandle,DAQmx_Val_PauseUntilDataAvailable));
+#endif
+
+	DAQmxErrChk (DAQmxSetWriteRegenMode (taskHandle, DAQmx_Val_DoNotAllowRegen) );
+
+	if (trigger != NULL) {
+		printf("Setting up trigger on %s.\n", trigger);
+		DAQmxErrChk (DAQmxCfgDigEdgeStartTrig(taskHandle, trigger, DAQmx_Val_Rising));
+		//DAQmxErrChk (DAQmxExportSignal (taskHandle, DAQmx_Val_StartTrigger, "RTSI2") );
+	} else {
+		printf("Start trigger for %s exported on RTSI2\n", dev);
+		DAQmxErrChk (DAQmxExportSignal (taskHandle, DAQmx_Val_StartTrigger, "RTSI2") );
+	}
+
+	DAQmxErrChk (DAQmxRegisterDoneEvent(taskHandle, 0, DoneCallback, NULL));
+	return taskHandle;
+
+Error:
+	if( DAQmxFailed(error) )
+		DAQmxGetExtendedErrorInfo(errBuff,2048);
+	if( DAQmxFailed(error) )
+		printf("DAQmx Error: %s\n",errBuff);
+	return taskHandle;
+}
+
+_declspec (dllexport) void initialize_data(uInt32* NI_waveform, int total_cycles) {
+    /****** Variable Declarations ******/
+    int i;
+    unsigned int AD_reg_edits[50][2];
+    int nedits = 50;
+        
+	/* Variables needed for parsing 'reg_edits.txt' file */
+	//const char *ad_registry = L"C:\Users\greinerlab\Documents\GitHub\RbRepository\software\exp_control\NI_653x_routines\reg_edits.txt";
+	const char *ad_registry = "C:\\Users\\greinerlab\\Documents\\RbRepository\\software\\exp_control\\NI_653x_routines\\reg_edits.txt";
+	FILE *fr;
+	char fr_line[120];
+	char addr[40];
+	char val[40];
+	uInt32 *CSblock;
+	time_t  t0, t1; /* time_t is defined on <time.h> and <sys/types.h> as long */
+	clock_t c0, c1; /* clock_t is defined on <time.h> and <sys/types.h> as int */
+
+	n_offset = 2*nedits + NUMVCOCALCYCLES;
+	nsamples = n_offset + total_cycles;
+	
+	// printf("Clearing NI_waveform.\n");
+    // memset(&NI_waveform[0], 0, BPW * nsamples * sizeof(uInt32));
+
+    /* new initialization of NI_waveform */
+	printf("New initialization routine.\n");
+
+    /* Initialize 'CSblock' */
+	CSblock = (uInt32 *)malloc(2 * sizeof(*CSblock));
+	memset(&CSblock[0], 0, 2 * sizeof(uInt32));
+	CSblock[0] = CSblock[0] | (1 << (31 - ADCS));
+	CSblock[0] = CSblock[0] | (1 << (31 - RESETBAR));
+	CSblock[0] = CSblock[0] | (1 << (31 - CSTop));
+	CSblock[0] = CSblock[0] | (1 << (31 - CSBot));
+	CSblock[0] = CSblock[0] | (1 << (31 - SYNCBAR));
+
+	CSblock[1] = CSblock[1] | (1 << (31 - ADCS));
+	CSblock[1] = CSblock[1] | (1 << (31 - RESETBAR));
+	CSblock[1] = CSblock[1] | (1 << (31 - CSTop));
+	CSblock[1] = CSblock[1] | (1 << (31 - CSBot));
+	CSblock[1] = CSblock[1] | (1 << (31 - SYNCBAR));
+
+	CSblock[0] = CSblock[0] | (1 << (31 - REFIN));
+	#ifdef DEBUGCS
+		printf("CSblock[0] = %u, CSblock[1] = %u.\n", CSblock[0], CSblock[1]);
+	#endif
+
+    memset(&NI_waveform[0], 0, BPW * sizeof(uInt32));
+    NI_waveform[REFIN] = 0xAAAAAAAA;
+    NI_waveform[RESETBAR] = 0xFFFFFFFF;
+    NI_waveform[SYNCBAR] = 0xFFFFFFFF;
+    NI_waveform[BPW - 2] = CSblock[0];
+    NI_waveform[BPW - 1] = CSblock[1];
+    for (i = 0; i < nsamples - 1; i++) {
+        memcpy(&NI_waveform[(i + 1)*BPW], &NI_waveform[i*BPW], BPW*sizeof(uInt32));
+    }
+	free(CSblock);
+
+    /* Registry Modifications */
+	memset(&AD_reg_edits[0], 0, 2 * nedits * sizeof(unsigned int));
+	printf("Parsing 'reg_edits.txt' file.\n");
+	fr = fopen(ad_registry, "rt");
+	i = 0;
+	if (fr == NULL) perror ("Error opening reg_edits.txt");
+	else {
+		while(fgets(fr_line, 120, fr) != NULL) {
+			/* get a line, up to 80 chars from fr.  done if NULL */
+			if ((strncmp(fr_line, "%", 1) & strncmp(fr_line, "\n", 1)) != 0) {
+				sscanf(fr_line, "%s %s %*s", &addr[0], &val[0]);
+				AD_reg_edits[i][0] = strtol(addr, NULL, 0);
+				AD_reg_edits[i][1] = strtol(val, NULL, 0);
+				/*printf("addr, value pair found is %s, %s\n", addr, val);
+				printf("(%x, %d)\n", AD_reg_edits[i][0], AD_reg_edits[i][1]);*/
+				i++;
+			}
+		}
+	}
+	fclose(fr);  /* close the file prior to exiting the routine */
+	printf("Done with 'reg_edits.txt' file.\n");
+
+    #ifdef DEBUG_REG_EDITS
+	    for (i = 0; i < 50; i++) {
+	    	printf("(%x, %d)\n", AD_reg_edits[i][0], AD_reg_edits[i][1]);
+	    }
+    #endif
+	
+    /* Note that this routine is call by reference, hence it will change
+     * the 'AD_reg_edits' array */
+	printf("Inserting registry edits of the AD9522.\n");
+    insert_reg_edits(NI_waveform, AD_reg_edits, nedits);
+	printf("Done registry edits of the AD9522.\n");
+
+    /* Take care of active-low lines */
+	// printf("Setting RESETb and SYNCb to high.\n");
+	// t0 = time(NULL);
+	// c0 = clock();
+	// printf ("\tbegin (wall):            %ld\n", (long) t0);
+	// printf ("\tbegin (CPU):             %d\n", (int) c0);
+
+    // raise_line(NI_waveform, RESETBAR);
+    // raise_line(NI_waveform, SYNCBAR);
+	// printf("Done RESETb and SYNCb to high.\n");
+
+    // /* Insert the reference to be multiplied by the AD9522 */
+	// printf("Inserting reference clock.\n");
+    // insert_clock(NI_waveform);
+	// 			
+	// t1 = time(NULL);
+	// c1 = clock();
+
+	// printf ("\tend (wall):              %ld\n", (long) t1);
+	// printf ("\tend (CPU);               %d\n", (int) c1);
+	// printf ("\telapsed wall clock time: %ld\n", (long) (t1 - t0));
+	// printf ("\telapsed CPU time:        %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+    
+    /* Beginning Trigger */
+	for (i = 0; i < NUMVCOCALCYCLES/2; i++) {
+		NI_waveform[BPW*(n_offset - i) + CSTop] = 0xFFFFFFFF;
+		NI_waveform[BPW*(n_offset - i) + CSBot] = 0xFFFFFFFF;
+	}
+	for (i = NUMVCOCALCYCLES/2; i < NUMVCOCALCYCLES; i++) {
+		NI_waveform[BPW*(n_offset - i) + CSTop] = 0xFFFFFFFF;
+		NI_waveform[BPW*(n_offset - i) + CSBot] = 0xFFFFFFFF;
+	}
+
+    //for (i = 0; i < BPW; i++) {
+    //    printf("NI_waveform[%d] = %d.\n", i, NI_waveform[68 + i]);
+    //}
+
+}
+
+_declspec (dllexport) void transpose_data(uInt32* NI_waveform) {
+	int sample_number;
+	#ifdef OPENMP_FOR
+		int chunksize;
+	#endif
+	uInt32 *CSblock;
+			
+	printf("Start transpose operation...\n");
+    #ifdef SINGLETHREAD
+        for (sample_number = 0; sample_number < nsamples; sample_number++) {
+            transpose32c(&NI_waveform[sample_number*BPW], &NI_waveform[sample_number*BPW]);
+    		NI_waveform[sample_number*BPW + 32] = CSblock[0];
+    		NI_waveform[sample_number*BPW + 33] = CSblock[1];
+    		}
+    #endif
+
+    #ifdef OPENMP_FOR
+        chunksize = nsamples/8;
+        #pragma omp parallel shared(NI_waveform, chunksize, CSblock) private(sample_number) num_threads(NTHREADS)
+        {
+        	#pragma omp for schedule(static, chunksize)
+        	for (sample_number = 0; sample_number < nsamples; sample_number++) {
+        		transpose32c(&NI_waveform[sample_number*BPW], &NI_waveform[sample_number*BPW]);
+        	}
+        }
+    #endif
+    printf("Done transposing\n");
+}
+
+_declspec (dllexport) int write_to_653x(TaskHandle taskHandle, uInt32* NI_waveform) {
+	int32 error = 0;
+    int i;
+	char errBuff[2048] = {'\0'};
+	uInt32 *buffer_temp;
+	buffer_temp = (uInt32 *)malloc(BLOCKSIZE*sizeof(uInt32));
+
+	printf("Transferring %d samples to PCIe-653x buffer...\n", BPW*nsamples);
+
+	#ifdef DEBUG_CHANNELS
+        /* Print out the resulting 'program_AD_sequence' matrix */
+        for (i = 0; i < nedits; i++) {
+            if (i == 0) {
+                printf("address \t value \n");
+            }
+            for (j = 0; j < 2; j++) {
+                if (j == 1) {
+                    printf("%d \n", AD_reg_edits[i][j]);
+                }
+                else { 
+                    printf("%d \t", AD_reg_edits[i][j]);
+                }
+            }
+        }
+    
+        /* Print out the resulting 'NI_waveform' matrix */
+        for (i = 0; i < nsamples; i++) {
+            if (i == 0) {
+                for (j = 0; j < NUMCHANNELS; j++) {
+                    if (j == 0) {
+                        printf("Smp/Chn \t");
+                    }
+    
+                    printf("%u \t", j);
+    
+                    if (j == NUMCHANNELS - 1) {
+                        printf("\n");
+                    }
+                }
+                printf("============================================================================================================================================================\n");
+            }
+            for (j = 0; j < NUMCHANNELS; j++) {
+                if (j == 0) { 
+                    printf("%u \t", i);
+                }
+    
+                printf("%u \t", NI_waveform[i*NUMCHANNELS + j]);
+    
+                if (j == NUMCHANNELS - 1) {
+                    printf("\n");
+                }
+            }
+        }
+	#endif
+    
+	#ifdef DEBUG_TRANSPOSE
+		printf("CSblock[0] = %d, CSblock[1] = %d.\n", CSblock[0], CSblock[1]);
+        sample_number = 37;
+        printf("before transposition\n");
+        print_bit_matrix(NI_waveform, sample_number);
+        transpose32c(&NI_waveform[sample_number*BPW], &NI_waveform[sample_number*BPW]);
+        printf("following transposition\n");
+        print_bit_matrixT(NI_waveform, sample_number);
+		printf("Done with diagnostic output\n");
+	#endif
+
+	/*********************************************/
+	// DAQmx Write Code
+	/*********************************************/
+#ifndef PIPE_DREAMS
+	DAQmxErrChk (samples_written = DAQmxWriteDigitalU32(taskHandle, /* the task to write samples to */
+										nsamples*BPW, /* number of samples to write */
+										0, /* autoStart */
+										10.0, /* timeout in seconds */
+										DAQmx_Val_GroupByScanNumber, /* interleaved or not */
+										NI_waveform, /* data to write to buffer */
+										NULL, /* Must be null */
+										NULL)); /* API honestly doesn't even say this arg exists */
+
+	//*********************************************/
+	//// DAQmx Start Code
+	//*********************************************/
+	printf("Starting the task...\n");
+	DAQmxErrChk (DAQmxStartTask(taskHandle));
+#endif
+	
+#ifdef PIPE_DREAMS
+	if (nsamples*BPW < 20*BLOCKSIZE) {
+		DAQmxErrChk (DAQmxWriteDigitalU32(taskHandle, /* the task to write samples to */
+										nsamples*BPW, /* number of samples to write */
+										0, /* autoStart */
+										10.0, /* timeout in seconds */
+										DAQmx_Val_GroupByScanNumber, /* interleaved or not */
+										NI_waveform, /* data to write to buffer */
+										NULL, /* Must be null */
+										NULL)); /* API honestly doesn't even say this arg exists */
+
+		//*********************************************/
+		//// DAQmx Start Code
+		//*********************************************/
+		printf("Starting the task...\n");
+		DAQmxErrChk (DAQmxStartTask(taskHandle));
+	} else {
+		memcpy(buffer_temp, NI_waveform, BLOCKSIZE*sizeof(uInt32));
+		DAQmxErrChk (DAQmxWriteDigitalU32(taskHandle, /* the task to write samples to */
+											BLOCKSIZE, /* number of samples to write */
+											0, /* autoStart */
+											10.0, /* timeout in seconds */
+											DAQmx_Val_GroupByScanNumber, /* interleaved or not */
+											buffer_temp, /* data to write to buffer */
+											NULL, /* Must be null */
+											NULL)); /* API honestly doesn't even say this arg exists */
+
+		//*********************************************/
+		//// DAQmx Start Code
+		//*********************************************/
+		printf("Starting the task...\n");
+		DAQmxErrChk (DAQmxStartTask(taskHandle));
+
+		printf("nsamples*BPW/BLOCKSIZE = %d\n", nsamples*BPW/BLOCKSIZE);
+	
+		for (i = 1; i < nsamples*BPW/BLOCKSIZE; i++) {
+			memcpy(buffer_temp, &NI_waveform[i*BLOCKSIZE], BLOCKSIZE*sizeof(uInt32));
+			DAQmxErrChk (DAQmxWriteDigitalU32(taskHandle, /* the task to write samples to */
+											BLOCKSIZE, /* number of samples to write */
+											0, /* autoStart */
+											10.0, /* timeout in seconds */
+											DAQmx_Val_GroupByScanNumber, /* interleaved or not */
+											buffer_temp, /* data to write to buffer */
+											NULL, /* Must be null */
+											NULL)); /* API honestly doesn't even say this arg exists */
+		}
+	}
+#endif
+
+	//DAQmxErrChk (DAQmxWaitUntilTaskDone(taskHandle, BLOCKSIZE/SMP_CLK + 2));
+	printf("Generating digital output continuously. Press Enter to interrupt\n");
+	//getchar();
+
+Error:
+	if( DAQmxFailed(error) )
+		DAQmxGetExtendedErrorInfo(errBuff,2048);
+	if( DAQmxFailed(error) )
+		printf("DAQmx Error: %s\n",errBuff);
+	printf("End of program.\n");
+	return 0;
+}
+
+_declspec (dllexport) void release_data() {
+	/* For potential future use? */
+	printf("Data freed.\n");
+}
+
+_declspec (dllexport) void release_task(TaskHandle taskHandle) {
+	printf("============ Task Closed =============.\n");
+	if( taskHandle!=0 ) {
+		/*********************************************/
+		// DAQmx Stop Code
+		/*********************************************/
+		DAQmxStopTask(taskHandle);
+		DAQmxClearTask(taskHandle);
+	}
+}
+
+int32 CVICALLBACK DoneCallback(TaskHandle taskHandle, int32 status, void *callbackData) {
+	int32   error=0;
+	char    errBuff[2048]={'\0'};
+
+	// Check to see if an error stopped the task.
+	DAQmxErrChk (status);
+
+Error:
+	if( DAQmxFailed(error) ) {
+		DAQmxGetExtendedErrorInfo(errBuff,2048);
+		DAQmxClearTask(taskHandle);
+		printf("DAQmx Error: %s\n",errBuff);
+	}
+	return 0;
+}
+
+_declspec (dllexport) void disable_clk_dist(double t_start, double t_stop, uInt32 *NI_waveform) {
+    int j;                      /* loop index */
+	int i;                      /* loop index */
+	int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+	int j_times[4] = {j_start, j_stop};
+	unsigned int AD_reg_edits[5][2];
+
+	for (j = 0; j < 4; j++) {
+		AD_reg_edits[j][0] = 0x191 + j*3;
+		AD_reg_edits[j][1] = 0x70;
+	}
+	AD_reg_edits[4][0] = 0x232;
+	AD_reg_edits[4][1] = 0x1;
+	
+	for (i = 0; i < 2; i++) {
+		for (j = 0; j < 5; j++) {
+			interleave_zero(&(AD_reg_edits[j][0]));
+			interleave_zero(&(AD_reg_edits[j][1]));
+			NI_waveform[BPW*(n_offset + j_times[i] + 2*j) + ADDAT] = AD_reg_edits[j][0];
+			NI_waveform[BPW*(n_offset + j_times[i] + 2*j + 1) + ADDAT] = AD_reg_edits[j][1];
+		
+			/* Insert clock: full clock required for 16-bit instruction byte. For
+				* the 8-bit value byte, only need clocks in the second half of the
+				* digital world */
+			/* 0x5 = 0101 */
+			NI_waveform[BPW*(n_offset + j_times[i] + 2*j) + ADCLK] = 0x55555555;
+			NI_waveform[BPW*(n_offset + j_times[i] + 2*j + 1) + ADCLK] = 0x00005555;
+		}
+
+		/* reset 'AD_reg_edits' with powered on values */
+		for (j = 0; j < 4; j++) {
+			AD_reg_edits[j][0] = 0x191 + j*3;
+			AD_reg_edits[j][1] = 0;
+		}
+		AD_reg_edits[4][0] = 0x232;
+		AD_reg_edits[4][1] = 0x1; 
+	}
+}
+
+_declspec (dllexport) void insert_step(double step_volts, 
+                                       double t_start, double t_stop, 
+                                       int dat_chan, uInt32 NI_waveform[]) {
+    /* Function description */
+    /* consider using a trick from Hacker's Delight */
+    /* perhaps precalculate 'BPW/SMP_CLK' */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+
+    for (j = j_start; j < j_stop; j++) {
+		NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(step_volts);
+    }
+}
+
+_declspec (dllexport) void insert_exp(double base_volts, double offset_volts,
+                                      double t_start, double t_stop, double time_const,
+                                      int dat_chan, uInt32 NI_waveform[]) {
+    /* Function description */
+    /* consider using a trick from Hacker's Delight */
+    /* perhaps precalculate 'BPW/SMP_CLK' */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int time_const_j = digitize_time(time_const);
+
+    for (j = j_start; j < j_stop; j++) {
+		NI_waveform[BPW*(n_offset + j) + dat_chan] = 
+            AD_convert(base_volts * exp((j - j_start)/time_const_j));
+    }
+}
+
+_declspec (dllexport) void insert_exp_and_ramp(double base_volts, double offset_volts,
+                                      double t_start, double t_stop, double tramp, double time_const,
+                                      double start_volts, double stop_volts,
+                                      int dat_chan, uInt32 NI_waveform[]) {
+    /* Function description */
+    /* consider using a trick from Hacker's Delight */
+    /* perhaps precalculate 'BPW/SMP_CLK' */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double y = DA_convert(NI_waveform[BPW*(n_offset + j_start) + dat_chan]);
+    int time_const_j  = digitize_time(time_const);
+    int tramp_j = digitize_time(tramp);
+    double slope = (stop_volts - start_volts)/tramp_j;
+    double ratio;
+    int jduration = j_stop - j_start;
+
+    for (j = j_start; j < j_stop; j++) {
+        ratio = (double)(j - j_start)/jduration; 
+
+        if (j < (tramp_j + j_start)) {
+		    NI_waveform[BPW*(n_offset + j) + dat_chan] = 
+                AD_convert(y + start_volts + (j - j_start)*slope
+                            + offset_volts - base_volts
+                            * exp((t_stop - t_start)/time_const * ratio));
+        } else {
+		    NI_waveform[BPW*(n_offset + j) + dat_chan] = 
+                AD_convert(y + stop_volts
+                            + offset_volts - base_volts
+                            * exp((t_stop - t_start)/time_const * ratio)); 
+        }
+    }
+}
+
+_declspec (dllexport) void insert_ramp(double start_volts, double stop_volts,
+                                        double t_start, double t_stop, 
+                                        int dat_chan, uInt32 NI_waveform[]) {
+    /* Function description */
+    /* consider using a trick from Hacker's Delight */
+    /* perhaps precalculate 'BPW/SMP_CLK' */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double slope = (stop_volts - start_volts)/((t_stop - t_start)*SMP_CLK/BPW/1000);
+	//FILE *pFile;
+	
+    for (j = j_start; j < j_stop; j++) {
+		NI_waveform[BPW*(n_offset + j) + dat_chan] = 
+             AD_convert(start_volts + slope*(j - j_start));
+
+        /* diagnostic */
+        /*printf("cs top %i \n", (NUMCHANNELS*(n_offset + 2*j) + cs_chan)/NUMCHANNELS);
+        if (j == j_stop - 1) {
+            printf("%i\n", (int)(slope*((j - j_start) << 18)/5));
+        } else {
+            printf("%i\t", (int)(slope*((j - j_start) << 18)/5));
+        }*/
+    }
+	/* Make sure CS goes high for the last cycle */
+	//NI_waveform[NUMCHANNELS*(n_offset + 2*j) + cs_chan] = 0xFFFFFFFF;
+	
+	/* diagnostic */
+	//pFile = fopen ( "ramp_out.txt" , "ab" );
+	//fprintf (pFile, "Linear Ramp: %f, %f, %f, %f, %f\n", t_start, t_stop, y_start, y_stop, increment);
+ //   for (j = j_start; j < j_stop; j++) {
+ //             fprintf (pFile, "%i, %u, %u\n", j, NI_waveform[BPW*(n_offset + j) + dat_chan], j - j_start);
+	//}
+ //   fclose (pFile);
+	//printf("j_start =  %u\n", j_start);
+ //   printf("j_stop = %u\n", j_stop);
+ //   printf("n_offset = %u\n", n_offset);
+}
+
+_declspec (dllexport) void insert_tunnel_sine(double offset_depth, double rel_amp, double freq_Hz, double phase,
+                            double t_start, double t_stop,
+                            double calib_volt, double slope,
+                            int dat_chan, uInt32 NI_waveform[]) {
+    /* Sinusoidal modulation of the tunnelling about given lattice depth with relative 
+     * amplitude rel_amp and initial phase zero on a selected channel.
+     *
+     * Arguments:
+     * - offset_depth       offset for tunnelling, in recoils
+     * - rel_amp            relative amplitude of sinusoidal modulation of tunnelling
+     * - freq_Hz            frequency in Hz
+     * - tstart             Leading edge time, in milliseconds from the analog output start trigger
+     * - tstop              Trailing edge time, in milliseconds from the analog output start trigger
+     * - calib_volt         calibrated voltage for offset_depth (e.g. lattice2_low_volt)
+     * - slope              slope (in V per decade) of photdiodes
+     * - dat_chan           (0-7) Specifies the channel to which the ramp waveform is added
+     * - phase              additional phase in units of Pi */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double period = 1 / freq_Hz;
+    double w = tunnel_from_depth(offset_depth);
+    double u;
+    double x;
+    double y;
+    period = period * SMP_CLK/BPW;
+
+    if (j_stop > j_start) {
+        for (j = j_start; j < j_stop; j++) {
+            u = w * (1 + rel_amp * sin(phase * PI + 2 * PI / period * (j - j_start)));
+            x = depth_from_tunnel(u);
+            y = calib_volt + slope * (log10(x) - log10(offset_depth));
+            NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(y);
+        }
+    }
+}
+
+_declspec (dllexport) void insert_tunnel_sine_ramp(double offset_depth, double rel_amp, 
+                            double freq_start, double freq_stop,
+                            double phase_start, double t_start, double t_stop,
+                            double calib_volt, double slope,
+                            int dat_chan, uInt32 NI_waveform[]) {
+    /* Sinusoidal modulation of the tunnelling about given lattice depth with 
+     * linearly increasing frequency and relative amplitude rel_amp. Specify 
+     * initial phase in units of Pi.
+     *
+     * Arguments:
+     * - offset_depth:      offset for tunnelling, in recoils
+     * - rel_amp:           relative amplitude of sinusoidal modulation of tunnelling
+     * - freq_start:        initial frequency in Hz
+     * - freq_stop:         final frequency in Hz
+     * - t_start:           Leading edge time, in milliseconds from the analog output start trigger
+     * - t_stop:            Trailing edge time, in milliseconds from the analog output start trigger
+     * - calib_volt         calibrated voltage for offset_depth (e.g. lattice2_low_volt)
+     * - slope              slope (in V per decade) of photdiodes
+     * - dat_chan           (0-7) Specifies the channel to which the ramp waveform is added
+     * - phase              additional phase in units of Pi */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double w = tunnel_from_depth(offset_depth);
+    double u;
+    double x;
+    double y;
+    double PhiT;
+	double omega_start = 2*PI*freq_start*BPW/SMP_CLK;
+	double omega_stop = 2*PI*freq_stop*BPW/SMP_CLK;
+    double omega_slope = (omega_stop - omega_start)/digitize_time((t_stop - t_start));
+
+    if (j_stop > j_start) {
+        for (j = j_start; j < j_stop; j++) {
+            PhiT = omega_start*(j - j_start) + omega_slope*pow((j - j_start), 2);
+            u = w * (1 + rel_amp * sin(PhiT));
+            x = depth_from_tunnel(u);
+            y = calib_volt + slope * (log10(x) - log10(offset_depth));
+		    NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(y);
+        }
+    }
+}
+
+_declspec (dllexport) void insert_axial_exp_ramp(double start_2Ddepth, double stop_2Ddepth, 
+                            double t_start, double t_stop,
+                            double axial_calib_depth, double axial_calib_volt,
+                            int dat_chan, uInt32 NI_waveform[]) {
+    /* Ramp axial lattice such that axial and 2d tunneling are the same. Assumes 
+     * linear ramp in 2D lattice voltage!!! 
+     * Calulation saved in Z:\Experiment Software Backup\ExpControl\mathematica
+     *
+     * Arguments:
+     * start_2Ddepth:       initial amplitude of 2d lattice, in 2d recoils
+     * tstart:              Leading edge time, in milliseconds from the analog output start trigger
+     * tstop:               Trailing edge time, in milliseconds from the analog output start trigger
+     * axial_calib_depth:   calibration depth of axial lattice, in axial recoils
+     * axial_calib_volt:    calibration voltage axial lattice 
+     * dat_chan:            (0-7) Specifies the channel to which the ramp waveform is added
+     * time_const:          (1/time constant) for 2d lattice depth exponential ramp (linear in voltage) */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double time_const = log10(stop_2Ddepth / start_2Ddepth) / (j_start - j_stop);
+    
+    for (j = j_start; j < j_stop; j++) {
+        NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(axial_calib_volt 
+                + 0.5 * log10(axialdepth_from_2d_depth(start_2Ddepth * pow(10, (time_const * (j - j_start)))) / axial_calib_depth));
+    }
+}
+
+_declspec (dllexport) void insert_sine(double offset, double amp, double freq,
+            double t_start, double t_stop,
+            int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a sine waveform to a selected channel starting with phase zero.
+     * 
+     * Arguments:
+     * offset:              offset for sine waveform, in volts
+     * amp:                 amplitude for sine waveform, in volts
+     * freq_Hz:             frequency in Hz
+     * t_start:             Leading edge time, in milliseconds from the analog output start trigger
+     * tstop:               Trailing edge time, in milliseconds from the analog output start trigger
+     * channel:             (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+	freq = 2*PI*freq*BPW/SMP_CLK;
+
+    for (j = j_start; j < j_stop; j++) {
+		NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(amp*sin(freq*(j - j_start)) + offset);
+    }
+}
+
+_declspec (dllexport) void insert_sine_phase(double offset, double amp, double freq,
+            double phase_pi, double t_start, double t_stop,
+            int dat_chan, uInt32 *NI_waveform) {
+
+    /* Adds a sine waveform to a selected channel starting with initial phase pi*phase_pi.
+     * 
+     * Arguments:
+     * offset:              offset for sine waveform, in volts
+     * amp:                 amplitude for sine waveform, in volts
+     * freq_Hz:             frequency in Hz
+     * t_start:             Leading edge time, in milliseconds from the analog output start trigger
+     * tstop:               Trailing edge time, in milliseconds from the analog output start trigger
+     * channel:             (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+	freq = 2*PI*freq*BPW/SMP_CLK;
+
+    for (j = j_start; j < j_stop; j++) {
+		NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(amp*sin(freq*(j - j_start) + PI*phase_pi) + offset);
+    }
+}
+
+_declspec (dllexport) void insert_sine_flip(double offset, double amp, double freq,
+            double t_start, double t_stop, double fract,
+            int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a sine waveform to a selected channel starting with phase zero and 
+     * phase flip of 180 deg after fraction of modulation time.
+     *
+     * Arguments:
+     * offset:                  offset for sine waveform, in volts
+     * amp:                     amplitude for sine waveform, in volts
+     * freq:                    frequency in Hz
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * fract:                   Fraction of the total duration after which Pi phase flip occurs
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int j_flip = (int)(j_start + fract * (j_stop - j_start));
+	freq = 2*PI*freq*BPW/SMP_CLK;
+
+    if (j_stop < j_start) {
+        for (j = j_start; j < j_flip; j++) {
+		    NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(amp*sin(freq*(j - j_start)) + offset);
+        }
+        for (j = j_flip; j < j_stop; j++) {
+		    NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(amp*sin(freq*(j - j_start) + PI) + offset);
+		}
+	}
+}
+
+_declspec (dllexport) void insert_sine_ramp(double offset, double amp, 
+            double freq_start, double freq_stop,
+            double t_start, double t_stop,
+            int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a sine ramp waveform to a selected channel starting with phase 
+     * zero, with the frequency linearly increasing in time.
+     *
+     * Arguments:
+     * offset:                  offset for sine waveform, in volts
+     * amp:                     amplitude for sine waveform, in volts
+     * freq:                    frequency in Hz
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double PhiT;
+	double omega_start = 2*PI*freq_start*BPW/SMP_CLK;
+	double omega_stop = 2*PI*freq_stop*BPW/SMP_CLK;
+    double omega_slope = (omega_stop - omega_start)/digitize_time((t_stop - t_start));
+
+    for (j = j_start; j < j_stop; j++) {
+        PhiT = omega_start*(j - j_start) + omega_slope*pow((j - j_start), 2);
+	    NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(offset + amp * sin(PhiT));
+    }
+}
+
+_declspec (dllexport) void insert_log_ramp(double start_volts, double stop_volts,
+            double t_start, double t_stop,
+            int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a ramp waveform to a selected channel.
+     *
+     * Arguments:
+     * start_volts:         initial amplitude for the ramp, in volts
+     * stop_volts:          final amplitude for the ramp, in volts
+     * t_start:             Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:              Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:            (0-7) Specifies the channel to which the ramp waveform is added */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double ratio;
+    int jduration = j_stop - j_start;
+
+    for (j = j_start; j < j_stop; j++) {
+        ratio = (double)(j - j_start)/jduration; 
+		NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert((double)start_volts + 0.5 * log10(1 + ratio * (pow(10, 2 * stop_volts - 2 * start_volts) - 1)));
+    }
+}
+
+_declspec (dllexport) void insert_log_ramp_red_dipole(double red_start_volts, double red_start_freq,
+        double lattice_start_depth, double lattice_stop_depth,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a ramp waveform to a selected channel 
+     * 
+     * Arguments:
+     * red_start_volts:         initial amplitude for the ramp, in volts
+     * red_start_freq:          initial red dipole frequency in Hz
+     * lattice_start_depth:     initial lattice depth in recoils
+     * lattice_stop_depth:      final lattice depth in recoils
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double currentDepth;
+    double currentVolt;
+    double ratio;
+    int jduration = j_stop - j_start;
+
+    for (j = j_start; j < j_stop; j++) {
+        ratio = (double)(j - j_start) / jduration;
+        currentDepth = lattice_start_depth + ratio * (lattice_stop_depth - lattice_start_depth);
+        currentVolt = red_start_volts + 0.5 * log10(InteractionRatio(currentDepth) + pow(BlueDeconfinement(currentDepth) / red_start_freq, 2));
+	    NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(currentVolt);
+    }
+}
+
+_declspec (dllexport) void insert_smooth_ramp(double start_volts, double stop_volts,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a smooth ramp waveform to a selected channel 
+     *
+     * Arguments:
+     * start_volts:         initial amplitude for the ramp, in volts
+     * stop_volts:          final amplitude for the ramp, in volts
+     * tstart:              Leading edge time, in milliseconds from the analog output start trigger
+     * tstop:               Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int jduration = j_stop - j_start;
+    double x, f;
+
+    for (j = j_start; j < j_stop; j++) {
+        x = (double)(j - j_start) / jduration;
+        f = 10 * pow(x, 3) - 15 * pow(x, 4) + 6 * pow(x, 5);
+		NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(start_volts + (stop_volts - start_volts) * f);
+    }
+}
+
+_declspec (dllexport) void insert_s(double background_volts, double final_volts,
+            double t_start, double t_stop,
+            int dat_chan, uInt32 *NI_waveform) {
+    /* Adds an s-shaped smooth waveform to a selected channel 
+     *
+     * Arguments:
+     * start_volts:         initial amplitude for the ramp, in volts, logarithmic photodiode assumed
+     * stop_volts:          final asymptotic amplitude for the ramp, in volts, logarithmic photodiode assumed
+     * t_start:             Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:              Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int jduration;
+    double f, fmax, g;
+    jduration = j_stop - j_start;
+
+    fmax = 1.0 - 2.0 / (1 + exp(-pow(2.5 * (1.02 * jduration) / jduration, 2)));
+    for (j = j_start; j < j_stop; j++) {
+        f = 1.0 - 2.0 / (1 + exp(-pow(2.5 * (j - j_start + 0.02 * jduration) / jduration, 2)));
+        g = final_volts + 0.5 * log10(f / fmax);
+        g = max(g, background_volts);
+        NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(g);
+    }
+}
+
+_declspec (dllexport) double insert_ramp_red_dipole(double red_start_volts, double red_start_freq,
+        double lattice_start_depth, double lattice_stop_depth,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a ramp waveform to a selected channel 
+     *
+     * Arguments:
+     * red_start_volts:         initial amplitude for the ramp, in volts
+     * red_start_freq:          initial red dipole frequency in Hz
+     * lattice_start_depth:     initial lattice depth in recoils
+     * lattice_stop_depth:      final lattice depth in recoils
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double currentDepth;
+    double currentVolt;
+    double ratio;
+    int jduration = j_stop - j_start;
+
+    for (j = j_start; j < j_stop; j++) {
+        ratio = (double)(j - j_start)/jduration; 
+        currentDepth = lattice_start_depth * pow(lattice_stop_depth / lattice_start_depth, ratio);
+        currentVolt = red_start_volts + 0.5 * log10(InteractionRatio(currentDepth) + pow(BlueDeconfinement(currentDepth) / red_start_freq, 2));
+	    NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(currentVolt);
+    }
+    return currentVolt;
+}
+
+_declspec (dllexport) double insert_ramp_red_dipole_bkwd(double red_start_volts, double red_start_freq,
+        double lattice_start_depth, double lattice_stop_depth,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a ramp waveform to a selected channel 
+     *
+     * Arguments:
+     * red_start_volts:         initial amplitude for the ramp, in volts
+     * red_start_freq:          initial red dipole frequency in Hz
+     * lattice_start_depth:     initial lattice depth in recoils
+     * lattice_stop_depth:      final lattice depth in recoils
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int jduration;
+    double currentDepth = 0;
+    double currentVolt = 0;
+    double ratio;
+
+    for (j = j_start; j < j_stop; j++) {
+        ratio = (double)(j_stop - j)/jduration; 
+        currentDepth = lattice_start_depth * pow(lattice_stop_depth / lattice_start_depth, ratio);
+        currentVolt = red_start_volts + 0.5 * log10(InteractionRatio(currentDepth) + pow(BlueDeconfinement(currentDepth) / red_start_freq, 2));
+	    NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(currentVolt);
+    }
+    return currentVolt;
+}
+
+_declspec (dllexport) double insert_s_red_dipole(double red_start_volts, double red_start_freq,
+        double lattice_start_depth, double lattice_stop_depth,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a ramp waveform to a selected channel 
+     * 
+     * Arguments:
+     * red_start_volts:         initial amplitude for the ramp, in volts
+     * red_start_freq:          initial red dipole frequency in Hz
+     * lattice_start_depth:     initial lattice depth in recoils
+     * lattice_stop_depth:      final lattice depth in recoils
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double f, fmax;
+    int jduration = j_stop - j_start;
+    double currentDepth = 0;
+    double currentVolt = 0;
+
+    fmax = 1.0 - 2.0 / (1 + exp(-pow(2.5 * (1.02 * jduration) / jduration, 2)));
+    for (j = j_start; j < j_stop; j++) {
+        f = 1.0 - 2.0 / (1 + exp(-pow(2.5 * (j - j_start + 0.02 * jduration) / jduration, 2)));
+        currentDepth = f / fmax * lattice_stop_depth;
+        currentVolt = red_start_volts + 0.5 * log10(InteractionRatio(currentDepth) + pow(BlueDeconfinement(currentDepth) / red_start_freq, 2));
+	    NI_waveform[BPW*(n_offset + j) + dat_chan] = AD_convert(currentVolt);
+    }
+    return currentVolt;
+}
+
+_declspec (dllexport) void insert_fancy_smooth_ramp(double start_volts, double stop_volts,
+        double alpha, double beta,
+        double t_start, double t_stop,
+        int dat_chan, uInt32 *NI_waveform) {
+    /* Adds a smooth ramp waveform to a selected channel 
+     * The ramp has zero second derivatives at the endpoints but the first derivative is 
+     * alpha at the first endpoint and beta at the second.
+     *
+     * Arguments:
+     * start_volts:         initial amplitude for the ramp, in volts
+     * stop_volts:          final amplitude for the ramp, in volts
+     * alpha (volts/ms)
+     * beta (volts/ms)
+     * t_start:                 Leading edge time, in milliseconds from the analog output start trigger
+     * t_stop:                  Trailing edge time, in milliseconds from the analog output start trigger
+     * dat_chan:                (0-7) Specifies the channel to which the ramp waveform is added */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    int jduration = j_stop - j_start;
+    double x, f;
+    double a, b, c;
+    alpha = alpha * 1000.0 / SMP_CLK * BPW / (stop_volts - start_volts);
+    beta = beta * 1000.0 / SMP_CLK * BPW / (stop_volts - start_volts);
+    a = -3 * (-2 + alpha + beta);
+    b = -15 + 8 * alpha + 7 * beta;
+    c = -2 * (-5 + 3 * alpha + 2 * beta);
+    
+    for (j = j_start; j < j_stop; j++) {
+        x = (double)(j - j_start) / jduration;
+        f = alpha * x + c * pow(x, 3) + b * pow(x, 4) + a * pow(x, 5);
+        NI_waveform[BPW*(n_offset + j ) + dat_chan] = AD_convert(start_volts + (stop_volts - start_volts) * f);
+    }
+}
+
+_declspec (dllexport) void insert_from_file(char* filename,
+        double t_start, double t_stop,
+        double max_current, double num_psu,
+        int dat_chan, uInt32 *NI_waveform) { 
+    /* Runs through a list of voltages defined by an input file. Points are 
+     * assumed to be separated by 1/SMP_CLK. */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double temp_val;
+	FILE *fr;
+	char fr_line[120];
+	char val[40];
+
+	printf("Parsing '%s' file.\n", filename);
+	fr = fopen(filename, "rt");
+    
+	j = 0;
+	if (fr == NULL) perror ("Error opening file.");
+	else {
+		while(fgets(fr_line, 120, fr) != NULL) {
+			/* get a line, up to 80 chars from fr.  done if NULL */
+			if ((strncmp(fr_line, "%", 1) & strncmp(fr_line, "\n", 1)) != 0) {
+				sscanf(fr_line, "%s %*s", &val[0]);
+				temp_val = strtod(val, NULL);
+                temp_val = temp_val / num_psu;
+                temp_val = temp_val / max_current * 5;
+				if (temp_val < 0) {
+					temp_val = 0;
+				}
+                NI_waveform[BPW*(n_offset + j_start + j) + dat_chan] = AD_convert(temp_val);
+				j++;
+			}
+		}
+	}
+	fclose(fr);  /* close the file prior to exiting the routine */
+	printf("Done with '%s' file.\n", filename);
+}
+
+_declspec (dllexport) void insert_from_transport_file(char* filename,
+        double t_start, double t_stop,
+        double max_current, double num_psu,
+        int dat_chan, uInt32 *NI_waveform) { 
+    /* Runs through a list of voltages defined by an input file. Points are 
+     * assumed to be separated by (34*70)/SMP_CLK ~ 10.5 kHz. */
+
+    int j;                      /* loop index */
+    int j_start = digitize_time(t_start);
+    int j_stop = digitize_time(t_stop);
+    double temp_val;
+    int i;                      /* loop index */
+    int k;                      /* loop index */
+    double increment; 
+	FILE *fr;
+	char fr_line[120];
+	char val[40];
+	double* voltage_array;
+	int nvoltages = 0;
+	voltage_array = (double *)malloc(25000*sizeof(double));
+
+	printf("Parsing '%s' file.\n", filename);
+	fr = fopen(filename, "rt");
+    
+	j = 0;
+	if (fr == NULL) perror ("Error opening file.");
+	else {
+		while(fgets(fr_line, 120, fr) != NULL) {
+			/* get a line, up to 80 chars from fr.  done if NULL */
+			if ((strncmp(fr_line, "%", 1) & strncmp(fr_line, "\n", 1)) != 0) {
+				sscanf(fr_line, "%s %*s", &val[0]);
+				temp_val = strtod(val, NULL);
+                temp_val = temp_val / num_psu;
+                temp_val = temp_val / max_current * 5;
+				if (temp_val < 0) {
+					voltage_array[j] = 0;
+				} else {
+					voltage_array[j] = temp_val;
+				}
+                j++;
+			}
+		}
+	}
+	fclose(fr);  /* close the file prior to exiting the routine */
+	printf("Done with '%s' file.\n", filename);
+
+	voltage_array[j] = voltage_array[j - 1];
+	nvoltages = j;
+
+	for (i = 0; i < nvoltages; i++) {
+        increment = (voltage_array[i + 1] - voltage_array[i])/70;
+        temp_val = voltage_array[i] - increment;
+        for (k = 0; k < 70; k++) {
+            temp_val = temp_val + increment;
+		    //NI_waveform[BPW*(n_offset + j_start + i*70 + k) + dat_chan] = AD_convert(temp_val + 0.02);
+			NI_waveform[BPW*(n_offset + j_start + i*70 + k) + dat_chan] = AD_convert(temp_val);
+        }
+    }
+}
+
+
+void insert_reg_edits(uInt32 *NI_waveform, unsigned int AD_reg_edits[][2], int nedits) {
+    int i;                      /* loop index */
+    
+	    for (i = 0; i < nedits; i++) {
+        /* do not need to check whether address value (which is encoded in
+         * 'program_AD_sequence[i][0]') is 0 because the loop only goes
+         * through the first 'nedits' number of rows in the
+         * 'program_AD_sequence' */
+        interleave_zero(&(AD_reg_edits[i][0]));
+		interleave_zero(&(AD_reg_edits[i][1]));
+        NI_waveform[BPW*(2*i) + ADDAT] = AD_reg_edits[i][0];
+        NI_waveform[BPW*(2*i + 1) + ADDAT] = AD_reg_edits[i][1];
+
+        /* Insert clock: full clock required for 16-bit instruction byte. For
+         * the 8-bit value byte, only need clocks in the second half of the
+         * digital world */
+        /* 0x5 = 0101 */
+        NI_waveform[BPW*(2*i) + ADCLK] = 0x55555555;
+        NI_waveform[BPW*(2*i + 1) + ADCLK] = 0x00005555;
+
+        /* Insert chip select: chip select drops low only for the instruction
+         * and value byte, otherwise it is set high. */
+		//printf("loop iteration i = %d.\n", i);
+    }
+	//NI_waveform[BPW*(2*(i - 1) + ) + ADCS] = 0xFFFFFFFF;
+}
+
+void raise_line(uInt32 NI_waveform[], int chan) {
+    int i;                      /* loop index */
+	    for (i = 0; i < nsamples; i++) {
+        /* 0x8 = 1000 and 0x1 = 0001 */
+        //NI_waveform[NUMCHANNELS*i + chan] = 0xFFFFFFFF;
+		memset(&NI_waveform[BPW*i + chan], 0xFF, sizeof(uInt32));
+    }
+}
+
+void insert_clock(uInt32 *NI_waveform) {
+    int i;                      /* loop index */
+    for (i = 0; i < nsamples; i++) {
+        /* 0x5 = 0101 */
+        NI_waveform[BPW*i + REFIN] = 0xAAAAAAAA;
+		//memset(&NI_waveform[BPW*i + REFIN], 0xAA, sizeof(uInt32));
+    }
+}
+
+unsigned int AD_convert(double voltage) {
+    unsigned int dig_volt;
+
+    dig_volt = (unsigned int)((1 << 18)*fabs(voltage)/5);
+    return dig_volt;
+}
+
+double DA_convert(unsigned int dig_volt) {
+    double voltage;
+
+    voltage = dig_volt/(1 << 18) * 5;
+    return voltage;
+}
+
+int digitize_time(double real_time) {
+    int digital_time;
+
+    digital_time = (int)round(real_time*SMP_CLK/BPW/1000);
+    return digital_time;
+}
+
+double tunnel_from_depth(double d) {
+    /* Numerical expression for tunnelling rate in recoils as a function of lattice 
+     * depth from band structure calculation, good between 3 and 40 recoils.
+     * Calulation saved in Z:\Experiment Software Backup\ExpControl\mathematica */
+    double t = 0.000806452 * (80.85 * exp(-d / 5.822) + 0.63815 * exp(-d / 15.349) + 248.836 * exp(-d / 3.0066));
+    return t;
+}
+
+double volt_from_tunnel(double t) {
+    /* Numerical expression for voltage needed for desired tunnelling rate. 
+     * Good between 10 and 30 recoils. 
+     * Calulation saved in Z:\Experiment Software Backup\ExpControl\mathematica */
+    double v = 0.49064 + 0.3304 * exp(-t / 1.7646) + 0.77322 * exp(-t / 60.384) + 0.27196 * exp(-t / 0.03982);
+    return v;
+}
+
+double volt_from_tunnel_shallow(double t) {
+    /* Fit for shallow lattices!
+     * Numerical expression for voltage needed for desired tunnelling rate. Good 
+     * from 3 to 10 recoils.
+     * Calulation saved in Z:\Experiment Software Backup\ExpControl\mathematica */
+    double v = 2 * pow(10, -0.19378 - 0.00584 * t + 7.1696 * pow(10, -5) * pow(t, 2) - 7.2492 * pow(10, -7) * pow(t, 3) + 3.5622 * pow(10, -9) * pow(t, 4) - 7.3566 * pow(10, -12) * pow(t, 5));
+    return v;
+}
+
+double depth_from_tunnel(double t) {
+    /* Fit for lattices < 30 Er.
+     * Numerical expression for lattice depth needed for desired tunnelling rate. 
+     * Good from 2 to 30 recoils. Tunneling and lattice depth in Er. */
+    double d = -0.70255 + 14.1054 * exp(-t / 0.0000553825) + 10.497 * exp(-t / 0.108124) + 10.6318 * exp(-t / 0.00203487) + 9.01271 * exp(-t / 0.0124361) + 12.449 * exp(-t / 0.000336428);
+    return d;
+}
+
+double axialdepth_from_2d_depth(double v) {
+    /* Numerical expression for axial depth needed (in axial recoils) for a given 
+     * 2D depth (in 2d recoils) to keep tunneling between planes and within planes 
+     * the same.
+     * Calulation saved in Z:\Experiment Software Backup\ExpControl\mathematica */
+    double d = 8.207 + 1.201 * v; /* may 04 2012 */
+    return d;
+}
+
+double mod_start_voltage(double offset_depth, double rel_amp, double phase, double calib_volt, double slope) {
+    double w = tunnel_from_depth(offset_depth);
+    double u = w * (1 + rel_amp * sin(phase * PI));
+    double x = depth_from_tunnel(u);
+    double v = calib_volt + slope * (log10(x) - log10(offset_depth));
+    return v;
+}
+
+double mod_end_voltage(double offset_depth, double rel_amp, double phase, double freq_Hz, double duration, double calib_volt, double slope) {
+    double w = tunnel_from_depth(offset_depth);
+    double u = w * (1 + rel_amp * sin(phase * PI + 2 * PI * freq_Hz * duration / 1000));
+    double x = depth_from_tunnel(u);
+    double v = calib_volt + slope * (log10(x) - log10(offset_depth));
+    return v;
+}
+
+double InteractionRatio(double v) {
+    /* See pg 26-27 of lab book 7 for documentation on this function.
+     * 
+     * Arguments:
+     * v:           lattice depth in recoils */
+    double f = 1 + 0.24256 * pow(v, 1) + 0.0128075 * pow(v, 2) - 0.00108671 * pow(v, 3) + 0.0000304067 * pow(v, 4) - 0.000000297633 * pow(v, 5);
+    return f;
+}
+
+double BlueDeconfinement(double v) {
+    /* See pg 26-27 of lab book 7 for documentation on this function.
+     * 
+     * Arguments:
+     * v:           lattice depth in recoils */
+
+    double g = 6.9397 * pow(v, 0.5) - 1.41963 * pow(v, 1) + 0.034345 * pow(v, 2) - 0.000601338 * pow(v, 3) + 0.00000424209 * pow(v, 4);
+    return g;
+}
+
+void interleave_zero(unsigned int *x) {
+    /* trick from Hacker's Delight */
+    *x = ((*x & 0xFF00) << 8) | (*x & 0x00FF);
+    *x = ((*x << 4) | *x) & 0x0F0F0F0F;
+    *x = ((*x << 2) | *x) & 0x33333333;
+    *x = ((*x << 1) | *x) & 0x55555555;
+    *x = 3*(*x);
+}
+
+/* Straight-line version of transpose32a & b. */
+
+void transpose32c(uInt32 A[32], uInt32 B[32]) {
+   unsigned m, t;
+   unsigned a0, a1, a2, a3, a4, a5, a6, a7,
+            a8, a9, a10, a11, a12, a13, a14, a15,
+            a16, a17, a18, a19, a20, a21, a22, a23,
+            a24, a25, a26, a27, a28, a29, a30, a31;
+
+   a0  = A[ 0];  a1  = A[ 1];  a2  = A[ 2];  a3  = A[ 3];
+   a4  = A[ 4];  a5  = A[ 5];  a6  = A[ 6];  a7  = A[ 7];
+   a8  = A[ 8];  a9  = A[ 9];  a10 = A[10];  a11 = A[11];
+   a12 = A[12];  a13 = A[13];  a14 = A[14];  a15 = A[15];
+   a16 = A[16];  a17 = A[17];  a18 = A[18];  a19 = A[19];
+   a20 = A[20];  a21 = A[21];  a22 = A[22];  a23 = A[23];
+   a24 = A[24];  a25 = A[25];  a26 = A[26];  a27 = A[27];
+   a28 = A[28];  a29 = A[29];  a30 = A[30];  a31 = A[31];
+
+   m = 0x0000FFFF;
+   swap(a0,  a16, 16, m)
+   swap(a1,  a17, 16, m)
+   swap(a2,  a18, 16, m)
+   swap(a3,  a19, 16, m)
+   swap(a4,  a20, 16, m)
+   swap(a5,  a21, 16, m)
+   swap(a6,  a22, 16, m)
+   swap(a7,  a23, 16, m)
+   swap(a8,  a24, 16, m)
+   swap(a9,  a25, 16, m)
+   swap(a10, a26, 16, m)
+   swap(a11, a27, 16, m)
+   swap(a12, a28, 16, m)
+   swap(a13, a29, 16, m)
+   swap(a14, a30, 16, m)
+   swap(a15, a31, 16, m)
+   m = 0x00FF00FF;
+   swap(a0,  a8,   8, m)
+   swap(a1,  a9,   8, m)
+   swap(a2,  a10,  8, m)
+   swap(a3,  a11,  8, m)
+   swap(a4,  a12,  8, m)
+   swap(a5,  a13,  8, m)
+   swap(a6,  a14,  8, m)
+   swap(a7,  a15,  8, m)
+   swap(a16, a24,  8, m)
+   swap(a17, a25,  8, m)
+   swap(a18, a26,  8, m)
+   swap(a19, a27,  8, m)
+   swap(a20, a28,  8, m)
+   swap(a21, a29,  8, m)
+   swap(a22, a30,  8, m)
+   swap(a23, a31,  8, m)
+   m = 0x0F0F0F0F;
+   swap(a0,  a4,   4, m)
+   swap(a1,  a5,   4, m)
+   swap(a2,  a6,   4, m)
+   swap(a3,  a7,   4, m)
+   swap(a8,  a12,  4, m)
+   swap(a9,  a13,  4, m)
+   swap(a10, a14,  4, m)
+   swap(a11, a15,  4, m)
+   swap(a16, a20,  4, m)
+   swap(a17, a21,  4, m)
+   swap(a18, a22,  4, m)
+   swap(a19, a23,  4, m)
+   swap(a24, a28,  4, m)
+   swap(a25, a29,  4, m)
+   swap(a26, a30,  4, m)
+   swap(a27, a31,  4, m)
+   m = 0x33333333;
+   swap(a0,  a2,   2, m)
+   swap(a1,  a3,   2, m)
+   swap(a4,  a6,   2, m)
+   swap(a5,  a7,   2, m)
+   swap(a8,  a10,  2, m)
+   swap(a9,  a11,  2, m)
+   swap(a12, a14,  2, m)
+   swap(a13, a15,  2, m)
+   swap(a16, a18,  2, m)
+   swap(a17, a19,  2, m)
+   swap(a20, a22,  2, m)
+   swap(a21, a23,  2, m)
+   swap(a24, a26,  2, m)
+   swap(a25, a27,  2, m)
+   swap(a28, a30,  2, m)
+   swap(a29, a31,  2, m)
+   m = 0x55555555;
+   swap(a0,  a1,   1, m)
+   swap(a2,  a3,   1, m)
+   swap(a4,  a5,   1, m)
+   swap(a6,  a7,   1, m)
+   swap(a8,  a9,   1, m)
+   swap(a10, a11,  1, m)
+   swap(a12, a13,  1, m)
+   swap(a14, a15,  1, m)
+   swap(a16, a17,  1, m)
+   swap(a18, a19,  1, m)
+   swap(a20, a21,  1, m)
+   swap(a22, a23,  1, m)
+   swap(a24, a25,  1, m)
+   swap(a26, a27,  1, m)
+   swap(a28, a29,  1, m)
+   swap(a30, a31,  1, m)
+
+   B[ 0] = a0;   B[ 1] = a1;   B[ 2] = a2;   B[ 3] = a3;
+   B[ 4] = a4;   B[ 5] = a5;   B[ 6] = a6;   B[ 7] = a7;
+   B[ 8] = a8;   B[ 9] = a9;   B[10] = a10;  B[11] = a11;
+   B[12] = a12;  B[13] = a13;  B[14] = a14;  B[15] = a15;
+   B[16] = a16;  B[17] = a17;  B[18] = a18;  B[19] = a19;
+   B[20] = a20;  B[21] = a21;  B[22] = a22;  B[23] = a23;
+   B[24] = a24;  B[25] = a25;  B[26] = a26;  B[27] = a27;
+   B[28] = a28;  B[29] = a29;  B[30] = a30;  B[31] = a31;
+}
+
+void print_bit_matrix(uInt32 array[], int sample_number) {
+    int i;
+    int j;
+    /* Advance through array in increasing order. Currently, the array is
+     * arranged as (32-samples of chan 0, 32 samples of chan 1, 32-samples of
+     * chan 2, etc.) Hence, an increment in 'i' (which is graphically shown by
+     * incrementing the row) is an increment in the channel number. */
+    for (i = 0; i < NUMCHANNELS; i++) {
+        if (i == 0) {
+            /* Bit decompose each row in MSB first fashion */
+            for (j = 31; j > -1; j--) {
+                if (j == 31) {
+                    printf("Chan/Bit \t");
+                }
+
+                printf("D%02i ", j);
+
+            }
+            printf("\n==============================================================================================================================================\n");
+        }
+        for (j = 31; j > -1; j--) {
+            if (j == 31) {
+                printf("chan %02u \t", i);
+            }
+
+            printf("%d   ", (array[sample_number*NUMCHANNELS + i] & (1 << j)) >= 1);          
+        }
+		printf("\n");
+	}
+}
+
+void print_bit_matrixT(uInt32 array[], int sample_number) {
+    int i;
+    int j;
+    /* Advance through array in increasing order. Following the transpose, the
+     * array should be arranged as (32-values for time 0, 32-values for time
+     * 1,  32-values for time 2,  32-values for time 3, etc.) Hence, an
+     * increment in 'i' (which is graphically shown by incrementing the row)
+     * is a step through time. Since the DAC is MSB first, hopefully time 0
+     * corresponds to MSB.*/
+    for (i = 0; i < 32; i++) {
+        if (i == 0) {
+            /* the bit numbers are calculated LSB -> MSB. The channels are
+             * also LSB -> MSB (DIO0 = LSB), then we count up in labelling the
+             * channels */
+            for (j = 0; j < NUMCHANNELS; j++) {
+                if (j == 0) {
+                    printf("Bit/Chan \t");
+                }
+
+                printf("c%02i ", j);
+				}
+            printf("\n==============================================================================================================================================\n");
+        }
+
+        for (j = 0; j < NUMCHANNELS; j++)  {
+            if (j == 0) {
+                printf("t%02u \t\t", i);
+            }
+
+            printf("%d   ", (array[sample_number*NUMCHANNELS + i] & (1 << j)) >= 1);
+        }
+		printf("\n");
+    }
+}
+
+double round(double val) {    
+    return floor(val + 0.5);
+}

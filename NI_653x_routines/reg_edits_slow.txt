@@ -1,0 +1,43 @@
+% Registry modifications used for AD9959.
+% Formatting requirements:
+% Tab delimited.
+% Only first two strings are interpreted.
+% Use '0x' prefix for hexadecimal representations.
+% '%' is the comment char.
+0x10    0x7C	/* PLL enable */
+0x10    0x7C	/* PLL enable */
+0x191   0x70
+0x194   0x70
+0x197   0x70
+0x19A   0x70
+0x232   1		/* Update Register */
+% 0x13    12      /* 6-bit A counter = 0 (default) */
+0x13    0x00      /* 6-bit A counter = 0 (default) */
+0x14    0xC      /* B counter (lower 8 bits) */
+0x16    0x06		/* prescaler = 32 (default) */
+0x18    2	    /* VCO calibration divider */
+0x1A    45      /* LD pin */
+0x1B    42      /* REFMON pin */
+0x1C    2
+% 0x1D    0x80	/* clock doubler not enabled */
+0x1E0   4
+0x1E1   2
+0xF0    226
+0xF1    226
+0xF2    226
+0xF3    226
+0xF4    226
+0xF5    226
+0xF6    226
+0xF7    226
+0xF8    226
+0xF9    226
+0xFA    226
+0xFB    226
+0x190   0xFF		/* duty cycle */
+0x193   0xFF		/* duty cycle */
+0x196   0xFF		/* duty cycle */
+0x199   0xFF		/* duty cycle */
+0x232   1		/* Update Registers */
+0x18    5		/* set bit for VCO calibration */
+0x232   1		/* Update Register (starts VCO calibration) */
