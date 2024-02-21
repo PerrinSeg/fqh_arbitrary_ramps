@@ -22,8 +22,10 @@ Public Function  LoadArrayFromFile(filename As String) As Double()
 		End If
 	Next
 
-	'For idx = 0 To line_count - 1
-	'	Console.WriteLine(" a[{0}] = {1}", idx, array_values(idx))
+	'For v_idx = 0 To n_variables
+	'	For t_idx = 0 To line_count - 1
+	'		Console.WriteLine("v = {1}, t = {0}, ramp_variables(v_idx)(t_idx) = {2}", t_idx, v_idx, ramp_variables(v_idx)(t_idx))
+	'	Next
 	'Next
 
 	Return array_values

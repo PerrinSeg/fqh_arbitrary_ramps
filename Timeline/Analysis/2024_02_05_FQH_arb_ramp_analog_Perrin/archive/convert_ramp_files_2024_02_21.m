@@ -27,7 +27,7 @@ ramp_amps_hz = ramp_amps*J0;
 
 %% Plot raw values
 
-plot_figure = 0;
+plot_figure = 1;
 save_figure = 0;
 if plot_figure
     figure
@@ -74,43 +74,40 @@ quad_latt_ramp_end_idx = 7;
 quadDepth = zeros(ntimes,1);
 quadDepth = quadDepth + quad_latt_depth_init;
 quadDepth(quad_latt_ramp_end_idx:end) = quad_latt_depth_final; % TO DO: adjust so that if it spans multiple points, it linearly interpolates between start and end depths
-% quadDepth
 ramp_amps_convert(:,1) = quadDepth;
 
 
 %% quad Gauge beam power (assuming 2D1 lattice depth 5Er)
 
 quadtunneling = ramp_amps(:,1)*J0;
-quadvolts = zeros(size(quadtunneling));
-syms v
-for i = 1:length(quadvolts)
-    jx = quadtunneling(i);
-    if jx == 0
-        val = 0;
-    else
-        val = vpasolve( jx == 108.4 * besselj(1, 1.399 * 10^(2*v-6)), v, [0, 3.05] );
-    end
-    quadvolts(i) = val;
-end
-% ramp_amps_convert(:,2) = quadvolts;
+% quadvolts = zeros(size(quadtunneling));
+% syms v
+% for i = 1:length(quadvolts)
+%     jx = quadtunneling(i);
+%     if jx == 0
+%         val = 0;
+%     else
+%         val = vpasolve( jx == 108.4 * besselj(1, 1.399 * 10^(2*v-6)), v, [0, 3.05] );
+%     end
+%     quadvolts(i) = val;
+% end
 ramp_amps_convert(:,2) = quadtunneling;
 
 
 %% quic depth
 
 quictunneling = ramp_amps(:,2)*J0;
-quicdepth = zeros(size(quictunneling));
-syms x
-for i = 1:length(quictunneling)
-    jy = quictunneling(i);
-    if jy == 0
-        val = 45;
-    else   
-        val = vpasolve(jy == 1229*4/sqrt(pi)*124/100*x^(3/4)*exp(-2*x^(1/2)), x, [1,Inf]);
-    end
-    quicdepth(i) = val;
-end
-% ramp_amps_convert(:,3) = quicdepth;
+% quicdepth = zeros(size(quictunneling));
+% syms x
+% for i = 1:length(quictunneling)
+%     jy = quictunneling(i);
+%     if jy == 0
+%         val = 45;
+%     else   
+%         val = vpasolve(jy == 1229*4/sqrt(pi)*124/100*x^(3/4)*exp(-2*x^(1/2)), x, [1,Inf]);
+%     end
+%     quicdepth(i) = val;
+% end
 ramp_amps_convert(:,3) = quictunneling;
 
 
@@ -151,8 +148,6 @@ ramp_amps_convert(:,6) = (ramp_amps(:,4)*J0 + 290.3)/134.6; % 2024/01/09
 %% convert time points to durations
 
 % convert from tunneling times to ms
-
-% ramp_time = ramp_time*tau*10^3;
 ramp_duration = [0; ramp_time_ms(2:end)-ramp_time_ms(1:end-1)];
 
 
@@ -165,48 +160,55 @@ fid = fopen('ramp_segments.txt','w');
 fprintf(fid, '%f %f %f %f %f %f %f\r\n', ramp_new');
 fclose(fid);
 
-% ramp_new(:,0) = Delta t
-% ramp_new(:,1) = V0_x
-% ramp_new(:,2) = V_gauge (voltage corresponding to gauge power)
-% ramp_new(:,3) = V0_y
-% ramp_new(:,4) = gauge detuning V
-% ramp_new(:,5) = gradV_x
-% ramp_new(:,6) = gradV_y
+% ramp_new(:,0) = Delta t (ms)
+% ramp_new(:,1) = V0_x (Er)
+% ramp_new(:,2) = J_x (Hz)
+% ramp_new(:,3) = J_y (Hz)
+% ramp_new(:,4) = gauge detuning (Hz)
+% ramp_new(:,5) = gradV_x (V)
+% ramp_new(:,6) = gradV_y (V)
 
 
 %% Plot final values
 
-plot_figure = 0;
-save_figure = 0;
+plot_figure = 1;
+save_figure = 1;
 if plot_figure
+    i = 1;
+
     figure
-    tl2 = tiledlayout(5,1,"TileSpacing",'compact','Padding','compact');
+    tl2 = tiledlayout('flow', "TileSpacing", 'compact', 'Padding', 'compact');
     
-    ax1 = nexttile;
+    ax(i) = nexttile;
+    i = i+1;
     plot(ramp_time_ms, ramp_amps_convert(:,1), '.-', 'DisplayName', 'quad')
+    ylabel('Quad lattice depth (E_r)')
+ 
+    ax(i) = nexttile;
+    i = i+1;
     hold on
-    plot(ramp_time_ms, ramp_amps_convert(:,3), '.-', 'DisplayName', 'quic')
-    ylabel('Lattice depth (E_r)')
+    plot(ramp_time_ms, ramp_amps_convert(:,2), '.-', 'DisplayName', 'quad (gauge power)')
+    plot(ramp_time_ms, ramp_amps_convert(:,3), '.-', 'DisplayName', 'quic (lattice depth)')
+    ylabel('J (Hz)')
     legend('location','best')
 
-    ax2 = nexttile;
-    plot(ramp_time_ms, ramp_amps_convert(:,2), '.-', 'DisplayName', 'gauge power')
-    ylabel('gauge power (V)')
-
-    ax3 = nexttile;
+    ax(i) = nexttile;
     plot(ramp_time_ms, ramp_amps_convert(:,4), '.-', 'DisplayName', 'gauge freq')
-    ylabel('gauge freq (Hz)')
+    ylabel('Gauge freq (Hz)')
+    i = i+1;
 
-    ax4 = nexttile;
+    ax(i) = nexttile;
     plot(ramp_time_ms, ramp_amps_convert(:,5), '.-', 'DisplayName','quad')
     ylabel('Quad magnetic gradient (V)')
+    i = i+1;
 
-    ax5 = nexttile;
+    ax(i) = nexttile;
     plot(ramp_time_ms, ramp_amps_convert(:,6), '.-', 'DisplayName','quic')
     ylabel('Quic magnetic gradient (V)')
+    i = i+1;
 
     xlabel(tl2,'time (ms)')
-    linkaxes([ax1,ax2,ax3,ax4,ax5],'x')
+    linkaxes(ax,'x')
 
     if save_figure
         print('ramp_arb_final_channels','-dpng')
@@ -543,13 +545,16 @@ depth_from_tunnel_quad_str2 = 'a1*(x/1240) + a2*(x/1240).^2 + a3*(x/1240).^3 + a
 startvals2 = [0.02, 0, 0.000001,0];
 lowerbnd2 = [-Inf, -Inf, -Inf, -Inf];
 
-figure
-hold on
-plot(quadJ_aux, depth_from_tunnel_quad2(startvals2,quadJ_aux))
-plot(quadJ_aux, quadDepth_aux, '--')
-title('fit startvals test 2')
-xlabel("J_x (Hz)")
-ylabel("lattice depth (E_r)")
+plot_figure = 0;
+if plot_figure
+    figure
+    hold on
+    plot(quadJ_aux, depth_from_tunnel_quad2(startvals2,quadJ_aux))
+    plot(quadJ_aux, quadDepth_aux, '--')
+    title('fit startvals test')
+    xlabel("J_x (Hz)")
+    ylabel("lattice depth (E_r)")
+end
 
 fx = fit(quadJ_aux', quadDepth_aux', depth_from_tunnel_quad_str2, 'Start', startvals2,'Lower',lowerbnd2)
 % fx2 = fit(quadJ_aux', quadDepth_aux', 'poly4')
@@ -563,10 +568,10 @@ if plot_figure
     
     ax1 = nexttile;
     hold on
-    plot(quadJ_aux, fx(quadJ_aux), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux, fx(quadJ_aux), '-', 'DisplayName', 'approx')
     plot(quadJ_aux, quadDepth_aux, '--', 'DisplayName', 'numeric')
     plot(quadJ_endpts, quadDepth_endpts,'o', 'DisplayName', 'numeric endpts')
-    plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'exp estimated endpts')
+    plot(quadJ_endpts, fx(quadJ_endpts),'.', 'DisplayName', 'estimated endpts')
     ylabel('Gauge depth quad (E_r)')
     legend('location','best')
     
@@ -579,24 +584,23 @@ if plot_figure
     % ylim([-0.02,0.02])
     
     xlabel(tl2, 'J_x (Hz)')
-    title(tl2, '2nd exp test quad')
+    title(tl2, 'polynomial test quad')
     linkaxes([ax1,ax2],'x')
 end
 
 % Plot
-plot_figure =1;
+plot_figure = 1;
 if plot_figure
-
     figure
     tl2 = tiledlayout('flow','tilespacing','compact');
     
     ax1 = nexttile;
     hold on
-    plot(quadJ_aux, depthToVoltx(fx(quadJ_aux)), '-', 'DisplayName', 'exp approx')
+    plot(quadJ_aux, depthToVoltx(fx(quadJ_aux)), '-', 'DisplayName', 'approx')
     plot(quadJ_aux, depthToVoltx(quadDepth_aux), '--', 'DisplayName', 'numeric')
-    plot(quadJ_aux, quadV_aux, ':', 'DisplayName', 'numeric')
+    % plot(quadJ_aux, quadV_aux, ':', 'DisplayName', 'numeric')
     plot(quadJ_endpts, depthToVoltx(quadDepth_endpts),'o', 'DisplayName', 'numeric endpts')
-    plot(quadJ_endpts, depthToVoltx( fx(quadJ_endpts)),'.', 'DisplayName', 'exp estimated endpts')
+    plot(quadJ_endpts, depthToVoltx( fx(quadJ_endpts)),'.', 'DisplayName', 'estimated endpts')
     ylabel('Gauge power quad (V)')
     legend('location','best')
     
@@ -609,7 +613,7 @@ if plot_figure
     % ylim([-0.02,0.02])
     
     xlabel(tl2, 'J_x (Hz)')
-    title(tl2, '2nd exp test quad')
+    title(tl2, 'polynomial test quad')
     linkaxes([ax1,ax2],'x')
 end
 
@@ -710,7 +714,7 @@ end
 %% Another quick test...
 
 gauge_JToDepth_final = @(x) 19.742717 * x + 134.286941 * x.^2 ...
-                            + -6152.835178 * x.^3 + 129950.446182 * x^4;
+                            + -6152.835178 * x.^3 + 129950.446182 * x.^4;
 gauge_DepthToVolts_final = @(x) (1/2)*log10(x/dcal_quad) + vcal_quad;
 
 quic_JToDepth_final = @(x) 4.806925 + 9.845196*exp(-x/0.000188) ...
@@ -718,6 +722,46 @@ quic_JToDepth_final = @(x) 4.806925 + 9.845196*exp(-x/0.000188) ...
                            + 7.077495*exp(-x/0.007011) + 7.863954*exp(-x/0.000649);
 quic_DepthToVolts_final = @(x) lattice2_voltage_offset + lattice2_calib_volt + 1/2 * log10(x/lattice2_calib_depth);
 
-lattice2D1_ramp_v = 
+% tunneling final conversions
+lattice2D2_ramp_v = quic_DepthToVolts_final( quic_JToDepth_final(quicJ_full/1240) );
+
+gauge1_power_ramp_v = gauge_DepthToVolts_final( gauge_JToDepth_final(quadJ_full/1240) );
 
 
+% Plot final values
+plot_figure = 1;
+save_figure = 1;
+if plot_figure
+    figure
+    tl3 = tiledlayout(5,1,"TileSpacing",'compact','Padding','compact');
+    
+    ax1 = nexttile;
+    hold on
+    plot(ramp_time_ms, quic_DepthToVolts_final(ramp_amps_convert(:,1)), '.-', 'DisplayName', 'quad')
+    plot(rampt_full, lattice2D2_ramp_v, '-', 'DisplayName', 'quic')
+    ylabel('Lattice depth (V)')
+    legend('location','best')
+
+    ax2 = nexttile;
+    plot(rampt_full, gauge1_power_ramp_v, '-', 'DisplayName', 'gauge power')
+    ylabel('gauge power (V)')
+
+    ax3 = nexttile;
+    plot(ramp_time_ms, ramp_amps_convert(:,4), '.-', 'DisplayName', 'gauge freq')
+    ylabel('gauge freq (Hz)')
+
+    ax4 = nexttile;
+    plot(ramp_time_ms, ramp_amps_convert(:,5), '.-', 'DisplayName','quad')
+    ylabel('Quad magnetic gradient (V)')
+
+    ax5 = nexttile;
+    plot(ramp_time_ms, ramp_amps_convert(:,6), '.-', 'DisplayName','quic')
+    ylabel('Quic magnetic gradient (V)')
+
+    xlabel(tl3,'time (ms)')
+    linkaxes([ax1,ax2,ax3,ax4,ax5],'x')
+
+    if save_figure
+        print('ramp_arb_final_ramps','-dpng')
+    end
+end

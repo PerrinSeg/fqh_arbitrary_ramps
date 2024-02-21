@@ -22,15 +22,15 @@ return_half = 0
 'Dim rampSegPath As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
 'Dim rampSegPath_return As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
 'Dim lattice2_JtoDepth_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
-'Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+'Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_gaugepower.txt"
 
-Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments.txt"
-Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_adiabatic.txt"
-Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_depth_2d2lattice.txt"
-Dim gauge_JtoVolt_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\j_to_v_gaugepower.txt"
+Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_files\\ramp_segments.txt"
+Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_files\\ramp_segments_adiabatic.txt"
+Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_files\\j_to_depth_2d2lattice.txt"
+Dim gauge_JtoVolt_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_05_FQH_arb_ramp_analog_Perrin\\ramp_segments_files\\j_to_depth_gaugepower.txt"
 
 Dim n_variables As Integer = 6 ' number of channels used in the arbitrary ramp
-Dim half_index As Integer = 4 ' point at which y delocalization finishes and x delocalization starts
+Dim half_index As Integer = 5 ' point at which y delocalization finishes and x delocalization starts
 Dim half_index_return As Integer = 4 ' point at which y delocalization finishes and x delocalization starts for return ramp
 If reverse_ramp > 0 Then
     half_index_return = half_index
@@ -142,7 +142,6 @@ Dim quic_ramp_end_v As Double
 
 'return
 Dim ramp_durs_return As Double()
-'Dim ramp_durs_return(-1) As Double
 Dim lattice1_ramp_v_return(-1) As Double
 Dim lattice2_ramp_j_return(-1) As Double
 Dim gauge_power_ramp_j_return(-1) As Double
@@ -208,21 +207,16 @@ Dim lattice1_ramp_start_v = lattice1_ramp_v(0)
 
 Dim gauge_power_ramp_start_v As Double = GaugeJToVolts(gauge_power_ramp_j(0), gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt)
 Dim gauge_power_ramp_end_v As Double = GaugeJToVolts(gauge_power_ramp_end_j, gauge_JtoVolt_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt)
-Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
-Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
+'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_j(0), gauge_power_ramp_start_v)
+'Console.WriteLine("GaugeJToVolts: {0} -> {1}", gauge_power_ramp_end_j, gauge_power_ramp_end_v)
 Dim lattice2_ramp_start_v As Double = JToVolts(lattice2_ramp_j(0), lattice2_JtoDepth_coeffs, nterms_2D2, lattice2_calib_depth, lattice2_calib_volt, lattice2_voltage_offset)
 Dim lattice2_ramp_end_v As Double = JToVolts(lattice2_ramp_end_j, lattice2_JtoDepth_coeffs, nterms_2D2, lattice2_calib_depth, lattice2_calib_volt, lattice2_voltage_offset)
-Console.WriteLine("2D2 JToVolts: {0} -> {1}", lattice2_ramp_j(0), lattice2_ramp_start_v)
-Console.WriteLine("2D2 JToVolts: {0} -> {1}", lattice2_ramp_end_j, lattice2_ramp_end_v)
-
+'Console.WriteLine("2D2 JToVolts: {0} -> {1}", lattice2_ramp_j(0), lattice2_ramp_start_v)
+'Console.WriteLine("2D2 JToVolts: {0} -> {1}", lattice2_ramp_end_j, lattice2_ramp_end_v)
 
 Dim gauge_freq_ramp_start_v As Double = gauge_freq_ramp_v(0)
 Dim quad_ramp_start_v As Double = quad_ramp_v(0)
 Dim quic_ramp_start_v As Double = quic_ramp_v(0)
-
-'Console.WriteLine("quad_ramp_start_v: {0}", quad_ramp_start_v)
-'Console.WriteLine("quad_ramp_end_v: {0}", quad_ramp_end_v)
-'Console.WriteLine("quad_ramp_v(n_times-4): {0}", quad_ramp_v(n_times-4))
 
 ' Final values:
 ' ramp_end_time
@@ -233,13 +227,11 @@ Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 ' quad_ramp_end_v
 ' quic_ramp_end_v
 
-'ramp ends on last value: need to ramp down to turn off
-'need to add freeze lattice
-
 
 '----------------------------------------------------- Time Definitions PLACEHOLDER ----------------------------------------------------------
 
 Dim twodphysics_start_time As Double = 0
+
 
 '----------------------------------------------------- Time Definitions for Sequence ---------------------------------------------------------
 'initialize values of everything needed for ramp...should end on values for start of ramp
@@ -256,7 +248,7 @@ Dim quad_turnon_end_time As Double = quic_turnon_end_time ' raise from 0 to quad
 '---------------------------------------------------------------------------------------------------------------------------------------------
 '----------------------------------------------------- Arb ramp time definitions -------------------------------------------------------------
 
-'Arbitrary ramp
+'forward ramp
 Dim ramp_start_time As Double = quic_turnon_end_time
 Dim ramp_end_time As Double
 Dim ramp_t(n_times) As Double
@@ -265,9 +257,9 @@ For index As Integer = 1 To n_times
     ramp_t(index) = ramp_t(index - 1) + ramp_durs(index)
 Next
 Dim ramp_forward_end_time As Double = ramp_t(n_times)
-Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
+'Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
 
-'return
+'return ramp
 Dim ramp_t_return(-1) As Double
 If is_return > 0 Then
     ReDim ramp_t_return(n_times_return)
@@ -280,7 +272,7 @@ If is_return > 0 Then
 Else
     ramp_end_time = ramp_forward_end_time
 End If
-Console.WriteLine("ramp end time = {0}", ramp_end_time)
+'Console.WriteLine("ramp end time = {0}", ramp_end_time)
 
 
 '---------------------------------------------------------------------------------------------------------------------------------------------

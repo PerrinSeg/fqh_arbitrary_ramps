@@ -4,9 +4,9 @@ Public Function DepthToVolts(ByVal desired_depth As Double, _
     ByVal offset_volt As Double) As Double
 
     Dim volts As Double = offset_volt + calib_volt + 0.5*Log10(desired_depth/calib_depth)
-    'If desired_depth <= 0 Then
-    '    volts = 0
-    'End If 
+    If desired_depth <= 0 Then
+        volts = 0
+    End If 
 
     Return volts
 End Function
