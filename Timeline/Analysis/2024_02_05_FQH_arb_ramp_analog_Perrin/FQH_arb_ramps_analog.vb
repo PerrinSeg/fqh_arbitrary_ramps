@@ -358,7 +358,6 @@ If (is_return > 0) Then
     '    analogdata.AddTunnelGaugeRamp(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
     'Next
     For index As Integer = 0 To n_times_return - 1
-        'analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), 0, gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power
         analogdata.AddTunnelGaugeRamp2(gauge_JtoVolt_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, ps1_ao) 'gauge1_power    
     Next
 

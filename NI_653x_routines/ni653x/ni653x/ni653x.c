@@ -2061,12 +2061,12 @@ _declspec (dllexport) void insert_tunneling_gauge_ramp(double conversion_coeffs[
     for (j = j_start; j < j_stop; j++) {
         u = start_tunneling + slope * (j - j_start);
         x = gauge_depth_from_tunnel_calibrated(conversion_coeffs, u);
-        if (x <= 0) {
-            y = 0;
+        if (x > 0) {
+            y = calib_volt + 0.5 * log10(x / calib_depth);
         }
         else {
-            y = calib_volt + 0.5 * log10(x / calib_depth);           
-        }      
+            y = 0;
+        }
         NI_waveform[BPW * (n_offset + j) + (dat_chan % NUMCHANNELS)] = convert_func(y);
     }
 }
