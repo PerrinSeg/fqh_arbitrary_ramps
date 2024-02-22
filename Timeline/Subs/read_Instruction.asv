@@ -3,8 +3,8 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
-    disp(' ')
-    disp('ENTERED read_Instruction !!!!!!!!!!')
+    
+    disp('REA')
     % flag = 1;
 %     if contains(Sequence{1}, lower('analogdata.addstep(end_dipole_voltage, twodphysics_start_time') )
 %         disp('Here')
@@ -67,40 +67,36 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                 nextvar
                 i = findIndex(arr_variable_list, nextvar{1});
                 if numel(nextvar) > 1
-                    i_cell_str = '';
+                    i_cell_str = nextvar{2};
                     n = 1;
-                    for jj = 2:numel(nextvar)
-                        i_cell_str = strcat(i_cell_str, '(', nextvar{jj});
-                        while ~contains(i_cell_str(end),")")
-                            new_str = ins_split_aux{j+n};
-                            i_cell_str = strcat(i_cell_str, ins_split_idx_aux{j + n - 1}, strtrim(new_str));
-                            ins_split_aux{j+n} = {};
-                            ins_split_idx_aux{j + n - 1} = {};
-                            n = n+1;
-                        end
+                    while ~contains(i_cell_str(end),")")
+                        new_str = ins_split_aux{j+n};
+                        i_cell_str = strcat(i_cell_str, ins_split_idx_aux{j + n - 1}, strtrim(new_str));
+                        ins_split_aux{j+n} = {};
+                        ins_split_idx_aux{j + n - 1} = {};
+                        n = n+1;
                     end
-                    i_cell_str_init = i_cell_str;
-                    i_cell_str = strcat(nextvar{1}, i_cell_str);
-                    nextvar = split(i_cell_str,"(");
-                    
-                    for i = 2:(numel(nextvar))  
-                        if isnan(var_idx)
-                            [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*"]);
-                            for jj = 1:numel(i_cell_split)
-                                i_cell_str = i_cell_split{jj};
-                                if isnan(round(str2double(i_cell_str))) % array size is set by a variable
-                                    if findIndex(variable_list, i_cell_str)
-                                        i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
-                                    elseif findIndex(logExpParam, i_cell_str)
-                                        i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
-                                    end
+                    i_cell_str_init = i_cell_str(1:end-1);
+                    i_cell_str = i_cell_str_init;
+                    var_idx = round(str2double(i_cell_str));
+
+                    if isnan(var_idx)
+                        [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*"]);
+                        for jj = 1:numel(i_cell_split)
+                            i_cell_str = i_cell_split{jj};
+                            if isnan(round(str2double(i_cell_str))) % array size is set by a variable
+                                if findIndex(variable_list, i_cell_str)
+                                    i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
+                                elseif findIndex(logExpParam, i_cell_str)
+                                    i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
                                 end
-                                i_cell_split{jj} = i_cell_str;
                             end
-                            i_cell_str = join(i_cell_split,i_cell_symbol);
-                            var_idx = round(str2sym(i_cell_str));
+                            i_cell_split{jj} = i_cell_str;
                         end
+                        i_cell_str = join(i_cell_split,i_cell_symbol);
+                        var_idx = round(str2sym(i_cell_str));
                     end
+
                     arr_variable_list{i}
                     arr_variable_list{i}{3}
                     val = string(arr_variable_list{i}{3}{var_idx + 1});

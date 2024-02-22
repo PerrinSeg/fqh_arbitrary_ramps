@@ -6,8 +6,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
     % integer... or even a more general "replace variables" function to
     % consolidate the "search lists and replace with value" proccess
 
-    % variable_list{:}
-    % arr_variable_list{:}
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
@@ -235,20 +233,25 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                 filepathname = erase(filepathname, '"');
                 filepathname = replace(filepathname, 'c:\users\rblab\documents\github', 'C:\Users\Rb Lab\Documents\GitHub');
                 ramp_variable_str = read_loadArrayFromFile(filepathname);
+                ramp_variable_str
                 variable{3} = ramp_variable_str;
+                variable
                 if findIndex(arr_variable_list, variable{1})
                     i = findIndex(arr_variable_list, variable{1});
                     arr_variable_list{i}{3} = ramp_variable_str;
+                    arr_variable_list{i}{3}
                 elseif findIndex(variable_list, variable{1})
                     %it's not really a regular variable, move it to the array list
                     i = findIndex(variable_list, variable{1});
                     variable_list{i} = {};
                     variable_list = variable_list(~cellfun('isempty', variable_list));
                     arr_variable_list{end + 1} = variable;
+                    arr_variable_list{end + 1}
                 else
                     disp("could not find this variable in the variable lists. ")
                 end
-           
+                ramp_variable_str
+                 variable{3}
             else
                 disp("function (other) not defined in matlab")
             end
@@ -256,7 +259,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
         else % Else it's an expression that one can compute directly
             disp("COMPUTING EXPRESSION")
             variable{1} = strtrim(variable{1});
-            variable{2} = erase(variable{2}," ")
+            variable{2} = erase(variable{2}," ");
             
             [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*"]); 
             variable_split_aux
@@ -264,8 +267,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             for k = 1:numel(variable_split_aux)
                 % If one piece of the formula is a known variable, replace by its value              
                 variable_split_aux{k} = strtrim(variable_split_aux{k});
-                disp("Next piece to process: ")
-                disp(variable_split_aux{k})
+                % disp("Next piece to process: ")
+                % disp(variable_split_aux{k})
                 if isempty(variable_split_aux{k})
                     % disp("empty cell")
                     continue
@@ -279,8 +282,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                     var_aux = strsplit(var_aux{1}, ["(",")"]);
                     var_aux = var_aux{1};
                     i = findIndex(arr_variable_list, var_aux);
-                    arr_variable_list{i}
-                    arr_variable_list{i}{3}
+                    % arr_variable_list{i}
+                    % arr_variable_list{i}{3}
                     val = size(arr_variable_list{i}{3}{1}, 2)-1; % THIS IS A HACK THAT ONLY WORKS FOR THIS PARTICULAR CASE!! fix to be more general
                     variable{2} = num2str(val);  
 
@@ -303,8 +306,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                             end
                         end
                         i_cell_str_init = i_cell_str;
-                        i_cell_str = strcat(nextvar{1}, i_cell_str)
-                        nextvar = split(i_cell_str,"(")
+                        i_cell_str = strcat(nextvar{1}, i_cell_str);
+                        nextvar = split(i_cell_str,"(");
                         for j = 2:(numel(nextvar))                            
                             i_cell_str = nextvar{j}(1:end-1);
                             var_idx = round(str2double(i_cell_str));
@@ -324,9 +327,9 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                                 i_cell_str = join(i_cell_split,i_cell_symbol);
                                 var_idx = round(str2sym(i_cell_str));
                             end
-                            val
-                            var_idx
-                            val = val{var_idx + 1}
+                            % val
+                            % var_idx
+                            val = val{var_idx + 1};
                         end
                         val
                         if numel(string(val))>1 % don't have to worry about any additional operations, which have to be done in a loop in vb
@@ -343,6 +346,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                             % val_str
                             % variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val_str);
                             variable{3} = val;
+                            variable{2} = {};
                         else
                             disp("REPLACING ")
                             disp(strcat(nextvar{1}, i_cell_str_init))
@@ -353,7 +357,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                             variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val);
                         end
                     else
-                        val
+                        % val
                         % val{1}
                        variable{3} = val;
                        variable{2} = {};
@@ -412,48 +416,24 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                 disp(variable{1})
                 disp(" USING STRING")
                 disp(variable{2})
-                variable_aux = strtrim( split(variable{1}, '(') )
-                nextvar = variable_aux{1}
+                variable_aux = strtrim( split(variable{1}, '(') );
+                nextvar = variable_aux{1};
                 i = findIndex(arr_variable_list, nextvar);
                 if i_cell > -1     
-                    i_cell
-                    variable
+                    % i_cell
+                    % variable
                     if numel(variable_aux) == 2
                         arr_variable_list{i}{3}{i_cell + 1} = variable{2};
-                        disp("VARIABLE SET AS ")                      
-                        disp(arr_variable_list{i}{3}{i_cell + 1})
+                        % disp("VARIABLE SET AS ")                      
+                        % disp(arr_variable_list{i}{3}{i_cell + 1})
                     elseif numel(variable_aux) == 3
                         arr_variable_list{i}{3}{i_cell + 1}{i_cell2 + 1} = variable{2};
-                        % variable{3}{i_cell + 1}{i_cell2 + 1} = variable{2};
-                        disp("VARIABLE SET AS ")
-                        disp(arr_variable_list{i}{3}{i_cell + 1}{i_cell2 + 1})
+                        % disp("VARIABLE SET AS ")
+                        % disp(arr_variable_list{i}{3}{i_cell + 1}{i_cell2 + 1})
                     end
                 else
-                    % split array into individual values, get length of array to assign, search in variables if it isn't already numbers
-                    % variable2_split = replace(variable{2}, ["{", "}"], " ");
-                    % variable2_split = strtrim(split(variable2_split, ","))
-                %     for k = 1:numel(variable2_split)
-                %         val = str2double(variable2_split{k});
-                %         if isnan(val)
-                %             if findIndex(variable_list, variable2_split{k})
-                %                 idx = findIndex(variable_list, variable2_split{k});
-                %                 variable2_split{k} = variable_list{idx}{2};
-                %             elseif findIndex(arr_variable_list, variable2_split{k})
-                %                 idx = findIndex(arr_variable_list, variable2_split{k});
-                %                 disp("new value:")
-                %                 disp(arr_variable_list{idx}{3})
-                %                 variable2_split{k} = arr_variable_list{idx}{3};
-                %             end
-                %         end
-                %         arr_variable_list{i}{3}{k} = variable2_split{k};
-                %         variable{3}{k} = variable2_split{k};
-                %         disp(['SETTING ARRAY VARIABLE ' arr_variable_list{i}{1}])
-                %         disp('AS')
-                %         disp(arr_variable_list{i}{3})
-                %         disp(arr_variable_list{i}{3}{k})
-                %     end
-                    disp("VARIABLE SET AS ")
-                    disp(variable{3})
+                    % disp("VARIABLE SET AS ")
+                    % disp(variable{3})
                     arr_variable_list{i}{3} = variable{3};
                 end
                 disp(['SETTING ARRAY VARIABLE ' arr_variable_list{i}{1}])
