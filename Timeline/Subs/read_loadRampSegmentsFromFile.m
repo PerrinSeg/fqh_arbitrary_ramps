@@ -1,8 +1,4 @@
-function ramp_variables = LoadRampSegmentsFromFile(filename)
-    % Some functions used below
-    firstCell = @(x) x{1};
-    findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
-    
+function ramp_variables = read_loadRampSegmentsFromFile(filename)
     filename
     % detectImportOptions(filename)
     ramp_variables_aux = readmatrix(filename);

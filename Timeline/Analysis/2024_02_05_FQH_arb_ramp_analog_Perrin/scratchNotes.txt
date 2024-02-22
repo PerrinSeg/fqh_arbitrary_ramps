@@ -1,0 +1,97 @@
+elseif findIndex(arr_variable_list, nextvar{1})
+	disp("  RHS HAS ARRAY COMPONENT")
+	nextvar
+	ii = findIndex(arr_variable_list, nextvar{1});
+	val = arr_variable_list{ii}{3};
+	if numel(nextvar)>1                    
+        	i_cell_str = '';
+        	n = 1;
+        	for j = 2:numel(nextvar)                           
+			i_cell_str = strcat(i_cell_str, '(', nextvar{j});
+			while ~contains(i_cell_str(end),")")
+				new_str = variable_split_aux{k+n};
+                                i_cell_str = strcat(i_cell_str, variable_split_idx_aux{k + n - 1}, strtrim(new_str));
+                                variable_split_aux{k+n} = {};
+                                variable_split_idx_aux{k + n - 1} = {};
+                                n = n+1;
+			end
+		end
+		i_cell_str_init = i_cell_str;
+		i_cell_str = strcat(nextvar{1}, i_cell_str)
+		nextvar = split(i_cell_str,"(")
+		for j = 2:(numel(nextvar))                            
+			i_cell_str = nextvar{j}(1:end-1);
+			var_idx = round(str2double(i_cell_str));
+			if isnan(var_idx)
+				[i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*", "/"]);
+				for jj = 1:numel(i_cell_split)
+					i_cell_str = i_cell_split{jj};
+                                    	if isnan(round(str2double(i_cell_str))) % array size is set by a variable
+						if findIndex(variable_list, i_cell_str)
+                                            		i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
+                                        	elseif findIndex(logExpParam, i_cell_str)
+                                            		i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
+                                        	end
+					end
+                                    	i_cell_split{jj} = i_cell_str;
+                                end
+                                i_cell_str = join(i_cell_split,i_cell_symbol);
+                                var_idx = round(str2sym(i_cell_str));
+			end
+			val
+ 			var_idx
+			val = string(val{var_idx + 1})
+		end
+		
+		if numel(val)>1
+  			val_str = ['{' val{1}];
+ 			for jj = 2:numel(val)
+                        	val_str = [val_str ',' val{jj}];
+			end
+			val_str = [val_str '}'];
+			disp("REPLACING ")
+			disp(strcat(nextvar{1}, i_cell_str_init))
+			disp(" IN")
+			variable{2}
+ 			disp("WITH")
+			val_str
+			variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val_str);
+		else
+			disp("REPLACING ")
+			disp(strcat(nextvar{1}, i_cell_str_init))
+			disp(" IN")
+			variable{2}
+			disp("WITH")
+			val
+			variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val);
+  		end
+	else
+		% val
+   		% val{1}
+		val_str = "{";
+ 		for jj = 1:numel(val)
+			val_sub = string(val{jj});
+			val_str_sub = val_sub;
+			if numel(val_sub)>1
+				val_str_sub = "{";
+				for jjj = 1:numel(val_sub)-1
+					val_str_sub = strcat(val_str_sub, val_sub{jj}, ",");
+                                end
+                                val_str_sub = strcat(val_str_sub, val_sub{end}, "}");
+			end
+			val_str = strcat(val_str, val_str_sub, ",");
+		end
+		[val_str_split, val_str_split_c] = split(val_str, ",");
+		% size(val_str_split)
+		% size(val_str_split_c)
+		val_str = join(val_str_split(1:end-1), val_str_split_c(1:end-1));
+		val_str = strcat(val_str, "}");
+		disp("REPLACING ")
+		disp(strcat(nextvar{1}))
+		disp(" IN")
+		variable{2}
+		disp("WITH")
+		val_str
+		variable{2} = replace(variable{2}, nextvar{1}, val_str);
+	end
+end

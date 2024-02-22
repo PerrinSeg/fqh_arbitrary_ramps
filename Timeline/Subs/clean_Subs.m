@@ -1,5 +1,5 @@
 function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(sub_path, name_sub_sequence, arguments, variable_list, arr_variable_list, logExpParam, ExpConstants)
-    % disp("BEGIN CLEAN SUBS")
+    disp("BEGIN CLEAN SUBS")
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
@@ -28,23 +28,23 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
         not_exhausted = ~contains(Sub_Sequence_aux, ")");
         Sub_Sequence_aux = strtrim(fgetl(Sub_Sequence_file));
     end
-    % disp('sub_variable_list = ')
-    % sub_variable_list{:}
+    disp('sub_variable_list = ')
+    sub_variable_list{:}
 
     % Now replace with the values given the main sequence
     N_arg = numel(sub_variable_list);
     for j = 1:N_arg
-        % disp("SEARCHING FOR:")
-        % sub_variable_list{j}
-        nextsubvar = sub_variable_list{j}{2};
+        disp("SEARCHING FOR:")
+        sub_variable_list{j}
+        nextsubvar = sub_variable_list{j}{2}
         nextsubvar = strsplit(nextsubvar, "(");
         if findIndex(variable_list, sub_variable_list{j}{2})
             i = findIndex(variable_list, sub_variable_list{j}{2});
             sub_variable_list{j} = {sub_variable_list{j}{1}, variable_list{i}{2}};
         elseif findIndex(arr_variable_list, nextsubvar{1})
-            % disp("found subvar argument assignment in array variable list")
+            disp("found subvar argument assignment in array variable list")
             i = findIndex(arr_variable_list, nextsubvar{1});
-            dummyarr = arr_variable_list{i}{3};
+            dummyarr = arr_variable_list{i}{3}
             for jj = 2:numel(nextsubvar)
                 nextsubvar{jj} = nextsubvar{jj}(1:end-1);
                 [i_cell_split, i_cell_symbol] = split(nextsubvar{jj}, ["+", "-", "*", "/"]);
@@ -60,8 +60,8 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
                     end
                     i_cell_split{k} = i_cell_str;
                 end
-                i_cell_str = join(i_cell_split,i_cell_symbol);
-                i_cell = round(str2sym(i_cell_str));
+                i_cell_str = join(i_cell_split,i_cell_symbol)
+                i_cell = round(str2sym(i_cell_str))
                 dummyarr = string(dummyarr{i_cell+1}); % NOTE: this may not work if it still a cell array...        
             end
             if numel(dummyarr)>1

@@ -45,14 +45,15 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
     for k = 1:numel(instruction)
         instruction{k} = erase(instruction{k}," ");
         [ins_split_aux, ins_split_idx_aux] = split(instruction{k}, ["+", "-", "/", "*"]); 
-        % ins_split_aux
+        disp('NEW INSTRUCTION:')
+        ins_split_aux
         % ins_split_idx_aux
 
         for j = 1:numel(ins_split_aux)
             % If one piece of the formula is a known variable, replace by its value              
             ins_split_aux{j} = strtrim(ins_split_aux{j});
-            % disp("Next piece to process: ")
-            % disp(ins_split_aux{j})
+            disp(" Next piece to process: ")
+            disp(ins_split_aux{j})
             if isempty(ins_split_aux{j})
                 % disp("empty cell")
                 continue
@@ -61,8 +62,8 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             nextvar = split(ins_split_aux{j}, "(");
 
             if findIndex(arr_variable_list, nextvar{1})
-                % disp("  RHS HAS ARRAY COMPONENT")
-                % nextvar
+                disp("  RHS HAS ARRAY COMPONENT")
+                nextvar
                 i = findIndex(arr_variable_list, nextvar{1});
                 if numel(nextvar) > 1
                     i_cell_str = nextvar{2};
@@ -95,26 +96,26 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                         var_idx = round(str2sym(i_cell_str));
                     end
 
-                    % arr_variable_list{i}
-                    % arr_variable_list{i}{3}
+                    arr_variable_list{i}
+                    arr_variable_list{i}{3}
                     val = string(arr_variable_list{i}{3}{var_idx + 1});
-
+                    val
                     if numel(val)>1
                         val_str = ['{' val{1}];
                         for jj = 2:numel(val)
                             val_str = [val_str ',' val{jj}];
                         end
                         val_str = [val_str '}'];
-                        % disp(" NOW REPLACING ")
-                        % disp(strcat(nextvar{1}, '(', i_cell_str_init, ')'))
-                        % disp(" WITH")
-                        % val_str
+                        disp(" NOW REPLACING ")
+                        disp(strcat(nextvar{1}, '(', i_cell_str_init, ')'))
+                        disp(" WITH")
+                        val_str
                         instruction{k} = replace(instruction{k}, strcat(nextvar{1}, '(', i_cell_str_init, ')'), val_str);
                     else
-                        % disp(" NOW REPLACING ")
-                        % disp(strcat(nextvar{1}, '(', i_cell_str_init, ')'))
-                        % disp(" WITH")
-                        % val
+                        disp(" NOW REPLACING ")
+                        disp(strcat(nextvar{1}, '(', i_cell_str_init, ')'))
+                        disp(" WITH")
+                        val
                         instruction{k} = replace(instruction{k}, strcat(nextvar{1}, '(', i_cell_str_init, ')'), val);
                     end
                 else
@@ -163,12 +164,12 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                 instruction_split{ii} = val;
             end
         end
-        % disp(' ')
-        % disp("final instructions split:")
-        % instruction_split
-        % disp("after joining:")
+        disp(' ')
+        disp("final instructions split:")
+        instruction_split
+        disp("after joining:")
         instruction{k} = join(instruction_split, instruction_split_symbols);
-        % instruction{k}
+        instruction{k}
         try
             instruction{k} = char(str2sym(instruction{k}));
         catch

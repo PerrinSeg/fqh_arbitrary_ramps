@@ -596,5 +596,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
             values = [];
         end
 
+    elseif contains(lower(name_fun), lower('AddTunnelRamp'))
+
     end
 end

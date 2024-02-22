@@ -20,7 +20,8 @@ findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput
 %% Import and read sequence line-by-line
 
 % Where all the functions are defined
-addpath('Z:\Timeline\Subs\') 
+% addpath('Z:\Timeline\Subs\') 
+addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
 [instruction_list, arguments_list, variable_list, arr_variable_list, sub_variable_containers, ExpConstants, LogExpParam] ...
     = read_Sequence(path_files, name_sequence, batch_line);
 N_inst = numel(instruction_list);

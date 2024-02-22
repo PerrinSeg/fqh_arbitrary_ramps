@@ -52,7 +52,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
                 Sub_Function, sub_variable_list, sub_arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files);
         
         elseif startsWith(lower(Sub_Function{1}), lower('Return')) % TO DO: incorporate array return values!!(or don't, and treat the new array function like an NI function...)
-            
+            disp('Return value')            
             % Get what is after return
             current_line = erase(Sub_Function{1}, lower('Return'));
             current_line = strtrim(split(current_line, ["{", ",", "}"]));
