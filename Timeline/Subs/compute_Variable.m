@@ -259,7 +259,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
         else % Else it's an expression that one can compute directly
             disp("COMPUTING EXPRESSION")
             variable{1} = strtrim(variable{1});
-            variable{2} = erase(variable{2}," ");
+            variable{2} = erase(variable{2}," ")
             
             [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*"]); 
             variable_split_aux
