@@ -130,11 +130,10 @@ ramp_amps_convert(:,3) = quictunneling;
 
 %% Gauge beam freq
 
-gauge_freq_hz = 700;
-
+gauge_freq_hz = 870;
 gauge_freq_full = zeros(ntimes,1);
-gauge_freq_full = gauge_freq_full + gauge_freq_hz;
-ramp_amps_convert(:,4) = gauge_freq_full;
+gauge_freq_full = gauge_freq_full + gauge_freq_hz; 
+ramp_amps_convert(:,4) = gauge_freq_full/1000; % in units of kHz, for consistancy with old sequences and expected units for BeatVolt() function in .vb files
 
 
 %% quad magnetic gradient
@@ -187,7 +186,7 @@ save_figure = 1;
 if plot_figure
     i = 1;
 
-    figure
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.4, 0.97])
     tl2 = tiledlayout(5,1, "TileSpacing", 'compact', 'Padding', 'compact');
     
     ax(i) = nexttile;
@@ -516,7 +515,7 @@ gauge1_power_ramp_v(quadJ_full == 0) = 0;
 plot_figure = 1;
 save_figure = 1;
 if plot_figure
-    figure
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.4, 0.97])
     tl3 = tiledlayout(5,1,"TileSpacing",'compact','Padding','compact');
     
     ax1 = nexttile;

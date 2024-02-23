@@ -361,7 +361,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ax = [];
@@ -371,7 +371,7 @@ if plot_figure
     if plot_sth_happens
         N_chan_tot = N_chan+1;
     end 
-    figure('Units','normalized', 'Position', [0.25, 0.1, 0.5, 0.8])
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.5, 0.97])
     tl = tiledlayout(N_chan_tot, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
     for k = 1:N_chan
         ax(k) = nexttile;

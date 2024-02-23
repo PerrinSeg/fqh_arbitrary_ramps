@@ -92,11 +92,11 @@ ramp_amps_convert(:,3) = quictunneling;
 
 %% Gauge beam freq
 
-gauge_freq_hz = 700;
+gauge_freq_hz = 870;
 
 gauge_freq_full = zeros(ntimes,1);
 gauge_freq_full = gauge_freq_full + gauge_freq_hz;
-ramp_amps_convert(:,4) = gauge_freq_full;
+ramp_amps_convert(:,4) = gauge_freq_full/1000;
 
 
 %% Quad magnetic gradient
@@ -135,11 +135,11 @@ fclose(fid);
 %% Plot final values
 
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 if plot_figure
     i = 1;
 
-    figure
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.4, 0.97])
     tl2 = tiledlayout(5,1, "TileSpacing", 'compact', 'Padding', 'compact');
     
     ax(i) = nexttile;
