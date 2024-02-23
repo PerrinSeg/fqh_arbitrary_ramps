@@ -28,7 +28,7 @@ ramp_amps_hz = ramp_amps*J0;
 %% Plot raw values
 
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 if plot_figure
     figure
     tl = tiledlayout(2,1,"TileSpacing",'compact','Padding','compact');
@@ -183,7 +183,7 @@ fclose(fid);
 %% Plot final values
 
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 if plot_figure
     i = 1;
 
@@ -514,7 +514,7 @@ gauge1_power_ramp_v(quadJ_full == 0) = 0;
 
 % Plot final values
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 if plot_figure
     figure
     tl3 = tiledlayout(5,1,"TileSpacing",'compact','Padding','compact');
