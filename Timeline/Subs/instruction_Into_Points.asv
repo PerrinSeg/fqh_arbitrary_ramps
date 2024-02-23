@@ -620,12 +620,10 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         %     }
         % }
         disp('REACHED AddTunnelRamp')
-        ncoeffs = 11;
-        coeff_array = zeros(1,ncoeffs);
-        for i = 1:ncoeffs
-            coeff_array(i) = eval(arguments{2}{i});
-        end
-        coeff_array
+        disp(arguments{2})
+        [eval(arguments{2}{:})]
+        eval([arguments{2}{:}])
+        coeff_array = eval([eval(arguments{2}{:})])
         j_start = eval(arguments{3});
         j_stop = eval(arguments{4});
         t_start = eval(arguments{5});
@@ -636,7 +634,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         
         depth_from_tunnel = @(a, j_er) a(1) + a(2)*exp(-j_er/a(3)) + a(4)*exp(-j_er/a(5)) + a(6)*exp(-j_er/a(7)) + a(8)*exp(-j_er/a(9)) + a(10)*exp(-j_er/a(11));
 
-        slope = (j_stop - j_start) / (t_stop - t_start);
+        slope = (j_stop - j_start) / ((t_stop - t_start) / 1000);
         N = 100;
         time = linspace(t_start, t_stop, N);
 
@@ -670,16 +668,12 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         %           NI_waveform[BPW * (n_offset + j) + (dat_chan % NUMCHANNELS)] = convert_func(y);
         %       }
         % }
-        % disp('REACHED AddTunnelGaugeRamp')
-        % arguments
-        % arguments{2}
-        % arguments{2}{:}
-        ncoeffs = 4;
-        coeff_array = zeros(1,ncoeffs);
-        for i = 1:ncoeffs
-            coeff_array(i) = eval(arguments{2}{i});
-        end
-        coeff_array
+        disp('REACHED AddTunnelGaugeRamp')
+        arguments
+        arguments{2}
+        arguments{2}{:}
+        coeff_array = zeros(4);
+        coeff_array eval([arguments{2}{:}])
         j_start = eval(arguments{3});
         j_stop = eval(arguments{4});
         t_start = eval(arguments{5});
@@ -693,7 +687,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         N = 100;
         time = linspace(t_start, t_stop, N);
 
-        u = j_start + slope * (time - t_start);
+        u = j_start + slope * (times - t_start);
         x = gauge_depth_from_tunnel(coeff_array, u);
         values = calib_volt + 0.5 * log10(x / calib_depth);
         values(x == 0) = 0;

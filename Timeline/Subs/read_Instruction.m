@@ -150,6 +150,7 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
         instruction_aux = instruction{k}
         instruction_length = numel(string(instruction_aux))
         for j = 1:instruction_length
+            nextvar = '';
             if instruction_length > 1
                 nextvar = instruction_aux{j}
             else
@@ -183,11 +184,12 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             nextvar = join(instruction_split, instruction_split_symbols);
             nextvar
             try
-                nextvar = char(str2sym(nextvar{j}));
+                nextvar = char(str2sym(nextvar));
             catch
             end
             if instruction_length > 1
-                instruction_aux{j} = nextvar
+                nextvar
+                instruction_aux{j} = nextvar;
             else
                 instruction_aux = nextvar
             end
@@ -195,7 +197,7 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
         instruction{k} = instruction_aux
         % final step: add the instruction piece to the end of the list of
         % arguments.
-        arguments_list{end}{k} = instruction{k};
+        arguments_list{end}{k} = instruction{k}
     end
 
     % if flag == 1
