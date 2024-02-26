@@ -149,7 +149,7 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
         instruction_aux = instruction{k};
         instruction_length = numel(string(instruction_aux));
         for j = 1:instruction_length
-            nextvar = '';
+            % nextvar = '';
             if instruction_length > 1
                 nextvar = instruction_aux{j};
             else
@@ -185,7 +185,9 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             try
                 nextvar = char(str2sym(nextvar));
             catch
+                nextvar = nextvar{1};
             end
+            % nextvar
             if instruction_length > 1
                 % nextvar
                 instruction_aux{j} = nextvar;
@@ -194,8 +196,7 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             end
         end
         instruction{k} = instruction_aux;
-        % final step: add the instruction piece to the end of the list of
-        % arguments.
+        % final step: add the instruction piece to the end of the list of arguments.
         arguments_list{end}{k} = instruction{k};
     end
 

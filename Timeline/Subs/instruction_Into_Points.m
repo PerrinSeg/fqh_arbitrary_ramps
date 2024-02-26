@@ -383,7 +383,8 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         % analogdata.AddFromBinaryTransportFile(filename, t_start, t_stop, channel)
         % Z:\Temp\RbExpSoftware\NI_653x_routines\ni653x
         
-%         disp('AddFromBinaryTransportFile')
+        % disp('AddFromBinaryTransportFile')
+        % arguments{2}
         filename = eval(arguments{2});
         t_start = eval(arguments{3});
         t_stop = eval(arguments{4});
@@ -395,8 +396,10 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         filename = [filename{:}];
 
         % File name in lower letters...
-        filename = replace(filename, 'c:\\users\\greinerlab\\documents\\', 'z:\\temp\\'); 
+        % filename = replace(filename, 'c:\\users\\greinerlab\\documents\\', 'z:\\temp\\'); 
+        filename = replace(filename, 'c:\\users\\greinerlab\\documents\\rbexpsoftware', 'C:\\Users\\Rb Lab\\Documents'); 
         filename = replace(filename, "_12.5mhz.bin", ".txt");
+        % filename
         values = importdata(filename);
         N = numel(values);
         time = linspace(t_start, t_stop, N);
