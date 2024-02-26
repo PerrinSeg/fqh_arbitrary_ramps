@@ -619,14 +619,14 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         %         NI_waveform[BPW * (n_offset + j) + (dat_chan % NUMCHANNELS)] = convert_func(y);
         %     }
         % }
-        disp('REACHED AddTunnelRamp')
+        % disp('REACHED AddTunnelRamp')
         ncoeffs = 11;
         coeff_array = zeros(1,ncoeffs);
         for i = 1:ncoeffs
             coeff_array(i) = eval(arguments{2}{i});
         end
-        disp(' AddTunnelRamp coeff array:')
-        coeff_array
+        % disp(' AddTunnelRamp coeff array:')
+        % coeff_array
         j_start = eval(arguments{3});
         j_stop = eval(arguments{4});
         t_start = eval(arguments{5});
@@ -644,7 +644,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         u = j_start + slope * (time - t_start);
         x = depth_from_tunnel(coeff_array, u);
         values = voltage_offset + calib_volt + 0.5 * log10(x / calib_depth);
-        disp(['first value: ' num2str(values(1)) ', last value: ' num2str(values(end))])
+        % disp(['first value: ' num2str(values(1)) ', last value: ' num2str(values(end))])
 
     elseif contains(lower(name_fun), lower('AddTunnelGaugeRamp'))
         % analogdata.AddTunnelGaugeRamp(conversion_coeffs, 

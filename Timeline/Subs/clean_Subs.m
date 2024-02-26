@@ -1,5 +1,5 @@
 function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(sub_path, name_sub_sequence, arguments, variable_list, arr_variable_list, logExpParam, ExpConstants)
-    disp("BEGIN CLEAN SUBS")
+    % disp("BEGIN CLEAN SUBS")
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
@@ -50,8 +50,7 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
                 [i_cell_split, i_cell_symbol] = split(nextsubvar{jj}, ["+", "-", "*", "/"]);
                 for k = 1:numel(i_cell_split)
                     i_cell_str = i_cell_split{k};
-                    i_cell = round(str2double(i_cell_str));
-                    if isnan(i_cell) % array size is set by a variable
+                    if isnan(str2double(i_cell_str)) % array size is set by a variable
                         if findIndex(variable_list, i_cell_str)
                             i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
                         elseif findIndex(logExpParam, i_cell_str)
@@ -62,7 +61,7 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
                 end
                 i_cell_str = join(i_cell_split,i_cell_symbol);
                 i_cell = round(str2sym(i_cell_str));
-                dummyarr = string(dummyarr{i_cell+1}); % NOTE: this may not work if it still a cell array...        
+                dummyarr = string(dummyarr{i_cell+1});     
             end
             if numel(dummyarr)>1
                 % disp("dummy array is still an array")
@@ -74,9 +73,6 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
                 sub_variable_list{j} = {sub_variable_list{j}{1}, dummyarr};
                 % sub_variable_list{j}
             end
-            % TO DO: So far, this just assumes that you are extracting a single value from an array and assigning it to a regular varialbe. 
-             % Needs fixing if you want the new variable to be an array as
-             % well.  SOLVED???
 
         elseif findIndex(ExpConstants, sub_variable_list{j}{2})
             i = findIndex(ExpConstants, sub_variable_list{j}{2});

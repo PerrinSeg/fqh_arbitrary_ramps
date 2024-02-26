@@ -52,13 +52,13 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
                 Sub_Function, sub_variable_list, sub_arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files);
         
         elseif startsWith(lower(Sub_Function{1}), lower('Return')) % TO DO: incorporate array return values!!(or don't, and treat the new array function like an NI function...)
-            disp('Return value')            
+            % disp('Return value')            
             % Get what is after return
             current_line = erase(Sub_Function{1}, lower('Return'));
             current_line = strtrim(split(current_line, ["{", ",", "}"]));
             current_line = strtrim(current_line(~cellfun('isempty', current_line)));
             
-            var_split = split(variable{1},"(")
+            var_split = split(variable{1},"(");
 
             % Get the destination of this function return
             if findIndex(variable_list, variable{1})
@@ -67,13 +67,12 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
                 variable_list = variable_list(~cellfun('isempty', variable_list));
                 
             elseif findIndex(arr_variable_list, var_split{1})
-                disp("variable in array (read sub function) ")
+                % disp("variable in array (read sub function) ")
                 [i_cell_split, i_cell_symbol] = split(var_split{2}(1:end-1), ["+", "-", "*"]);
                 % extract list of symbols dividing parts
                 for k = 1:numel(i_cell_split)
                     i_cell_str = i_cell_split{k};
-                    i_cell = round(str2double(i_cell_str));
-                    if isnan(i_cell) % array size is set by a variable
+                    if isnan(str2double(i_cell_str)) % array size is set by a variable
                         if findIndex(variable_list, i_cell_str)
                             ii = findIndex(variable_list, i_cell_str);
                             i_cell_str = variable_list{ii}{2};

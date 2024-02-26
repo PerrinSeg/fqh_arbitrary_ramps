@@ -120,6 +120,26 @@ ramp_start_time = eval(variable_list{i}{2}); % in ms
 i = findIndex(variable_list, 'ramp_end_time');
 ramp_end_time = eval(variable_list{i}{2}); % in ms
 
+i = findIndex(variable_list, 'half_index');
+half_index = eval(variable_list{i}{2});
+
+i = findIndex(variable_list, 'half_index_return');
+half_index_return = eval(variable_list{i}{2});
+
+%%% If it's in the array list
+
+i = findIndex(arr_variable_list, 'ramp_t');
+cell_idx = 4;
+ramp_t_4 = eval(arr_variable_list{i}{3}{cell_idx+1});
+
+i = findIndex(arr_variable_list, 'ramp_t');
+cell_idx = half_index;
+ramp_t_half = eval(arr_variable_list{i}{3}{cell_idx+1});
+
+i = findIndex(arr_variable_list, 'ramp_t_return');
+cell_idx = half_index_return;
+ramp_t_half_return = eval(arr_variable_list{i}{3}{cell_idx+1});
+
 %%% If it's in a subsequence
 keys_containers = sub_variable_containers.keys;
 
@@ -371,7 +391,7 @@ if plot_figure
     if plot_sth_happens
         N_chan_tot = N_chan+1;
     end 
-    figure('Units','normalized', 'Position', [0.25, 0.1, 0.5, 0.8])
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.5, 0.97])
     tl = tiledlayout(N_chan_tot, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
     for k = 1:N_chan
         ax(k) = nexttile;
@@ -396,7 +416,12 @@ if plot_figure
         % xline(twod1_rampdown2_start_time/1000, '--g', 'DisplayName', 'twod1_rampdown2_start_time')
         %
 
-        % xline(ramp_start_time/1000, '--', 'DisplayName', 'ramp_start_time')
+        xline(ramp_start_time/1000, '--', 'DisplayName', 'ramp_start_time')
+        xline(ramp_end_time/1000, '--', 'DisplayName', 'ramp_end_time')
+
+        xline(ramp_t_4/1000, '--r', 'DisplayName', 'ramp_t_4')
+        xline(ramp_t_half/1000, '--g', 'DisplayName', 'ramp_t_half')
+        xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         if ~(k==N_chan)
