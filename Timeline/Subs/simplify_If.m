@@ -40,7 +40,7 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
                 val = variable_list{i}{2}{:}; % gives whole array
             else
                 disp("If - Left - This variable is not defined...")
-                % left_split{k}
+                left_split{k}
             end
             left = replace(left, left_split{k}, val);
         end
