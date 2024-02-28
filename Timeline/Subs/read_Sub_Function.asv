@@ -3,7 +3,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
-    
+
     %% Read the name and the arguments of the sub-function
     sub_flag = 1;
     % The name
@@ -26,9 +26,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
     elseif strcmpi(name_sub_function, "BeatVolt")
         name_sub_function = "e4400_pll_beat_freq.vb";
     elseif strcmpi(name_sub_function, "GaugeJToVolts")
-        name_sub_function = "GaugeJToVoltsConv.vb";
-    elseif strcmpi(name_sub_function, "JToVolts")
-        name_sub_function = "JToVoltsConv.vb";
+    elseif 
     else
         disp("Sub-function is not known")
     end
@@ -71,8 +69,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
                 variable_list = variable_list(~cellfun('isempty', variable_list));
                 
             elseif findIndex(arr_variable_list, var_split{1})
-                disp("variable in array (read sub function) ")
-                var_split{1}
+                % disp("variable in array (read sub function) ")
                 [i_cell_split, i_cell_symbol] = split(var_split{2}(1:end-1), ["+", "-", "*"]);
                 % extract list of symbols dividing parts
                 for k = 1:numel(i_cell_split)
@@ -88,8 +85,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
                     end
                     i_cell_split{k} = i_cell_str;
                 end
-                i_cell_str = join(i_cell_split,i_cell_symbol)
-                i_cell = round(str2sym(i_cell_str))
+                i_cell_str = join(i_cell_split,i_cell_symbol);
+                i_cell = round(str2sym(i_cell_str));
                 sub_flag = 0;
             else
                 disp(['variable ' variable{1} ' not found (read sub function'])
@@ -98,7 +95,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
             for k = 1:numel(current_line)
 
                 l = findIndex(sub_variable_list, current_line{k});
-                value = sub_variable_list{l}{2}
+                value = sub_variable_list{l}{2};
                 if numel(current_line) == 1
                     if sub_flag == 0
                         j = findIndex(arr_variable_list, var_split{1});

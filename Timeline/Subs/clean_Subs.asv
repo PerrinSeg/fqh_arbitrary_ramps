@@ -1,5 +1,5 @@
 function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(sub_path, name_sub_sequence, arguments, variable_list, arr_variable_list, logExpParam, ExpConstants)
-    % disp("BEGIN CLEAN SUBS")
+    disp("BEGIN CLEAN SUBS")
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
@@ -7,7 +7,6 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
     arguments = erase(arguments," ");
 
     % Open the subsequence file
-    strcat(sub_path, name_sub_sequence)
     Sub_Sequence_file = fopen(strcat(sub_path, name_sub_sequence));
     sub_variable_list = {};
     sub_arr_variable_list = {};
@@ -21,27 +20,33 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
     not_exhausted = 1;
     while not_exhausted
         % Keep only the values useful for us ("ByVal")
-        Sub_Sequence_aux = lower(split(Sub_Sequence_aux, " "));
+        Sub_Sequence_aux = lower(split(Sub_Sequence_aux, " "))
         if strcmpi(Sub_Sequence_aux{1}, 'ByVal')
             sub_variable_list{end+1} = {Sub_Sequence_aux{2}, erase(arguments{counter}," ")};
+            sub_variable_list{end}
         end
         counter = counter + 1;
+        contains(Sub_Sequence_aux, "(")
+        contains(Sub_Sequence_aux, ")")
         if sum(contains(Sub_Sequence_aux, "("))
-            not_exhausted = not_exhausted + 1;
+            not_exhausted = not_exhausted + 1
         end
-        if sum(contains(Sub_Sequence_aux, ")"))
-            not_exhausted = not_exhausted - 1;
+        if contains(Sub_Sequence_aux, ")")
+            not_exhausted = not_exhausted - 1
         end
+        Sub_Sequence_aux
+        not_exhausted = ~contains(Sub_Sequence_aux, ")")
         Sub_Sequence_aux = strtrim(fgetl(Sub_Sequence_file));
+        Sub_Sequence_aux
     end
-    % disp('sub_variable_list = ')
-    % sub_variable_list{:}
+    disp('sub_variable_list = ')
+    sub_variable_list{:}
 
     % Now replace with the values given the main sequence
-    N_arg = numel(sub_variable_list);
+    N_arg = numel(sub_variable_list)
     for j = 1:N_arg
-        % disp("SEARCHING FOR:")
-        % sub_variable_list{j}
+        disp("SEARCHING FOR:")
+        sub_variable_list{j}
         nextsubvar = sub_variable_list{j}{2};
         nextsubvar = strsplit(nextsubvar, "(");
         if findIndex(variable_list, sub_variable_list{j}{2})

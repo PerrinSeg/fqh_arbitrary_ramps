@@ -1,10 +1,10 @@
 function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logExpParam, ExpConstants)
        
 %     pause(1)
-    % disp('   ')
-    % disp(Sequence{1})
-    % disp(Sequence{2})
-    % disp('   ')
+    disp('   ')
+    disp(Sequence{1})
+    disp(Sequence{2})
+    disp('   ')
 
     % Some functions used below
     firstCell = @(x) x{1};
@@ -77,7 +77,8 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
             end
         end
     end
-  
+    left
+    right
     % Determine if the "If" condition is satisfied
     if strcmpi(right, 'true') || strcmpi(right, 'false')
         condition_satisfied = strcmp(left, right);

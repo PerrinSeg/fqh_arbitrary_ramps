@@ -369,7 +369,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
 
         % analogdata2.AddStep(step_volt, t_start, t_end, channel)
         
-%         disp('AddStep')
+        disp('AddStep')
         step_volt = eval(arguments{2});
         t_start = eval(arguments{3});
         t_stop = eval(arguments{4});

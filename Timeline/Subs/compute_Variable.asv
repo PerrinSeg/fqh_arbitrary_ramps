@@ -304,31 +304,30 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                             %     variable_split_idx_aux{k + n - 1} = {};
                             %     n = n+1;
                             % end
-                            not_complete = ~contains(i_cell_str(end),")");
+                            not_complete = ~contains(i_cell_str(end),")"); 
                             while not_complete
                                 new_str = char(variable_split_aux{k+n})
                                 nopen = length(strfind(new_str, '('));
-                                close_paren = strfind(new_str, ')')
+                                close_paren = strfind(new_str, ')');
                                 nclose = length(close_paren);
-                                not_complete = not_complete + nopen - nclose
-                                cutvals = 0;
+                                not_complete = not_complete + nopen - nclose;
                                 if not_complete < 0
-                                    close_paren = close_paren(1:end + not_complete)
+                                    close_paren = close_paren(1:end + not_complete);
                                     not_complete = 0;
-                                    cutvals = close_paren(end)-1;
+                                    variable_split_aux{k+n} = {new_str(close_paren(end)+1:end)};
+                                else
+                                    variable_split_aux{k+n} = {};
                                 end
-                                endidx = length(new_str) - cutvals
-                                i_cell_str = strcat(i_cell_str, variable_split_idx_aux{k + n - 1}, strtrim(new_str(1:endidx)))
-                                variable_split_aux{k+n} = {};
-                                variable_split_idx_aux{k + n - 1} = {};
+                                i_cell_str = strcat(i_cell_str, variable_split_idx_aux{k + n - 1}, strtrim(new_str(1:end+not_complete)));
+                                variable_split_idx_aux{k + n - 1} = {''};
                                 n = n+1;
                             end
                         end
-                        % variable_split_idx_aux
-                        i_cell_str = strcat(nextvar{1}, i_cell_str)
-                        nextvar = split(i_cell_str,"(")
-                        i_cell_str_init = join(nextvar(2:end),'(')
-                        i_cell_str_init = strcat('(', i_cell_str_init{1})
+                        variable_split_idx_aux
+                        i_cell_str = strcat(nextvar{1}, i_cell_str);
+                        nextvar = split(i_cell_str,"(");
+                        i_cell_str_init = join(nextvar(2:end),'(');
+                        i_cell_str_init = strcat('(', i_cell_str_init{1});
                         for j = 2:(numel(nextvar))                            
                             i_cell_str = nextvar{j}(1:end-1);
                             var_idx = round(str2double(i_cell_str));

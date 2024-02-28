@@ -4,8 +4,8 @@ clear
 close all
 
 path_files = '';
-name_sequence = 'FQH_arb_ramps_analog.vb';
-batch_line = 5;
+name_sequence = 'fqh_arb_ramp.vb';
+batch_line = 1;
 
 
 %% Some functions
@@ -41,7 +41,7 @@ end
 
 %% Assign instruction to each channel
 
-% Import the di namesfferent channels'
+% Import the different channels' names
 ChannelsWithCard = import_ChannelsWithCard(path_files);
 N_ChannelsWithCard = numel(ChannelsWithCard);
 

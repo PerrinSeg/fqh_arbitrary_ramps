@@ -1,12 +1,12 @@
 function Sequence = simplify_For(Sequence, variable_list, arr_variable_list, logExpParam, ExpConstants)
 
-%     pause(1)
     % disp("STARTING SIMPLIFY FOR")
     % disp('   ')
     % disp(Sequence{1})
     % % disp(Sequence{2})
     % disp('   ')
-    
+    % variable_list{:}
+
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
@@ -59,6 +59,8 @@ function Sequence = simplify_For(Sequence, variable_list, arr_variable_list, log
                         % disp("found in exp param")
                         ii = findIndex(logExpParam, i_cell_str);
                         i_cell_str = logExpParam{ii}{2};
+                    else
+                        disp(['variable ' i_cell_str ' not found (simplify_For)'])
                     end
                 end
                 i_cell_split{k} = i_cell_str;

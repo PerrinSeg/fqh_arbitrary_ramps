@@ -109,19 +109,28 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                     end
                     % arr_variable_list{i}
                     % arr_variable_list{i}{3}
+                    % val = arr_variable_list{i}{3}{var_idx + 1};
+                    % val
                     if numel(string(val))>1
-                        % if flag
-                        %     disp("new value:")
-                        %     val
-                        % end
+                        % % val_str = ['{' val{1}];
+                        % % for jj = 2:numel(val)
+                        % %     val_str = [val_str ',' val{jj}];
+                        % % end
+                        % % val_str = [val_str '}'];
+                        % disp(" NOW REPLACING ")
+                        % disp(strcat(nextvar{1}, '(', i_cell_str_init, ')'))
+                        % disp(" WITH")
+                        % val
+                        % val_str
+                        % instruction{k} = replace(instruction{k}, strcat(nextvar{1}, '(', i_cell_str_init, ')'), val);
                         instruction{k} = val;
                     else
-                        % if flag
-                        %     disp(" NOW REPLACING ")
-                        %     disp(strcat(nextvar{1}, i_cell_str_init))
-                        %     disp(" WITH")
-                        %     val
-                        % end
+                        if flag
+                            disp(" NOW REPLACING ")
+                            disp(strcat(nextvar{1}, i_cell_str_init))
+                            disp(" WITH")
+                            val
+                        end
                         instruction{k} = replace(instruction{k}, strcat(nextvar{1},  i_cell_str_init), val);
                     end
                 else
@@ -140,10 +149,10 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                 end
             end
         end
-        % if flag
-        %     disp("instruction with no more array variables")
-        %     instruction{k}
-        % end
+        if flag
+            disp("instruction with no more array variables")
+            instruction{k}
+        end
         instruction_aux = instruction{k};
         instruction_length = numel(string(instruction_aux));
         for j = 1:instruction_length
@@ -156,8 +165,10 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             [instruction_split, instruction_split_symbols] = split(nextvar, ["+", "-", "/", '*', '(', ')']);
             % instruction_split
             % instruction_split_symbols
-            for ii = 1:numel(instruction_split)    
-                instruction_split{ii} = strtrim(instruction_split{ii});   
+            for ii = 1:numel(instruction_split)
+    
+                instruction_split{ii} = strtrim(instruction_split{ii});
+    
                 if findIndex(variable_list, instruction_split{ii})
                     i = findIndex(variable_list, instruction_split{ii});
                     val = variable_list{i}{2};
@@ -203,7 +214,8 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
     %     arguments_list{end}{2}
     %     disp('end read_Instruction for flagged line.')
     % end
-
+    % arguments_list{end}
+    % arguments_list{end}{2}
     % Remove all the lines that should be removed
     Sequence{1} = {};
     Sequence = Sequence(~cellfun('isempty', Sequence));
