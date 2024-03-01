@@ -1,0 +1,23 @@
+Experiment Log
+Z:\Data\2024\02Feb24\22\6_1x4N2_SaR_scan_quic_ramp\
+
+2/22/2024 9:16:35 PM
+
+Experiment Program Used:
+Z:\FQH\Sequences\2024_02_18_FQH_adiabatic_ramp\fqh_adiabatic_ramp.vb
+
+Batch Length:  
+9
+
+==========================
+lattice1_max  ,  lattice2_max  ,  pinning_hold_time ,  red_freq ,  round_dimple_voltage ,  anticonfine_dur_vert ,  anticonfine_dur_horz ,  quic_ramp_dur ,  quic_grad_level_init ,  quic_grad_level_final ,  quad_ramp_dur ,  quad_grad_level_init ,  quad_grad_level_final ,  lattice2_ramp_dur ,  lattice2_low_depth ,  lattice1_ramp_dur ,  lattice1_low_depth ,  walls2_volt ,  walls1_volt ,  use_gauge ,  gauge_power_init ,  gauge_power_final ,  gauge_power_ramp_dur ,  gauge_freq_khz ,  flux ,  evolution_dur ,  is_return ,  is_cleanup ,  is_counting ,  free_var ,  
+--------------------------
+45,  45,  1000,  18,  4.02,  40,  40,  30,  2.2,  0.9,  30,  0,  .51,  50,  10,  50,  5,  2.4,  3.1,  1,  2.88,  2.7,  50,  0.87,  0,  0,  1,  0,  0,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  100,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  0,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  150,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  0,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  200,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  0,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  50,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  1,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  100,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  1,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  150,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  1,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  200,  2.2,  0.9,  0,  0,  0,  50,  10,  0,  45,  2.4,  3.1,  0,  2.88,  2.7,  0,  0.87,  0,  0,  1,  0,  1,  0,  
+45,  45,  1000,  18,  4.02,  40,  40,  0,  0,  0,  0,  0,  0,  0,  45,  0,  45,  0,  0,  0,  2.88,  2.7,  0,  0.87,  0,  0,  0,  0,  0,  0,  
