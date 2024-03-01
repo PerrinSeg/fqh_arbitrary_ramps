@@ -404,6 +404,12 @@ Dim Berlin_wall_turnoff_end_time As Double = Berlin_wall_turnoff_start_time + (i
 '() freeze lattices, turn off gradients
 Dim grad_turnoff_start_time As Double = ramp_end_time 'turn off coils when is_return = 0
 Dim grad_turnoff_end_time As Double = grad_turnoff_start_time + coil_ramp_dur
+
+Dim lattice1_raise_dur As Double = 0 'slowly (??) raise lattices to max depth after return, quench if no return.
+Dim lattice2_raise_dur As Double = lattice1_raise_dur
+Dim lattice2_raise_end_time = ramp_end_time + lattice2_raise_dur 
+Dim lattice1_raise_end_time = ramp_end_time + lattice1_raise_dur 
+
 Dim lattice2_freeze_start_time As Double = lattice2_raise_end_time
 Dim lattice2_freeze_end_time As Double = lattice2_freeze_start_time + freeze_ramp_dur
 Dim lattice1_freeze_start_time As Double = twod1_reload3_end_time
@@ -617,7 +623,7 @@ Next
 
 'quic grad
 For index As Integer = 0 To n_times - 1
-    analogdata2.AddRamp(quic_ramp_v(index) * ps5_scaler, quic_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps5_ao) 'ps5_ao
+    analogdata2.AddRamp(quic_ramp_v(index) * ps5_scaler, quic_ramp_v(index + 1) * ps5_scaler, ramp_t(index), ramp_t(index + 1), ps5_ao) 'ps5_ao
 Next
 
 'quad grad
@@ -649,7 +655,7 @@ If (is_return > 0) Then
 
     'quic grad
     For index As Integer = 0 To n_times_return - 1
-        analogdata2.AddRamp(quic_ramp_v_return(index) * ps5_scaler, quic_ramp_v_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), ps5_ao) 'ps5_ao
+        analogdata2.AddRamp(quic_ramp_v_return(index) * ps5_scaler, quic_ramp_v_return(index + 1) * ps5_scaler, ramp_t_return(index), ramp_t_return(index + 1), ps5_ao) 'ps5_ao
     Next
 
     'quad grad
@@ -666,26 +672,27 @@ End If
 
 '----------------------------------------------------- Lattices II ----------------------------------------------------------------------------------------
 
+
 'prepare to freeze?
 If (is_return > 0) Then
     'raise 2D2
-    analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, lattice2_raise_start_time, lattice2_raise_end_time, lattice2D765_power2)
+    analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice2_raise_end_time, lattice2D765_power2)
     'hold 2D2 in deep lattice
     analogdata.AddStep(lattice2_max_volt, lattice2_raise_end_time, lattice2_freeze_start_time, lattice2D765_power2)
 Else
     'quench to deep lattice
-    analogdata.AddStep(lattice2_ramp_end_v, lattice2_raise_start_time, lattice2_freeze_start_time-1, lattice2D765_power2)
+    analogdata.AddStep(lattice2_ramp_end_v, ramp_end_time, lattice2_freeze_start_time-1, lattice2D765_power2)
     analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, lattice2_freeze_start_time-1, lattice2_freeze_start_time, lattice2D765_power2)
 End If
 
 If (is_return > 0) Then
     'raise 2D1
-    analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, lattice1_raise_start_time, lattice1_raise_end_time, lattice2D765_power)
+    analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, ramp_end_time, lattice1_raise_end_time, lattice2D765_power)
     'hold 2D1 in deep lattice
     analogdata.AddStep(lattice1_max_volt, lattice1_raise_end_time, twod1_rampdown2_start_time, lattice2D765_power)
 Else
     'quench to deep lattice
-    analogdata.AddStep(lattice1_ramp_end_v, lattice1_lower_end_time, twod1_rampdown2_start_time-1, lattice2D765_power)
+    analogdata.AddStep(lattice1_ramp_end_v, ramp_end_time, twod1_rampdown2_start_time-1, lattice2D765_power)
     analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, twod1_rampdown2_start_time-1, twod1_rampdown2_start_time, lattice2D765_power)
 End If
 
@@ -795,7 +802,7 @@ End If
 
 '----------------------------------------------------- Scope trigger --------------------------------------------------------------------------------------
 
-Dim scope_trigger As Double = quad_raise_start_time
+Dim scope_trigger As Double = pinning_start_time
 digitaldata.AddPulse(64, scope_trigger, scope_trigger + 10)
 
 

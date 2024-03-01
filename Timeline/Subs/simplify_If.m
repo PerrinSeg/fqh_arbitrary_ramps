@@ -1,10 +1,9 @@
 function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logExpParam, ExpConstants)
        
-%     pause(1)
-    disp('   ')
-    disp(Sequence{1})
-    disp(Sequence{2})
-    disp('   ')
+    % disp('   ')
+    % disp(Sequence{1})
+    % disp(Sequence{2})
+    % disp('   ')
 
     % Some functions used below
     firstCell = @(x) x{1};
@@ -77,8 +76,8 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
             end
         end
     end
-    left
-    right
+    % left
+    % right
     % Determine if the "If" condition is satisfied
     if strcmpi(right, 'true') || strcmpi(right, 'false')
         condition_satisfied = strcmp(left, right);
@@ -147,14 +146,9 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
 
         nested_if = 0;
         if startsWith(Sequence{i}, "else")
-%             disp('Here2')
-%             disp(Sequence{i})
             Sequence{i} = {};
             i = i + 1;
-%             disp(startsWith(Sequence{i}, "end if"))
             while (nested_if > 0) || ~startsWith(Sequence{i}, "end if")
-%                 disp('Here3')
-%                 disp(Sequence{i})
                 if startsWith(Sequence{i}, "if")
                     nested_if = nested_if + 1;
                 elseif startsWith(Sequence{i}, "end if")

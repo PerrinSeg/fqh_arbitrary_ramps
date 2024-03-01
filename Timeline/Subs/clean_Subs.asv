@@ -1,16 +1,15 @@
 function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(sub_path, name_sub_sequence, arguments, variable_list, arr_variable_list, logExpParam, ExpConstants)
-    
-    % disp(' ')
-    % disp("BEGIN CLEAN SUBS")
-
+    disp(' ')
+    disp("BEGIN CLEAN SUBS")
     % Some functions used below
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
-    % arguments
+    arguments
     % sub_path
     arguments = erase(arguments," ");
 
     % Open the subsequence file
+    strcat(sub_path, name_sub_sequence)
     Sub_Sequence_file = fopen(strcat(sub_path, name_sub_sequence));
     sub_variable_list = {};
     sub_arr_variable_list = {};
@@ -39,34 +38,27 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
         str = fgetl(Sub_Sequence_file);
         Sub_Sequence_aux = strtrim(str);
     end
-    % disp('sub_variable_list = ')
-    % sub_variable_list{:}
+    disp('sub_variable_list = ')
+    sub_variable_list{:}
 
     % Now replace with the values given the main sequence
     N_arg = numel(sub_variable_list);
     for j = 1:N_arg
-        % disp(' ')
-        % disp(" SEARCHING FOR:")
-        % sub_variable_list{j}
+        disp(" SEARCHING FOR:")
+        sub_variable_list{j}
         nextsubvar = sub_variable_list{j}{2};
         nextsubvar = strsplit(nextsubvar, "(");
-        % disp("  nextsubvar value:")
-        % nextsubvar
-        
-        if findIndex(variable_list, sub_variable_list{j}{2})                  
+        disp("  nextsubvar value:")
+        nextsubvar
+        if findIndex(variable_list, sub_variable_list{j}{2})
             i = findIndex(variable_list, sub_variable_list{j}{2});
-            % disp(" found subvar argument assignment in variable list") 
-            % disp([' setting sub variable ' sub_variable_list{j}{1}])
-            % sub_variable_list{j}{2}
-            % {sub_variable_list{j}{1}, variable_list{i}{2}}
             sub_variable_list{j} = {sub_variable_list{j}{1}, variable_list{i}{2}};
         
-        elseif findIndex(arr_variable_list, nextsubvar{1})           
+        elseif findIndex(arr_variable_list, nextsubvar{1})
+            disp(" found subvar argument assignment in array variable list")
             i = findIndex(arr_variable_list, nextsubvar{1});
             dummyarr = arr_variable_list{i}{3};
-            % disp(" found subvar argument assignment in array variable list")
-            % dummyarr
-
+            dummyarr
             for jj = 2:numel(nextsubvar)
                 nextsubvar{jj} = nextsubvar{jj}(1:end-1);
                 [i_cell_split, i_cell_symbol] = split(nextsubvar{jj}, ["+", "-", "*", "/"]);
@@ -83,38 +75,31 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
                 end
                 i_cell_str = join(i_cell_split,i_cell_symbol);
                 i_cell = round(str2sym(i_cell_str));
-                dummyarr = dummyarr{i_cell+1};     
+                dummyarr = string(dummyarr{i_cell+1});     
             end
-            % dummyarr
-
-            if numel(string(dummyarr))>1
-                % disp(" dummy array is still an array")
-                % disp([' setting sub variable ' sub_variable_list{j}{1}])
+            dummyarr
+            if numel(dummyarr)>1
+                % disp("dummy array is still an array")
+                sub_variable_list{j}{1}
                 sub_arr_variable_list{end+1} = {sub_variable_list{j}{1}, sub_variable_list{j}{2}, dummyarr};
-                % sub_arr_variable_list{end}{3}
                 sub_variable_list{j} = {};
             else
-                % disp([' setting sub variable: ' sub_variable_list{j}{1}])               
+                disp(['setting variable: ' sub_variable_list{j}{1}])               
                 sub_variable_list{j} = {sub_variable_list{j}{1}, dummyarr};
-                % sub_variable_list{j}
+                sub_variable_list{j}
             end
 
         elseif findIndex(ExpConstants, sub_variable_list{j}{2})
-            % disp(" found subvar argument assignment in ExpConstants")
             i = findIndex(ExpConstants, sub_variable_list{j}{2});
             sub_variable_list{j} = {sub_variable_list{j}{1}, ExpConstants{i}{2}};
         elseif findIndex(logExpParam, sub_variable_list{j}{2})
-            % disp(" found subvar argument assignment in logExpParam")
             i = findIndex(logExpParam, sub_variable_list{j}{2});
             sub_variable_list{j} = {sub_variable_list{j}{1}, logExpParam{i}{2}};
-        else
-            % disp(['variable ' sub_variable_list{j}{2} ' not found (clean_Subs)!'])
-        end 
-        % disp([' finished setting arg ' num2str(j) ' (clean_Subs).'])
+        end  
     end
     sub_variable_list = sub_variable_list(~cellfun('isempty', sub_variable_list));
-    % disp(" sub_variable_list:")
-    % sub_variable_list{:}
+    disp(" sub_variable_list:")
+    sub_variable_list
 
     % Simplify the useless parts
     Sub_Sequence = {};
@@ -157,7 +142,6 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
     end
     
     Sub_Sequence = Sub_Sequence(~cellfun('isempty', Sub_Sequence));
-    % Sub_Sequence
-    % disp("END CLEAN SUBS")
+    disp("END CLEAN SUBS")
 end
 

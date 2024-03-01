@@ -48,8 +48,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
     while numel(Sub_Function) > 0 
     
         % The line being read is always the first one
-        % disp(Sub_Function{1})
-        % disp(' ')
+        disp(Sub_Function{1})
+        disp(' ')
 
         % Case A
         if startsWith(lower(Sub_Function{1}), lower("If"))
@@ -168,5 +168,5 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
 
     % Store the variables computed in containers.Map
     sub_variable_containers(name_sub_function_aux{1}) = sub_variable_list;
-    % disp('END read_Sub_Function')
+    disp('END read_Sub_Function')
 end

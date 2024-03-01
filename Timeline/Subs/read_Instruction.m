@@ -4,29 +4,31 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
     firstCell = @(x) x{1};
     findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput', false), element));
 
-    % flag = 0;
-    % if contains(Sequence{1}, lower('analogdata.AddStep(lattice2_ramp_end_v') )
-    %     disp(' ')
-    %     disp('ENTERED read_Instruction !!!!!!!!!!')
-    %     disp('  found problem line')
-    %     flag = 1;
-    % end
+    flag = 0;
+    problemline = lower('analogdata.AddStep(lattice2_ramp_end_v');
+    if contains(Sequence{1}, problemline)
+        disp(' ')
+        disp('ENTERED read_Instruction !!!!!!!!!!')
+        disp('  found problem line:')
+        disp(problemline)
+        flag = 1;
+    end
 
     % Save the line corresponding to this instruction
     instruction_list{end+1} = Sequence{1};
     arguments_list{end+1} = {};
 
-    % % Get the name of the function
-    % name_fun = split(Sequence{1}, "(");
-    % name_fun = name_fun{1};
-    % if flag
-    %     disp(Sequence{1})
-    % end
-    % % And all the arguments
-    % arg_fun = split(Sequence{1}, "(");
-    % arg_fun = arg_fun{2};
-    % arg_fun = erase(arg_fun, ")");
-    % arg_fun = split(arg_fun, ", ");
+    % Get the name of the function
+    name_fun = split(Sequence{1}, "(");
+    name_fun = name_fun{1};
+    if flag
+        disp(Sequence{1})
+    end
+    % And all the arguments
+    arg_fun = split(Sequence{1}, "(");
+    arg_fun = arg_fun{2};
+    arg_fun = erase(arg_fun, ")");
+    arg_fun = split(arg_fun, ", ");
 
     % Replace opening and closing parenthesis of function by brackets for easier reading
     open_function = strfind(Sequence{1}, '(');
@@ -44,19 +46,19 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
     for k = 1:numel(instruction)
         instruction{k} = erase(instruction{k}," ");
         [ins_split_aux, ins_split_idx_aux] = split(instruction{k}, ["+", "-", "/", "*"]); 
-        % if flag
-        %     disp('NEW INSTRUCTION:')
-        %     ins_split_aux
-        %     ins_split_idx_aux
-        % end
+        if flag
+            disp('NEW INSTRUCTION:')
+            ins_split_aux
+            ins_split_idx_aux
+        end
 
         for j = 1:numel(ins_split_aux)
             % If one piece of the formula is a known variable, replace by its value              
             ins_split_aux{j} = strtrim(ins_split_aux{j});
-            % if flag
-            %     disp(" Next piece to process: ")
-            %     disp(ins_split_aux{j})
-            % end
+            if flag
+                disp(" Next piece to process: ")
+                disp(ins_split_aux{j})
+            end
             if isempty(ins_split_aux{j})
                 continue
             end
@@ -64,10 +66,10 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             nextvar = split(ins_split_aux{j}, "(");
 
             if findIndex(arr_variable_list, nextvar{1})
-                % if flag
-                %     disp("  RHS HAS ARRAY COMPONENT")
-                %     nextvar
-                % end
+                if flag
+                    disp("  RHS HAS ARRAY COMPONENT")
+                    nextvar
+                end
                 i = findIndex(arr_variable_list, nextvar{1});
                 val = arr_variable_list{i}{3};
                 if numel(nextvar) > 1
@@ -93,10 +95,12 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                             [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*"]);
                             for jjj = 1:numel(i_cell_split)
                                 i_cell_str = i_cell_split{jjj};
-                                if findIndex(variable_list, i_cell_str)
-                                    i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
-                                elseif findIndex(logExpParam, i_cell_str)
-                                    i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
+                                if isnan(round(str2double(i_cell_str)))
+                                    if findIndex(variable_list, i_cell_str)
+                                        i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
+                                    elseif findIndex(logExpParam, i_cell_str)
+                                        i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
+                                    end
                                 end
                                 i_cell_split{jjj} = i_cell_str;
                             end
@@ -110,44 +114,33 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
                     % arr_variable_list{i}
                     % arr_variable_list{i}{3}
                     if numel(string(val))>1
-                        % if flag
-                        %     disp("new value:")
-                        %     val
-                        % end
+                        if flag
+                            disp("new value:")
+                            val
+                        end
                         instruction{k} = val;
                     else
-                        % if flag
-                        %     disp(" NOW REPLACING ")
-                        %     disp(strcat(nextvar{1}, i_cell_str_init))
-                        %     disp(" WITH")
-                        %     val
-                        % end
+                        if flag
+                            disp(" NOW REPLACING ")
+                            disp(strcat(nextvar{1}, i_cell_str_init))
+                            disp(" WITH")
+                            val
+                        end
                         instruction{k} = replace(instruction{k}, strcat(nextvar{1},  i_cell_str_init), val);
                     end
                 else
                     val = arr_variable_list{i}{3};
-                    % val_str = ['{' val{1}];
-                    % for jj = 2:numel(val)
-                    %     val_str = [val_str ',' val{jj}];
-                    % end
-                    % val_str = [val_str '}'];
-                    % disp(" NOW REPLACING ")
-                    % disp(nextvar)
-                    % disp(" WITH")
-                    % val_str
-                    % instruction{k} = replace(instruction{k}, nextvar, val_str);
                     instruction{k} = val;
                 end
             end
         end
-        % if flag
-        %     disp("instruction with no more array variables")
-        %     instruction{k}
-        % end
+        if flag
+            disp("instruction with no more array variables")
+            instruction{k}
+        end
         instruction_aux = instruction{k};
         instruction_length = numel(string(instruction_aux));
         for j = 1:instruction_length
-            % nextvar = '';
             if instruction_length > 1
                 nextvar = instruction_aux{j};
             else
@@ -174,13 +167,13 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
             end 
             nextvar = join(instruction_split, instruction_split_symbols);
             
-            % if flag
-            %     disp(' ')
-            %     disp("final instructions split:")
-            %     instruction_split
-            %     disp("after joining:")
-            %     nextvar
-            % end
+            if flag
+                disp(' ')
+                disp("final instructions split:")
+                instruction_split
+                disp("after joining:")
+                nextvar
+            end
 
             try
                 nextvar = char(str2sym(nextvar));
@@ -198,11 +191,11 @@ function [Sequence, instruction_list, arguments_list] = read_Instruction(Sequenc
         arguments_list{end}{k} = instruction{k};
     end
 
-    % if flag == 1
-    %     arguments_list{end}
-    %     arguments_list{end}{2}
-    %     disp('end read_Instruction for flagged line.')
-    % end
+    if flag == 1
+        arguments_list{end}
+        arguments_list{end}{2}
+        disp('end read_Instruction for flagged line.')
+    end
 
     % Remove all the lines that should be removed
     Sequence{1} = {};

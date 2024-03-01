@@ -5,7 +5,8 @@ close all
 
 path_files = '';
 name_sequence = 'fqh_arb_ramp.vb';
-batch_line = 1;
+% name_sequence = 'fqh_arb_ramp_test_jtovolts.vb';
+batch_line = 2;
 
 
 %% Some functions
@@ -126,11 +127,12 @@ n_times = eval(variable_list{i}{2});
 i = findIndex(variable_list, 'half_index');
 half_index = eval(variable_list{i}{2});
 
-i = findIndex(variable_list, 'n_times_return');
-n_times_return = eval(variable_list{i}{2});
+% i = findIndex(variable_list, 'n_times_return');
+% variable_list{:}
+% n_times_return = eval(variable_list{i}{2});
 
-i = findIndex(variable_list, 'half_index_return');
-half_index_return = n_times_return - eval(variable_list{i}{2});
+% i = findIndex(variable_list, 'half_index_return');
+% half_index_return = n_times_return - eval(variable_list{i}{2});
 
 %%% If it's in the array list
 
@@ -142,9 +144,9 @@ i = findIndex(arr_variable_list, 'ramp_t');
 cell_idx = half_index;
 ramp_t_half = eval(arr_variable_list{i}{3}{cell_idx+1});
 
-i = findIndex(arr_variable_list, 'ramp_t_return');
-cell_idx = half_index_return;
-ramp_t_half_return = eval(arr_variable_list{i}{3}{cell_idx+1});
+% i = findIndex(arr_variable_list, 'ramp_t_return');
+% cell_idx = half_index_return;
+% ramp_t_half_return = eval(arr_variable_list{i}{3}{cell_idx+1});
 
 %%% If it's in a subsequence
 keys_containers = sub_variable_containers.keys;
@@ -427,7 +429,7 @@ if plot_figure
 
         xline(ramp_t_4/1000, '--r', 'DisplayName', 'ramp_t_4')
         xline(ramp_t_half/1000, '--g', 'DisplayName', 'ramp_t_half')
-        xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')
+        % xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         if ~(k==N_chan)

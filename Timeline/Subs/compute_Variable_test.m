@@ -1,4 +1,4 @@
-function [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = compute_Variable( ...
+function [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = compute_Variable_test( ...
     Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files)
     
     % NOTE: might be nice to add function find index that takes a set of values in
@@ -14,7 +14,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
     list_simple_function = {lower("GaugeJToVolts"), lower("JToVolts"), lower("BeatVolt"), lower("DepthToVolts")};
 
     % List of "analytical function" and their Matlab symbolic notation
-    list_analytical_function = {{'Log10', 'log10'}, {'Exp', 'exp'}};
+    list_analytical_function = {{'Log10', 'log10'}};
     
     list_other_function = {lower("LoadRampSegmentsFromFile"), lower("LoadArrayFromFile")};
 
@@ -100,7 +100,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
         variable_aux = split(variable{1},'(');
         
         if findIndex(arr_variable_list, variable_aux{1})
-            % i = findIndex(arr_variable_list, variable_aux{1});
+            i = findIndex(arr_variable_list, variable_aux{1});
 
             if numel(variable_aux) > 1
                 [i_cell_split, i_cell_symbol] = split(variable_aux{2}(1:end-1), ["+", "-", "*"]);
@@ -145,23 +145,23 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             end
 
             flag = 4;
-            % arr_variable_list{i}{2} = variable{2};
+            arr_variable_list{i}{2} = variable{2};
             % disp(" ARRAY VARIABLE INITIALLIZED AS ")
             % disp(arr_variable_list{i})
             % disp(arr_variable_list{i}{3})
             % variable
 
         elseif findIndex(variable_list, variable{1})
-            % i = findIndex(variable_list, variable{1});
-            % variable_list{i}{2} = variable{2};
+            i = findIndex(variable_list, variable{1});
+            variable_list{i}{2} = variable{2};
             flag = 1;
         elseif findIndex(ExpConstants, variable{1})
-            % i = findIndex(ExpConstants, variable{1});
-            % ExpConstants{i}{2} = variable{2};
+            i = findIndex(ExpConstants, variable{1});
+            ExpConstants{i}{2} = variable{2};
             flag = 2;
         elseif findIndex(logExpParam, variable{1})
-            % i = findIndex(logExpParam, variable{1});
-            % logExpParam{i}{2} = variable{2};
+            i = findIndex(logExpParam, variable{1});
+            logExpParam{i}{2} = variable{2};
             flag = 3;
         else
             disp(['variable ' variable{1} ' definition not found'])
@@ -176,7 +176,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
         % disp(variable_init{1})
         % disp(variable{1})
         % disp(variable{2})
-        % disp('')
 
         % Sub-sequences and simple functions are assumed to be evaluated separately
         % ie there is nothing else in variable{2}
@@ -186,10 +185,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = read_Sub_Sequence( ...
                 variable, path_files, Sequence, variable_list, arr_variable_list, sub_variable_containers, ...
                 instruction_list, arguments_list, logExpParam, ExpConstants);       
-            % disp(variable{1})
-            % disp(variable{2})
-            % variable_list{findIndex(variable_list, variable{1})}{:}
-            % disp('')
 
         elseif find(contains(variable{2}, cellfun(firstCell, list_simple_function, 'UniformOutput', false))) % Then it's a sub-function
             % disp("found simple function")
@@ -260,173 +255,166 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             variable{1} = strtrim(variable{1});
             variable{2} = erase(variable{2}," ");
             
-            [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*"]); 
+            % [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*"]); 
             % variable_split_aux
 
-            for k = 1:numel(variable_split_aux)
-                % If one piece of the formula is a known variable, replace by its value              
-                variable_split_aux{k} = strtrim(variable_split_aux{k});
-                % disp("Next piece to process: ")
-                % disp(variable_split_aux{k})
-
-                if isempty(variable_split_aux{k})
-                    continue
-                end
-                nextvar = split(variable_split_aux{k}, "(");
-                nextvar{1} = erase(nextvar{1}, ")"); % HACK TO FIX ISSUE WHEN FEEDING ARGUMENTS FROM SIMPLE FUNCTIONS. FIX LATER...
-                % nextvar
-
-                if contains(variable{2}, '.getupperbound(0)')
-                    % disp("REACHED .getuppberbound(0)")
-                    var_aux = strsplit(variable{2}, '.getupperbound(0)');
-                    var_aux = strsplit(var_aux{1}, "(");
-                    var_name = var_aux{1};
-                    i = findIndex(arr_variable_list, var_name);
-                    varArr = arr_variable_list{i}{3};
-                    if numel(var_aux)>1
-                        for ii = 2:numel(var_aux)
-                            newidx = var_aux{ii}(1:end-1);
-                            varArr = varArr{round(str2sym(newidx)) + 1};
-                        end
-                    end
-                    val = size(varArr, 2)-1; 
-                    variable{2} = num2str(val);  
-
-                elseif findIndex(arr_variable_list, nextvar{1})
-                    % disp("  RHS HAS ARRAY COMPONENT")
-                    % nextvar
-                    ii = findIndex(arr_variable_list, nextvar{1});
-                    val = arr_variable_list{ii}{3};
-                    if numel(nextvar)>1                    
-                        i_cell_str = '';
-                        n = 1;
-                        for j = 2:numel(nextvar)  
-                            i_cell_str = strcat(i_cell_str, '(', nextvar{j});
-                            not_complete = ~contains(i_cell_str(end),")");
-                            while not_complete
-                                new_str = char(variable_split_aux{k+n});
-                                nopen = length(strfind(new_str, '('));
-                                close_paren = strfind(new_str, ')');
-                                nclose = length(close_paren);
-                                not_complete = not_complete + nopen - nclose;
-                                cutvals = 0;
-                                if not_complete < 0
-                                    close_paren = close_paren(1:end + not_complete);
-                                    not_complete = 0;
-                                    cutvals = close_paren(end)-1;
-                                end
-                                endidx = length(new_str) - cutvals;
-                                i_cell_str = strcat(i_cell_str, variable_split_idx_aux{k + n - 1}, strtrim(new_str(1:endidx)));
-                                variable_split_aux{k+n} = {};
-                                variable_split_idx_aux{k + n - 1} = {};
-                                n = n+1;
-                            end
-                        end
-
-                        % variable_split_idx_aux
-                        % disp(' found indecies:')
-                        i_cell_str = strcat(nextvar{1}, i_cell_str);
-                        nextvar = split(i_cell_str,"(");
-                        i_cell_str_init = join(nextvar(2:end),'(');
-                        i_cell_str_init = strcat('(', i_cell_str_init{1});
-                        for j = 2:(numel(nextvar))                            
-                            i_cell_str = nextvar{j}(1:end-1);
-                            var_idx = round(str2double(i_cell_str));
-                            if isnan(var_idx)
-                                [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*", "/"]);
-                                for jj = 1:numel(i_cell_split)
-                                    i_cell_str = i_cell_split{jj};
-                                    if isnan(str2double(i_cell_str)) % array size is set by a variable
-                                        if findIndex(variable_list, i_cell_str)
-                                            i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
-                                        elseif findIndex(logExpParam, i_cell_str)
-                                            i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
-                                        end
-                                    end
-                                    i_cell_split{jj} = i_cell_str;
-                                end
-                                i_cell_str = join(i_cell_split,i_cell_symbol);
-                                var_idx = round(str2sym(i_cell_str));
-                            end
-                            % val
-                            % var_idx
-                            val = val{var_idx + 1};
-                        end                        
-                        % disp(' extracted value:')
-                        % val
-
-                        if numel(string(val))>1 % don't have to worry about any additional operations, which have to be done in a loop in vb
-                            variable{3} = val;
-                            variable{2} = {};
-                        else
-                            % disp("REPLACING ")
-                            % disp(strcat(nextvar{1}, i_cell_str_init))
-                            % disp(" IN")
-                            % variable{2}
-                            % disp("WITH")
-                            % val
-                            variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val);
-                            % variable{2}
-                        end
-
-                    else
-                        % val
-                        % val{1}
-                       variable{3} = val;
-                       variable{2} = {};
-                    end
-                end
-            end
+            % for k = 1:numel(variable_split_aux)
+            %     % If one piece of the formula is a known variable, replace by its value              
+            %     variable_split_aux{k} = strtrim(variable_split_aux{k});
+            %     % disp("Next piece to process: ")
+            %     % disp(variable_split_aux{k})
+            %     if isempty(variable_split_aux{k})
+            %         continue
+            %     end
+            %     nextvar = split(variable_split_aux{k}, "(");
+            %     nextvar{1} = erase(nextvar{1}, ")"); % HACK TO FIX ISSUE WHEN FEEDING ARGUMENTS FROM SIMPLE FUNCTIONS. FIX LATER...
+            %     if contains(variable{2}, '.getupperbound(0)')
+            %         % disp("REACHED .getuppberbound(0)")
+            %         var_aux = strsplit(variable{2}, '.getupperbound(0)');
+            %         var_aux = strsplit(var_aux{1}, "(");
+            %         var_name = var_aux{1};
+            %         i = findIndex(arr_variable_list, var_name);
+            %         varArr = arr_variable_list{i}{3};
+            %         if numel(var_aux)>1
+            %             for ii = 2:numel(var_aux)
+            %                 newidx = var_aux{ii}(1:end-1);
+            %                 varArr = varArr{round(str2sym(newidx)) + 1};
+            %             end
+            %         end
+            %         % size(varArr)
+            %         val = size(varArr, 2)-1; 
+            %         variable{2} = num2str(val);  
+            % 
+            %     elseif findIndex(arr_variable_list, nextvar{1})
+            %         % disp("  RHS HAS ARRAY COMPONENT")
+            %         % nextvar
+            %         ii = findIndex(arr_variable_list, nextvar{1});
+            %         val = arr_variable_list{ii}{3};
+            %         if numel(nextvar)>1                    
+            %             i_cell_str = '';
+            %             n = 1;
+            %             for j = 2:numel(nextvar)  
+            %                 i_cell_str = strcat(i_cell_str, '(', nextvar{j});
+            %                 not_complete = ~contains(i_cell_str(end),")");
+            %                 while not_complete
+            %                     new_str = char(variable_split_aux{k+n});
+            %                     nopen = length(strfind(new_str, '('));
+            %                     close_paren = strfind(new_str, ')');
+            %                     nclose = length(close_paren);
+            %                     not_complete = not_complete + nopen - nclose;
+            %                     cutvals = 0;
+            %                     if not_complete < 0
+            %                         close_paren = close_paren(1:end + not_complete);
+            %                         not_complete = 0;
+            %                         cutvals = close_paren(end)-1;
+            %                     end
+            %                     endidx = length(new_str) - cutvals;
+            %                     i_cell_str = strcat(i_cell_str, variable_split_idx_aux{k + n - 1}, strtrim(new_str(1:endidx)));
+            %                     variable_split_aux{k+n} = {};
+            %                     variable_split_idx_aux{k + n - 1} = {};
+            %                     n = n+1;
+            %                 end
+            %             end
+            %             % variable_split_idx_aux
+            %             i_cell_str = strcat(nextvar{1}, i_cell_str);
+            %             nextvar = split(i_cell_str,"(");
+            %             i_cell_str_init = join(nextvar(2:end),'(');
+            %             i_cell_str_init = strcat('(', i_cell_str_init{1});
+            %             for j = 2:(numel(nextvar))                            
+            %                 i_cell_str = nextvar{j}(1:end-1);
+            %                 var_idx = round(str2double(i_cell_str));
+            %                 if isnan(var_idx)
+            %                     [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*", "/"]);
+            %                     for jj = 1:numel(i_cell_split)
+            %                         i_cell_str = i_cell_split{jj};
+            %                         if isnan(str2double(i_cell_str)) % array size is set by a variable
+            %                             if findIndex(variable_list, i_cell_str)
+            %                                 i_cell_str = variable_list{findIndex(variable_list, i_cell_str)}{2};
+            %                             elseif findIndex(logExpParam, i_cell_str)
+            %                                 i_cell_str = logExpParam{findIndex(logExpParam, i_cell_str)}{2};
+            %                             end
+            %                         end
+            %                         i_cell_split{jj} = i_cell_str;
+            %                     end
+            %                     i_cell_str = join(i_cell_split,i_cell_symbol);
+            %                     var_idx = round(str2sym(i_cell_str));
+            %                 end
+            %                 % val
+            %                 % var_idx
+            %                 val = val{var_idx + 1};
+            %             end
+            %             val
+            %             if numel(string(val))>1 % don't have to worry about any additional operations, which have to be done in a loop in vb
+            %                 variable{3} = val;
+            %                 variable{2} = {};
+            %             else
+            %                 % disp("REPLACING ")
+            %                 % disp(strcat(nextvar{1}, i_cell_str_init))
+            %                 % disp(" IN")
+            %                 % variable{2}
+            %                 % disp("WITH")
+            %                 % val
+            %                 variable{2} = replace(variable{2}, strcat(nextvar{1}, i_cell_str_init), val);
+            %             end
+            %         else
+            %             % val
+            %             % val{1}
+            %            variable{3} = val;
+            %            variable{2} = {};
+            %         end
+            %     end
+            % end
 
             % disp("variable with no more array components")
             % variable{1}
             % variable{2}
-           
+            % nextvar
+
+            
             variable_split = split(variable{2}, ["+", "-", "/", "*", "(", ")"]);
             
             for k = 1:numel(variable_split)
 
                 % If one piece of the formula is a known variable, replace by its value
                 nextvar = strtrim(variable_split{k});
-                % disp("Next piece to process: ")
-                % disp(variable_split{k})
-                
                 if ~contains(nextvar, '"')
                     if findIndex(list_analytical_function, nextvar)
-                        % disp('found analytical function: ')
-                        % nextvar
-
                         i = findIndex(list_analytical_function, nextvar);
                         val = list_analytical_function{i}{2};
                         variable{2} = replace(variable{2}, nextvar, val);
-                        % variable{2}
-
+                        
                     elseif findIndex(variable_list, nextvar)
-                        % disp('found in variable_list:')
-                        % nextvar
                         i = findIndex(variable_list, nextvar);
                         val = variable_list{i}{2};
                         variable{2} = replace(variable{2}, nextvar, val);
-                        % variable{2}
-
+                        
                     elseif findIndex(logExpParam, nextvar)
-                        % disp('found in logExpParam:')
-                        % nextvar
                         i = findIndex(logExpParam, nextvar);
                         val = logExpParam{i}{2};
                         variable{2} = replace(variable{2}, nextvar, val);
-                        % variable{2}
-
+    
                     elseif findIndex(ExpConstants, nextvar)
-                        % disp('found in ExpConstants:')
-                        % nextvar
                         i = findIndex(ExpConstants, nextvar);
                         val = ExpConstants{i}{2};
                         variable{2} = replace(variable{2}, nextvar, val);
-                        % variable{2}
-
                     end
-                    % variable{2}
+                end
+            end
+
+            [variable_split_aux, variable_sym_aux] = split(variable{2}, ["+", "-", "/", "*", "(", ")"])
+            [variable_split_paren, variable_sym_aux] = split(variable{2}, ["+", "-", "/", "*", "(", ")"])
+            variable_split_aux
+            variable_sym_aux
+            for k = 1:numel(variable_split_aux)
+                nextvar = variable_split_aux{k}
+                variable_sym_aux{k}
+                if findIndex(arr_variable_list, nextvar)
+                     i = findIndex(arr_variable_list, nextvar);
+                     if contains(variable_sym_aux{k}, '(')
+                        disp('1st index')
+                        ii_list = findIndex(variable_sym_aux{')'}) 
+                        i_cell_str = join()
+                     end
                 end
             end
             
@@ -434,16 +422,10 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                 variable{2} = num2str(double(str2sym(variable{2})));
             catch
             end
-            % disp([' FINISHED PARSING ' variable{1} ':'])
-            % variable{2}
 
             if flag == 1
                 i = findIndex(variable_list, variable{1});
-                variable_list{i}{2} = variable{2}; 
-                % disp("SETTING NEW VARIABLE:")
-                % disp(variable{1})
-                % disp(" AS")
-                % disp(variable{2})
+                variable_list{i}{2} = variable{2};  
             elseif flag == 2
                 i = findIndex(ExpConstants, variable{1});
                 ExpConstants{i}{2} = variable{2};
@@ -459,6 +441,8 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                 nextvar = variable_aux{1};
                 i = findIndex(arr_variable_list, nextvar);
                 if i_cell > -1     
+                    % i_cell
+                    % variable
                     if numel(variable_aux) == 2
                         arr_variable_list{i}{3}{i_cell + 1} = variable{2};
                         % disp("VARIABLE SET AS ")                      
@@ -482,12 +466,12 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
         end
     end
     % disp('  ')
+    % % disp(strcat('VARIABLE ', 32, variable{1}, ' SET. RHS IS ', 32, variable{2}, ' NEW VALUE IS:'))
     % disp(strcat('VARIABLE ', 32, variable{1}, ' SET.')) 
     % disp(' RHS IS:')
     % variable{2}
     % disp(' NEW VALUE IS:')
     % variable{:}
-    % variable_list{end}
     % disp('  ')
     % disp("FINISHED ALL SETTING!!!!!!!!!!!")
     % for jj = 1:numel(arr_variable_list)

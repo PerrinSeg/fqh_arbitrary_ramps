@@ -51,7 +51,8 @@ function [instruction_list, arguments_list, variable_list, arr_variable_list, su
         
         % Case B
         elseif contains(Sequence{1}, "=") || startsWith(Sequence{1}, "dim ")      
-            [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = compute_Variable(Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files);
+            [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = compute_Variable( ...
+                Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files);
                                  
         % Case C
         elseif contains(Sequence{1}, "analogdata") || contains(Sequence{1}, "digitaldata")
