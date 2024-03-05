@@ -312,15 +312,6 @@ Dim twod1_reload3_end_time As Double = twod1_reload3_start_time + (is_counting *
 Dim Berlin_wall_turnoff_start_time As Double = twod1_reload3_end_time
 Dim Berlin_wall_turnoff_end_time As Double = Berlin_wall_turnoff_start_time + (is_counting * 5)
 
-'JK: from old FQH sequence, is this necessary?
-'() release and recapture for counting
-'Dim Berlin_wall_ramp_start_time As Double = twod1_reload3_end_time
-'Dim Berlin_wall_ramp_end_time As Double = Berlin_wall_ramp_start_time + is_counting * 5
-'Dim twod1_rampdown4_start_time As Double = Berlin_wall_ramp_end_time
-'Dim twod1_rampdown4_end_time As Double = twod1_rampdown4_start_time + is_counting * 2
-'Dim twod1_reload4_start_time As Double = twod1_rampdown4_end_time + is_counting * expansion_dur
-'Dim twod1_reload4_end_time As Double = twod1_reload4_start_time + is_counting * 2
-
 'freeze lattices, turn off gradients
 Dim grad_turnoff_start_time As Double = quic_turnoff_end_time 'turn off coils when is_return = 0
 Dim grad_turnoff_end_time As Double = grad_turnoff_start_time + coil_ramp_dur

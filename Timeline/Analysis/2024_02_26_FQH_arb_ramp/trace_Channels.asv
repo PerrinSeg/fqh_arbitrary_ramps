@@ -1,7 +1,7 @@
 %% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
-close all
+% close all
 
 path_files = '';
 name_sequence = 'fqh_arb_ramp.vb';
@@ -411,7 +411,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 1;
+save_figure = 0;
 plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ax = [];
@@ -436,19 +436,18 @@ if plot_figure
         % xline(twodphysics_start_time/1000, '--g', 'Linewidth', 1.25, 'DisplayName', '2d_phys_start')   
         xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
         xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
-        xline(twodphysics_start_time/1000, ':c', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
-        xline(twodphysics_end_time/1000, ':c', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
 
         xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')              
         xline(ramp_start_time/1000, '--b', 'DisplayName', 'ramp_start')
         xline(ramp_end_time/1000, '--b', 'DisplayName', 'ramp_end')
-        xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
-        xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
+        % xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
+        % xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
         % xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')    
+        xline(twodphysics_end_time/1000, ':g', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
         % xline(lattice2_freeze_start_time/1000, ':c', 'DisplayName', 'lattice2_freeze_start')
         % xline(lattice2_freeze_end_time/1000, ':c', 'DisplayName', 'lattice2_freeze_end')
-        xline(cleanup_start_time/1000, '--m', 'DisplayName', 'cleanup_start')
-        xline(cleanup_end_time/1000, '-.m', 'DisplayName', 'cleanup_end')
+        xline(cleanup_start_time/1000, '--r', 'DisplayName', 'cleanup_start')
+        xline(cleanup_end_time/1000, '-.r', 'DisplayName', 'cleanup_end')
         xline(full_counting_start_time/1000, '--g', 'DisplayName', 'full_counting_start')
         xline(full_counting_end_time/1000, '-.g', 'DisplayName', 'full_counting_end')
         % xline(berlin_wall_turnoff_start_time/1000, '--m', 'DisplayName', 'berlin_wall_turnoff_start')

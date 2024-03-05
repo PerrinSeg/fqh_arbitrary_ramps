@@ -165,7 +165,7 @@ Dim quad_ramp_v_return(-1) As Double
 Dim quic_ramp_v_return(-1) As Double
 Dim n_times_return As Integer
 
-If (is_return > 0) Then 'return ramp different? Replace with separate file?
+If (is_return > 0) Then 
     'get times for return ramp
     Dim ramp_variables_return As Double()()   
   
@@ -236,6 +236,7 @@ Dim quic_ramp_start_v As Double = quic_ramp_v(0)
 ' quic_ramp_end_v
 
 '----------------------------------------------------- MOT Creation ---------------------------------------------------------------------------------------
+
 digitaldata2.AddPulse(clock_resynch,1,4)
 analogdata.DisableClkDist(0.95, 4.05)
 analogdata2.DisableClkDist(0.95, 4.05)
@@ -246,16 +247,19 @@ Dim transport_start_time As Double = MOT_end_time
 
 
 '----------------------------------------------------- Transport ------------------------------------------------------------------------------------------
+
 Dim transport_end_time As Double
 transport_end_time = Me.AddTransportSequence(transport_start_time, cp, analogdata, analogdata2, digitaldata, digitaldata2, gpib, Hermes, dds, True)
 
 
 '----------------------------------------------------- Evaporation ----------------------------------------------------------------------------------------
+
 Dim evaporation_end_time As Double
 evaporation_end_time = Me.AddEvaporationSequence(transport_end_time, cp, analogdata, analogdata2, digitaldata, digitaldata2, gpib, Hermes, dds, True)
 
 
 '----------------------------------------------------- Make Mott Insulator --------------------------------------------------------------------------------
+
 Dim MI_variables As Double() = Me.AddMottInsulatorSequence(evaporation_end_time, cp, analogdata, analogdata2, digitaldata, digitaldata2, gpib, Hermes, dds, True)
 Dim twodphysics_start_time As Double = MI_variables(0)
 Dim lattice1_max_volt As Double = MI_variables(1)
@@ -264,6 +268,7 @@ Dim end_dipole_voltage As Double = MI_variables(3)
 
 
 '----------------------------------------------------- Time Definitions for Cutting -----------------------------------------------------------------------
+
 ' time constants for cutting vertical line
 Dim line_load_vert_start_time = twodphysics_start_time + gravity_offsets_switch_dur
 Dim cutting1_turnon_start_time As Double = line_load_vert_start_time
@@ -347,7 +352,7 @@ Dim piezo_ready_time As Double = piezo_rampup_time + piezo_ramp_dur
 
 '----------------------------------------------------- Time Definitions for Arb Ramp ----------------------------------------------------------------------
 
-'forward ramp
+'() forward ramp
 Dim ramp_start_time As Double = quic_turnon_end_time
 Dim ramp_end_time As Double
 Dim ramp_t(n_times) As Double
@@ -358,65 +363,79 @@ Next
 Dim ramp_forward_end_time As Double = ramp_t(n_times)
 'Console.WriteLine("ramp forward end time = {0}", ramp_forward_end_time)
 
-'return ramp
+'() Hold time
+Dim hold_start_time As Double = ramp_forward_end_time
+Dim hold_end_time As Double = hold_start_time + evolution_dur
+
+'() return ramp
 Dim ramp_t_return(-1) As Double
 If is_return > 0 Then
     ReDim ramp_t_return(n_times_return)
-    ramp_t_return(0) = ramp_forward_end_time
+    ramp_t_return(0) = hold_end_time
     For index As Integer = 1 To n_times_return
         ramp_t_return(index) = ramp_t_return(index - 1) + ramp_durs_return(n_times_return + 1 - index)
         'Console.WriteLine("ramp return index: {0}, ramp duration index: {1}", index, n_times_return+1-index)
     Next
     ramp_end_time = ramp_t_return(n_times_return)
 Else
-    ramp_end_time = ramp_forward_end_time
+    ramp_end_time = hold_end_time
 End If
 'Console.WriteLine("ramp end time = {0}", ramp_end_time)
 
 
 '----------------------------------------------------- Time Definitions for Physics Cont. -----------------------------------------------------------------
 
+'() raise lattice depth (same for both??)
+Dim lattice_quench_end_time As Double  = ramp_end_time + 1
+
+'() freeze 2D2 lattice 
+Dim lattice2_freeze_start_time As Double = ramp_end_time
+Dim lattice2_freeze_end_time As Double = lattice2_freeze_start_time + freeze_ramp_dur
+
 '() turn off walls 
 'same variable for both walls
-Dim walls_turnoff_start_time As Double = ramp_end_time 
+Dim walls_turnoff_start_time As Double = lattice_quench_end_time 
 Dim walls_turnoff_end_time As Double = walls_turnoff_start_time + 5
 
+'() Turn off quic and quad gradients
+Dim grad_turnoff_start_time As Double = lattice_quench_end_time
+Dim grad_turnoff_end_time As Double = grad_turnoff_start_time + coil_ramp_dur
+
 '() remove atoms outside the walls (cleanup)
-Dim cutting1_turnon2_start_time As Double = walls_turnoff_end_time ' CORRECTED ON 2024/02/21
-Dim cutting1_turnon2_end_time As Double = cutting1_turnon2_start_time +(is_cleanup * 5)
+Dim cleanup_start_time As Double = walls_turnoff_end_time
+Dim cutting1_turnon2_start_time As Double = cleanup_start_time
+Dim cutting1_turnon2_end_time As Double = cutting1_turnon2_start_time + (is_cleanup * 5)
 Dim twod1_rampdown2_start_time As Double = cutting1_turnon2_end_time
 Dim twod1_rampdown2_end_time As Double = twod1_rampdown2_start_time + (is_cleanup * twod_ramp_dur)
 Dim twod1_reload2_start_time As Double = twod1_rampdown2_end_time + (is_cleanup * cleanup_dur)
 Dim twod1_reload2_end_time As Double = twod1_reload2_start_time + (is_cleanup * twod_ramp_dur)
 Dim cutting1_turnoff2_start_time As Double = twod1_reload2_end_time 
 Dim cutting1_turnoff2_end_time As Double = cutting1_turnoff2_start_time + (is_cleanup * 5)
+Dim cleanup_end_time As Double = cutting1_turnoff2_end_time
+If (is_cleanup > 0) Then
+    cleanup_end_time 
+Else
+    cleanup_end_time = cleanup_start_time
+End If
 
-'() kick and capture for counting (Berlin wall)
-Dim Berlin_wall_turnon_start_time As Double = cutting1_turnoff2_end_time + 5 'fixed 5ms pause such that DMD trigger for wall pattern is always separated from DMD trigger for cutting (cleanup) pattern
+'() kick and capture for full counting
+Dim full_counting_start_time As Double = cleanup_end_time
+Dim Berlin_wall_turnon_start_time As Double = full_counting_start_time + 5 'fixed 5ms pause such that DMD trigger for wall pattern is always separated from DMD trigger for cutting (cleanup) pattern
 Dim Berlin_wall_turnon_end_time As Double = Berlin_wall_turnon_start_time + (is_counting * 5)
 Dim twod1_rampdown3_start_time As Double = Berlin_wall_turnon_end_time
-Dim twod1_rampdown3_end_time As Double = twod1_rampdown3_start_time + (is_counting * 1)
+Dim twod1_rampdown3_end_time As Double = Berlin_wall_turnon_end_time + (is_counting * 1)
 Dim twod1_reload3_start_time As Double = twod1_rampdown3_end_time + (is_counting * kick_dur)
 Dim twod1_reload3_end_time As Double = twod1_reload3_start_time + (is_counting * 1)
 Dim Berlin_wall_turnoff_start_time As Double = twod1_reload3_end_time
 Dim Berlin_wall_turnoff_end_time As Double = Berlin_wall_turnoff_start_time + (is_counting * 5)
+Dim full_counting_end_time As Double = twod1_reload3_end_time
 
-'() freeze lattices, turn off gradients
-Dim grad_turnoff_start_time As Double = ramp_end_time 'turn off coils when is_return = 0
-Dim grad_turnoff_end_time As Double = grad_turnoff_start_time + coil_ramp_dur
-
-Dim lattice1_raise_dur As Double = 0 'slowly (??) raise lattices to max depth after return, quench if no return.
-Dim lattice2_raise_dur As Double = lattice1_raise_dur
-Dim lattice2_raise_end_time = ramp_end_time + lattice2_raise_dur 
-Dim lattice1_raise_end_time = ramp_end_time + lattice1_raise_dur 
-
-Dim lattice2_freeze_start_time As Double = lattice2_raise_end_time
-Dim lattice2_freeze_end_time As Double = lattice2_freeze_start_time + freeze_ramp_dur
-Dim lattice1_freeze_start_time As Double = twod1_reload3_end_time
+'() freeze 2D1 lattice, turn off the rest of the gradients
+Dim lattice1_freeze_start_time As Double = full_counting_end_time
 Dim lattice1_freeze_end_time As Double = lattice1_freeze_start_time + freeze_ramp_dur
 
 '() Pinning, image
-Dim twodphysics_end_time As Double = twod1_reload3_end_time + free_var
+Dim twodphysics_end_time As Double = full_counting_end_time + free_var
 Dim pinning_start_time As Double = twodphysics_end_time
 
 '() Turn off gauge beams
@@ -432,21 +451,20 @@ Dim pinning_ready_time As Double = pinning_times(1)
 Dim molasses_start_time As Double = pinning_times(2)
 
 Dim IT As Double = pinning_end_time + TOF
+Dim last_time As Double = IT
 
 
 '------------------------------------------------------------------------ Tracking ------------------------------------------------------------------------
 
-Dim last_time As Double = IT
 Dim delay_tracking As Double = 2000 '1000
-Dim tracking_end_time As Double = Me.AddTrackingSequenceUpgrade(delay_tracking, cp, analogdata, analogdata2, digitaldata, digitaldata2, gpib, Hermes, dds, True)
+Dim tracking_end_time As Double = Me.AddTrackingSequence2(delay_tracking, cp, analogdata, analogdata2, digitaldata, digitaldata2, gpib, Hermes, dds, True)
 
 
 '--------------------------------------------------------------------- Invert signals ---------------------------------------------------------------------
 
 digitaldata.AddPulse(mot_low_current, transport_start_time, last_time) 'MOT Current Supply
-digitaldata.AddPulse(ta_shutter, transport_start_time, last_time) 'TA Shutter. starts to close early, so the shutter is closed ASAP after the blow away pulse.
+digitaldata.AddPulse(ta_shutter, transport_start_time, last_time) 'TA Shutter
 digitaldata.AddPulse(repump_shutter, transport_start_time, last_time) 'Repump Shutter
-digitaldata2.AddPulse(ixon_flip_mount_ttl, tracking_end_time, last_time)
 
 
 '----------------------------------------------------- Lattice Depth Conversion to Volts ------------------------------------------------------------------
@@ -492,8 +510,7 @@ analogdata.AddSmoothRamp(end_dipole_voltage, 1.44, twodphysics_start_time, line_
 'anticonfinement during DMD line loading
 digitaldata.AddPulse(blue_dipole_shutter, line_load_vert_start_time - 20, line_load_end_time)
 If (anticonfine_dur_vert > 0) Then
-	'digitaldata2.AddPulse(blue_dipole_ttl, line_load_vert_start_time, line_load_end_time)
-	digitaldata2.AddPulse(blue_dipole_ttl, line_load_vert_start_time, line_load_mid_time) ' CORRECTED ON 2024/02/21
+	digitaldata2.AddPulse(blue_dipole_ttl, line_load_vert_start_time, line_load_mid_time) 
 	analogdata.AddSmoothRamp(1, anticonfine_volt, twod1_rampdown_start_time, twod1_rampdown_end_time, red_dipole_power)
 	analogdata.AddStep(anticonfine_volt, twod1_rampdown_end_time, twod1_reload_start_time, red_dipole_power)
 	analogdata.AddSmoothRamp(anticonfine_volt, 1, twod1_reload_start_time, twod1_reload_end_time, red_dipole_power)
@@ -507,8 +524,8 @@ If (anticonfine_dur_horz > 0) Then
 End If
 
 'anticonfinement during cleanup prior to full counting
-digitaldata.AddPulse(blue_dipole_shutter, cutting1_turnon2_start_time - 20, twod1_reload2_end_time) ' CORRECTED ON 2024/02/21 (was not present)
 If (is_cleanup > 0) Then 
+    digitaldata.AddPulse(blue_dipole_shutter, cleanup_start_time - 20, twod1_reload2_end_time)
     digitaldata2.AddPulse(blue_dipole_ttl, cutting1_turnon2_start_time, cutting1_turnoff2_end_time)
     analogdata.AddSmoothRamp(1, anticonfine_volt, twod1_rampdown2_start_time, twod1_rampdown2_end_time, red_dipole_power)
     analogdata.AddStep(anticonfine_volt, twod1_rampdown2_end_time,  twod1_reload2_start_time, red_dipole_power)
@@ -572,7 +589,6 @@ If (use_gauge > 0) Then
 
     digitaldata2.AddPulse(gauge_shutter, ramp_start_time - 5,  ramp_end_time + 10)
     digitaldata2.AddPulse(gauge_ttl, ramp_start_time - 10, ramp_end_time)
-	'analogdata2.AddStep(4.99, ramp_start_time, ramp_end_time, gauge2_power)
 End If
 
 
@@ -672,59 +688,56 @@ End If
 
 '----------------------------------------------------- Lattices II ----------------------------------------------------------------------------------------
 
+'Quench to deep lattice
+analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power2)
+analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power)
+analogdata.AddStep(lattice1_max_volt, lattice_quench_end_time, cleanup_start_time, lattice2D765_power)
 
-'prepare to freeze?
-If (is_return > 0) Then
-    'raise 2D2
-    analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice2_raise_end_time, lattice2D765_power2)
-    'hold 2D2 in deep lattice
-    analogdata.AddStep(lattice2_max_volt, lattice2_raise_end_time, lattice2_freeze_start_time, lattice2D765_power2)
-Else
-    'quench to deep lattice
-    analogdata.AddStep(lattice2_ramp_end_v, ramp_end_time, lattice2_freeze_start_time-1, lattice2D765_power2)
-    analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, lattice2_freeze_start_time-1, lattice2_freeze_start_time, lattice2D765_power2)
-End If
-
-If (is_return > 0) Then
-    'raise 2D1
-    analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, ramp_end_time, lattice1_raise_end_time, lattice2D765_power)
-    'hold 2D1 in deep lattice
-    analogdata.AddStep(lattice1_max_volt, lattice1_raise_end_time, twod1_rampdown2_start_time, lattice2D765_power)
-Else
-    'quench to deep lattice
-    analogdata.AddStep(lattice1_ramp_end_v, ramp_end_time, twod1_rampdown2_start_time-1, lattice2D765_power)
-    analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, twod1_rampdown2_start_time-1, twod1_rampdown2_start_time, lattice2D765_power)
-End If
-
+'clean up
 If (is_cleanup > 0) Then
     '2D1
+    analogdata.AddStep(lattice1_max_volt, cleanup_start_time, twod1_rampdown2_start_time, lattice2D765_power)
     analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_amb_volt, twod1_rampdown2_start_time, twod1_rampdown2_end_time, lattice2D765_power)
     analogdata.AddStep(lattice1_amb_volt, twod1_rampdown2_end_time, twod1_reload2_start_time, lattice2D765_power) 
     analogdata.AddSmoothRamp(lattice1_amb_volt, lattice1_max_volt, twod1_reload2_start_time, twod1_reload2_end_time, lattice2D765_power)
-    analogdata.AddStep(lattice1_max_volt, twod1_reload2_end_time, twod1_rampdown3_start_time, lattice2D765_power)
+    analogdata.AddStep(lattice1_max_volt, twod1_reload2_end_time, full_counting_start_time, lattice2D765_power)
 Else
-    analogdata.AddStep(lattice1_max_volt, twod1_rampdown2_start_time, twod1_rampdown3_start_time, lattice2D765_power)
+    analogdata.AddStep(lattice1_max_volt, cleanup_start_time, full_counting_start_time, lattice2D765_power)
 End If
 
 'quench lattice1 for full counting
 If (is_counting > 0) Then
+    analogdata.AddStep(lattice1_max_volt, full_counting_start_time, twod1_rampdown3_start_time, lattice2D765_power)
     analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_kick_volt, twod1_rampdown3_start_time, twod1_rampdown3_end_time, lattice2D765_power)
     analogdata.AddStep(lattice1_kick_volt, twod1_rampdown3_end_time, twod1_reload3_start_time, lattice2D765_power) 
     analogdata.AddSmoothRamp(lattice1_kick_volt, lattice1_max_volt, twod1_reload3_start_time, twod1_reload3_end_time, lattice2D765_power)
-    analogdata.AddStep(lattice1_max_volt, twod1_reload3_end_time, lattice1_freeze_start_time, lattice2D765_power)
+    'analogdata.AddStep(lattice1_max_volt, twod1_reload3_end_time, lattice1_freeze_start_time, lattice2D765_power)
 Else
-    analogdata.AddStep(lattice1_max_volt, twod1_rampdown3_start_time, lattice1_freeze_start_time, lattice2D765_power)
+    analogdata.AddStep(lattice1_max_volt, full_counting_start_time, lattice1_freeze_start_time, lattice2D765_power)
 End If
 
-'freeze lattices
-analogdata.AddSmoothRamp(lattice2_max_volt, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
-analogdata.AddStep(lattice2_deepest_volt, lattice2_freeze_end_time, pinning_ready_time, lattice2D765_power2)
+
+'freeze 2D1 lattice
 analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_deepest_volt, lattice1_freeze_start_time, lattice1_freeze_end_time, lattice2D765_power)
 analogdata.AddStep(lattice1_deepest_volt, lattice1_freeze_end_time, pinning_ready_time, lattice2D765_power)
+'freeze 2D2 lattice
+analogdata.AddSmoothRamp(lattice2_max_volt, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
+analogdata.AddStep(lattice2_deepest_volt, lattice2_freeze_end_time, pinning_ready_time, lattice2D765_power2)
 
 
 '----------------------------------------------------- Magnetic Fields II ---------------------------------------------------------------------------------
- 'ramp down 
+
+'turn off quic
+If (quic_ramp_end_v > 0) Then
+    analogdata2.AddStep(quic_ramp_end_v * ps5_scaler, ramp_end_time, grad_turnoff_start_time, ps5_ao)
+    analogdata2.AddSmoothRamp(quic_ramp_end_v * ps5_scaler, 0, grad_turnoff_start_time, grad_turnoff_end_time, ps5_ao)
+End If
+
+'turn off quad
+If (quad_ramp_start_v > 0) Then
+    analogdata2.AddStep(quad_ramp_end_v, ramp_end_time, grad_turnoff_start_time, ps8_ao)
+    analogdata2.AddSmoothRamp(quad_ramp_end_v, 0, grad_turnoff_start_time, grad_turnoff_end_time, ps8_ao)
+End If
 
 
 '----------------------------------------------------- DMD Code -------------------------------------------------------------------------------------------
@@ -804,28 +817,3 @@ End If
 
 Dim scope_trigger As Double = pinning_start_time
 digitaldata.AddPulse(64, scope_trigger, scope_trigger + 10)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

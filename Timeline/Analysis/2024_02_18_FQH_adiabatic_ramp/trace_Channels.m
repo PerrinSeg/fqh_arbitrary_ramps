@@ -1,12 +1,11 @@
-%% 2022/08/01 - Plot the traces of the different channels
+%% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
 % close all
 
-path_files = ''; % add / at the end
+path_files = '';
 name_sequence = 'fqh_adiabatic_ramp.vb';
-
-batch_line = 1;
+batch_line = 2;
 
 
 %% Some functions
@@ -23,7 +22,10 @@ findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput
 % Where all the functions are defined
 % addpath('Z:\Timeline\Subs\') 
 addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
-[instruction_list, arguments_list, variable_list, arr_variable_list, sub_variable_containers, ExpConstants, LogExpParam] = read_Sequence(path_files, name_sequence, batch_line);
+% addpath('C:\Users\Perrin\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
+
+[instruction_list, arguments_list, variable_list, arr_variable_list, sub_variable_containers, ExpConstants, LogExpParam] ...
+    = read_Sequence(path_files, name_sequence, batch_line);
 N_inst = numel(instruction_list);
 
 % Load start and end times of all instructions
@@ -66,23 +68,126 @@ end
 i = findIndex(variable_list, 'mot_end_time');
 mot_end_time = eval(variable_list{i}{2}); % in ms
 
+i = findIndex(variable_list, 'transport_start_time');
+transport_start_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'transport_end_time');
+transport_end_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'evaporation_end_time');
+evaporation_end_time = eval(variable_list{i}{2}); % in ms
+
 i = findIndex(variable_list, 'twodphysics_start_time');
 twodphysics_start_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'quad_raise_end_time');
-quad_raise_end_time = eval(variable_list{i}{2}); % in ms 
-
-i = findIndex(variable_list, 'quic_turnoff_start_time');
-quic_turnoff_start_time = eval(variable_list{i}{2}); % in ms 
+i = findIndex(variable_list, 'twodphysics_end_time');
+twodphysics_end_time = eval(variable_list{i}{2}); % in ms
 
 i = findIndex(variable_list, 'pinning_start_time');
 pinning_start_time = eval(variable_list{i}{2}); % in ms
 
+i = findIndex(variable_list, 'pinning_end_time');
+pinning_end_time = eval(variable_list{i}{2}); % in ms
+
+% i = findIndex(variable_list, 'it');
+% IT = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'last_time');
+last_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'line_load_end_time');
+line_load_end_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'lattice2_freeze_start_time');
+lattice2_freeze_start_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'lattice2_freeze_end_time');
+lattice2_freeze_end_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'lattice1_freeze_start_time');
+lattice1_freeze_start_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'lattice1_freeze_end_time');
+lattice1_freeze_end_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'twod1_reload3_end_time');
+twod1_reload3_end_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'berlin_wall_turnoff_start_time');
+berlin_wall_turnoff_start_time = eval(variable_list{i}{2}); % in ms
+
+i = findIndex(variable_list, 'berlin_wall_turnoff_end_time');
+berlin_wall_turnoff_end_time = eval(variable_list{i}{2}); % in ms
+
+% i = findIndex(variable_list, 'lower_quic_start_time');
+% lower_quic_start_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lower_quic_end_time');
+% lower_quic_end_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lower_freq_start_time');
+% lower_freq_start_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'quic_turnon_start_time');
+% quic_turnon_start_time = eval(variable_list{i}{2}); % in ms
+%
+% i = findIndex(variable_list, 'lower_lattice2_end_time');
+% lower_lattice2_end_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'twod1_rampdown2_start_time');
+% twod1_rampdown2_start_time = eval(variable_list{i}{2}); % in ms
+
+
+%%% If it's in the array list
+%
+% i = findIndex(arr_variable_list, 'ramp_t');
+% cell_idx = 4;
+% ramp_t_4 = eval(arr_variable_list{i}{3}{cell_idx+1});
+
+
 %%% If it's in a subsequence
-% keys_containers = sub_variable_containers.keys;
+keys_containers = sub_variable_containers.keys;
+
 % sub_variable_list = sub_variable_containers(keys_containers{3});
 % i = findIndex(sub_variable_list, 'twod_start_time');
 % twod_start_time = eval(sub_variable_list{i}{2}); % in ms
+%
+% sub_variable_list = sub_variable_containers(keys_containers{3});
+% i = findIndex(sub_variable_list, 'dimple_start_time');
+% dimple_start_time = eval(variable_list{i}{2}); % in ms
+%
+% sub_variable_list = sub_variable_containers(keys_containers{3});
+% i = findIndex(sub_variable_list, 'dimple_ready_time');
+% dimple_ready_time = eval(variable_list{i}{2}); % in ms
+
+%%% if it's in exp constants
+%
+% i = findIndex(ExpConstants, 'mot_load_time');
+% mot_load_time = eval(ExpConstants{i}{2}); % in ms
+% 
+% i = findIndex(ExpConstants, 'molasses_time');
+% molasses_time = eval(ExpConstants{i}{2}); % in ms
+% 
+% i = findIndex(ExpConstants, 'gauge1_flux_calib');
+% gauge1_flux_calib = eval(ExpConstants{i}{2});
+%
+% i = findIndex(ExpConstants, 'lattice1_calib_depth');
+% lattice1_calib_depth = eval(ExpConstants{i}{2}); % ?
+% 
+% i = findIndex(ExpConstants, 'lattice1_calib_volt');
+% lattice1_calib_volt = eval(ExpConstants{i}{2}); % in V
+% 
+% i = findIndex(ExpConstants, 'lattice1_voltage_offset');
+% lattice1_voltage_offset = eval(ExpConstants{i}{2}); % in V
+% 
+% i = findIndex(ExpConstants, 'lattice2_calib_depth');
+% lattice2_calib_depth = eval(ExpConstants{i}{2}); % ?
+% 
+% i = findIndex(ExpConstants, 'lattice2_calib_volt');
+% lattice2_calib_volt = eval(ExpConstants{i}{2}); % in V
+% 
+% i = findIndex(ExpConstants, 'lattice2_voltage_offset');
+% lattice2_voltage_offset = eval(ExpConstants{i}{2}); % in V
 
 
 %% List times when something happens
@@ -119,26 +224,29 @@ end
 
 %% List what happens around a particular instant
 
-% t_event = twodphysics_start_time;
-t_event = 35506.6;
-t_before = t_event - 1;
-t_after = t_event + 1;
+list_instructions = 0;
 
-counter_instruction = 1;
-
-for i = 1:N_inst
+if list_instructions
+    % t_event = pinning_start_time;
+    t_event = full_counting_start_time;
+    t_before = t_event - 10;
+    t_after = t_event + 10;
     
-    [time_aux, values_aux] = instruction_Into_Points(arguments_list{i});
-    this_instruction_happens =  ( time_aux(1) <= time_aux(end) ) && ( ( (time_aux(1) >= t_before) && (time_aux(1) <= t_after) ) || ( (time_aux(end) >= t_before) && (time_aux(end) <= t_after) ) );
+    counter_instruction = 1;
+    
+    for i = 1:N_inst
         
-    if this_instruction_happens
-        disp( ['Number = ', num2str(counter_instruction)] )
-        disp( ['    ', instruction_list{i}] )
-        disp( arguments_list{i} )
-        counter_instruction = counter_instruction + 1;
+        [time_aux, values_aux] = instruction_Into_Points(arguments_list{i});
+        this_instruction_happens =  ( time_aux(1) <= time_aux(end) ) && ( ( (time_aux(1) >= t_before) && (time_aux(1) <= t_after) ) || ( (time_aux(end) >= t_before) && (time_aux(end) <= t_after) ) );
+            
+        if this_instruction_happens
+            disp( ['Number = ', num2str(counter_instruction)] )
+            disp( ['    ', instruction_list{i}] )
+            disp( arguments_list{i} )
+            counter_instruction = counter_instruction + 1;
+        end
     end
 end
-
 
 %% Multiple traces at the same time (use lower letters for the channels)
 
@@ -156,7 +264,7 @@ end
 % 'ps4_shunt'
 % 'ps5_shunt'
 % 'ps7_shunt'
-
+%
 % pinning
 % 'axial795_power'
 % 'lattice2D795_power' (2) (_ttl, _ttl2, _shutter)
@@ -174,7 +282,7 @@ end
 % 'ttl_80MHz'
 % 'ttl_133MHz'
 % 'ttl_78MHz'
-
+%
 % channel_list = {'ps6_ao', 'ps8_ao', 'lattice2d765_power', 'lattice2d765_power2', 'red_dipole_power', 'line_dmd_power', 'hor_dmd_power'};
 % channel_list = {'ps6_ao', 'ps8_ao', 'lattice2d765_power', 'lattice2d765_power2'};
 % channel_list = {'lattice2d765_power', 'red_dipole_power', 'line_dmd_power', 'blue_dipole_ttl', 'blue_dipole_shutter', 'anticonfin_ttl', 'anticonfin_shutter'};
@@ -184,28 +292,49 @@ end
 % channel_list = {'lattice2d765_power2', 'ps5_ao', 'hor_dmd_trigger', 'hor_dmd_power'};
 % channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'ps5_ao', 'line_dmd_power', 'line_dmd_trigger', 'hor_dmd_power', 'hor_dmd_trigger'};
 % channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'ps5_ao', 'axial_lattice_power', 'big_lattice_power'};
-% channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'hor_dmd_power', 'hor_dmd_trigger', 'line_dmd_power', 'line_dmd_trigger', 'ps5_ao', 'axial_lattice_power'};
-% channel_list = {'ps5_ao', 'lattice2d765_power2', 'hor_dmd_trigger', 'hor_dmd_ttl', 'hor_dmd_power', 'lattice2d765_power', 'line_dmd_trigger', 'line_dmd_ttl', 'line_dmd_power'};
-% channel_list = {'lattice2d765_power2'};
-
-
-channel_list = {'ps5_ao', 'ps8_ao', 'lattice2d765_power', 'lattice2d765_power2', 'gauge1_power', 'line_dmd_power', 'hor_dmd_power'};
+%
+% MOT channels full
+% channel_list = {'mot_low_current', 'ta_shutter', 'repump_shutter', ...
+%     'mot_detuning', 'mot_high_current', 'cap_discharge', ...
+%     'ttl_80mhz', 'ttl_97mhz', 'ttl_n133mhz', 'ttl_n78mhz', 'ttl_78mhz', ...
+%     'optical_pumping', 'polarizer_shutter_11'}; 
+%
+% % MOT channels inverted
+% channel_list = {'mot_low_current', 'ta_shutter', 'repump_shutter'}; 
+%
+% MOT channels inverted + DMD tracking
+% channel_list = {'mot_low_current', 'ta_shutter', 'repump_shutter', 'apogee_camera', ...
+%     'line_dmd_ttl', 'hor_dmd_ttl', 'lattice2d765_ttl', 'lattice2d765_shutter', 'ixon_flip_mount_ttl'}; 
+% 
+% % DMD tracking
+% channel_list = {'mot_low_current', 'apogee_camera', 'line_dmd_ttl', 'hor_dmd_ttl', 'lattice2d765_ttl', 'lattice2d765_shutter', 'ixon_flip_mount_ttl'}; 
+%
+% FQH
+% channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'line_dmd_power', ...
+    % 'hor_dmd_power', 'ps6_ao', 'ps8_ao', 'gauge1_power', 'gauge2_power', 'gauge2_rf_fm', 'gauge1_pztx'};
+% channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'line_dmd_power', ...
+%      'hor_dmd_power', 'gauge2_power', 'ps8_ao', 'ps5_ao', 'ps6_ao'};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'line_dmd_power', ...
+     'hor_dmd_power'};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 time_list = {};
 values_list = {};
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time window to look at
 % t_start_plot = min(t_start_all);
-% t_start_plot = 5000;
-t_start_plot = twodphysics_start_time-50;
-% t_start_plot = mod_start_time;
-% t_start_plot = twodphysics_start_time-10000;
-% t_stop_plot = twodphysics_start_time+200;
-% t_stop_plot = max(t_stop_all);
-% t_stop_plot = 15000;
-t_stop_plot = pinning_start_time+50;
+% t_start_plot = twodphysics_start_time;
+t_start_plot = lattice2_freeze_start_time-1;
 
-for k = 1:numel(channel_list)
+% t_stop_plot = max(t_stop_all);
+% t_stop_plot = pinning_start_time+100;
+t_stop_plot = berlin_wall_turnoff_end_time+1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+N_chan = numel(channel_list);
+
+for k = 1:N_chan
     
     channel = channel_list{k};
     list_instructions = channel_instruction(channel);
@@ -258,25 +387,70 @@ for k = 1:numel(channel_list)
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_figure = 1;
-
+save_figure = 0;
+plot_sth_happens = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ax = [];
 
 if plot_figure
-    figure()
-    for k = 1:numel(channel_list)
-        ax(k) = subplot(numel(channel_list), 1, k);
+    N_chan_tot = N_chan;
+    if plot_sth_happens
+        N_chan_tot = N_chan+1;
+    end 
+    figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.5, 0.97])
+    tl = tiledlayout(N_chan_tot, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+    for k = 1:N_chan
+        ax(k) = nexttile;
         hold on
         plot(time_list{k} ./ 1000, values_list{k}, 'Linewidth', 1.5)
         xlim([t_start_plot / 1000, t_stop_plot / 1000])
-        xlabel('Time (s)')
         ylabel(replace(channel_list{k}, '_', ' '))
-        xline(twodphysics_start_time/1000, '--', 'Linewidth', 1.5)
-        xline(quad_raise_end_time/1000, '--', 'Linewidth', 1.5)
-        xline(quic_turnoff_start_time/1000, '--', 'Linewidth', 1.5)
-        xline(pinning_start_time/1000, '--', 'Linewidth', 1.5) 
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % xline(mot_end_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'mot_end') 
+        % xline(evaporation_end_time/1000, '-.', 'Linewidth', 1.25, 'DisplayName', 'evap_end')
+        % xline(twodphysics_start_time/1000, '--g', 'Linewidth', 1.25, 'DisplayName', '2d_phys_start')   
+        xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
+        xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
+        xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')        
+        % xline(quic_turnon_start_time/1000, '--b', 'DisplayName', 'quic_turnon_start')
+        % xline(lower_quic_start_time/1000, '--r', 'DisplayName', 'lower_quic_start')
+        % xline(lower_quic_end_time/1000, '--r', 'DisplayName', 'lower_quic_end')
+        xline(twodphysics_end_time/1000, ':g', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
+        xline(lattice1_freeze_start_time/1000, ':b', 'DisplayName', 'lattice1_freeze_start')
+        xline(lattice1_freeze_end_time/1000, ':b', 'DisplayName', 'lattice1_freeze_end')
+        xline(lattice2_freeze_start_time/1000, ':c', 'DisplayName', 'lattice2_freeze_start')
+        xline(lattice2_freeze_end_time/1000, ':c', 'DisplayName', 'lattice2_freeze_end')
+        % xline(twod1_reload3_end_time/1000, ':m', 'DisplayName', 'twod1_reload3_end')
+        xline(berlin_wall_turnoff_start_time/1000, '--m', 'DisplayName', 'berlin_wall_turnoff_start')
+        xline(berlin_wall_turnoff_end_time/1000, '-.m', 'DisplayName', 'berlin_wall_turnoff_end')
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        if ~(k==N_chan)
+            xticklabels([])
+        end
+    end    
+    
+    if plot_sth_happens
+        ax(k+1) = nexttile;
+        plot(t_start_show ./ 1000, 5 * something_happens, '-', 'Linewidth', 1.5);
+        xlim([t_start_plot / 1000, t_stop_plot / 1000])
+        xlabel('Time (s)')
+        ylabel('Something happens')
+        xline(IT/1000, '--', 'Linewidth', 1.5)
+    end
+    
+    xlabel(tl, 'Time (s)')
+    title(tl, replace(name_sequence,'_', '\_'))
+    linkaxes(ax, 'x')
+    legend('Location','eastoutside', 'Interpreter','none')
+    % ylim([0,5.2])
+    hold off
+
+    if save_figure
+        print([path_files 'timeline_plots'],'-dpng')
     end
 
-    linkaxes(ax, 'x')
-    hold off
 end
