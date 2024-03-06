@@ -393,9 +393,19 @@ for k = 1:N_chan
             end
             if ~(time_aux(1) > time_aux(end))
                 time = [time, time_aux];
-                values = [values, values_aux];
+                values = [values, values_aux];                    
+                if overwrite_flag
+                    if numel(time_end_seg) > 0
+                        if time_end_seg(1) > time(end)
+                            time = [time, time(end) + 10^(-6), time_end_seg(1) - 10^(-6)]; % Put something in between, the 1 nanosecond should not be visible
+                            values = [values, 0, 0];
+                        end
+                        time = [time,time_end_seg];
+                        values = [values, values_end_seg];
+                    end
+                end
                 t_stop = max(time);
-            end
+        end
         end
     end
     
@@ -411,7 +421,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ax = [];
@@ -436,18 +446,19 @@ if plot_figure
         % xline(twodphysics_start_time/1000, '--g', 'Linewidth', 1.25, 'DisplayName', '2d_phys_start')   
         xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
         xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
+        xline(twodphysics_start_time/1000, ':c', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
+        xline(twodphysics_end_time/1000, ':c', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
 
         xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')              
         xline(ramp_start_time/1000, '--b', 'DisplayName', 'ramp_start')
         xline(ramp_end_time/1000, '--b', 'DisplayName', 'ramp_end')
-        % xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
-        % xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
+        xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
+        xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
         % xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')    
-        xline(twodphysics_end_time/1000, ':g', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
         % xline(lattice2_freeze_start_time/1000, ':c', 'DisplayName', 'lattice2_freeze_start')
         % xline(lattice2_freeze_end_time/1000, ':c', 'DisplayName', 'lattice2_freeze_end')
-        xline(cleanup_start_time/1000, '--r', 'DisplayName', 'cleanup_start')
-        xline(cleanup_end_time/1000, '-.r', 'DisplayName', 'cleanup_end')
+        xline(cleanup_start_time/1000, '--m', 'DisplayName', 'cleanup_start')
+        xline(cleanup_end_time/1000, '-.m', 'DisplayName', 'cleanup_end')
         xline(full_counting_start_time/1000, '--g', 'DisplayName', 'full_counting_start')
         xline(full_counting_end_time/1000, '-.g', 'DisplayName', 'full_counting_end')
         % xline(berlin_wall_turnoff_start_time/1000, '--m', 'DisplayName', 'berlin_wall_turnoff_start')

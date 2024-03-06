@@ -1,7 +1,7 @@
 %% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
-close all
+% close all
 
 path_files = '';
 name_sequence = 'fqh_arb_ramp.vb';
@@ -372,28 +372,42 @@ for k = 1:N_chan
     values = [];
     
     for j = 1:N_inst_2
-        
+        overwrite_flag = 0;
+        time_end_seg = [];
         disp(list_instructions_bare(j))
         int_aux = list_instructions(j);
         disp(int_aux{1})
         [time_aux, values_aux] = instruction_Into_Points(list_instructions{j});
         if numel(time_aux) > 0
             t_start = min(time_aux);
+            t_stop_aux = max(time_aux);
             if time_aux(1) > time_aux(end)
                 disp("Do nothing")
             elseif t_start > t_stop % If the new timestep is not stuck to the previous one
                 time = [time, t_stop + 10^(-6), t_start - 10^(-6)]; % Put something in between, the 1 nanosecond should not be visible
                 values = [values, 0, 0];
             elseif t_stop > t_start
+                overwrite_flag = 1;
                 disp('Previous step finishes after the new one...')
                 good_index = time <= t_start;
+                good_index2 = time >= t_stop_aux;
+                time_end_seg = time(good_index2);
+                values_end_seg = values(good_index2);
                 time = [time(good_index), t_start];
                 values = values(good_index);
                 values = [values, values(end)];
             end
             if ~(time_aux(1) > time_aux(end))
                 time = [time, time_aux];
-                values = [values, values_aux];
+                values = [values, values_aux];                    
+                if overwrite_flag & (numel(time_end_seg) > 0)
+                    if time_end_seg(1) > time(end)
+                        time = [time, time(end) + 10^(-6), time_end_seg(1) - 10^(-6)]; % Put something in between, the 1 nanosecond should not be visible
+                        values = [values, 0, 0];
+                    end
+                    time = [time,time_end_seg];
+                    values = [values, values_end_seg];
+                end
                 t_stop = max(time);
             end
         end
