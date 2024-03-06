@@ -626,31 +626,37 @@ End If
 For index As Integer = 0 To n_times - 1
     analogdata.AddLogRamp(lattice1_ramp_v(index), lattice1_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), lattice2D765_power)
 Next
+analogdata.AddStep(lattice1_ramp_end_v, hold_start_time, hold_end_time, lattice2D765_power)
 
 'gauge power
 For index As Integer = 0 To n_times - 1  
     analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power  
 Next
+analogdata2.AddStep(gauge_power_ramp_end_v, hold_start_time, hold_end_time, gauge1_power)
 
 '2D2 lattice power
 For index As Integer = 0 To n_times - 1
     analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
 Next
+analogdata.AddStep(lattice2_ramp_end_v, hold_start_time, hold_end_time, lattice2D765_power2)
 
 'quic grad
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(quic_ramp_v(index) * ps5_scaler, quic_ramp_v(index + 1) * ps5_scaler, ramp_t(index), ramp_t(index + 1), ps5_ao) 'ps5_ao
 Next
+analogdata2.AddStep(quic_ramp_end_v, hold_start_time, hold_end_time, ps5_ao)
 
 'quad grad
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps8_ao) 'ps8_ao
 Next
+analogdata2.AddStep(quad_ramp_end_v, hold_start_time, hold_end_time, ps8_ao)
 
 'gauge detuning
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(gauge_freq_ramp_v(index), gauge_freq_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), gauge2_rf_fm)
 Next
+analogdata2.AddStep(gauge_freq_ramp_end_v, hold_start_time, hold_end_time, gauge2_rf_fm)
 
 If (is_return > 0) Then
     ' ramp backward for return

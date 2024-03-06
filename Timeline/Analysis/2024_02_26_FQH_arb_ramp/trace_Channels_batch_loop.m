@@ -1,7 +1,7 @@
 %% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
-% close all
+close all
 
 path_files = '';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,7 +25,7 @@ findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput
 %% Set up some loop stuff
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-batch_lines = [2];
+batch_lines = [1:5];
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 N_batch = numel(batch_lines);
@@ -57,7 +57,7 @@ N_ChannelsWithCard = numel(ChannelsWithCard);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'line_dmd_power', ...
-     'hor_dmd_power', 'gauge2_power', 'ps8_ao', 'ps5_ao','ps6_ao'};
+     'hor_dmd_power', 'gauge2_power', 'ps8_ao', 'ps5_ao'};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N_chan = numel(channel_list);
 
@@ -88,9 +88,6 @@ for line_idx = 1:N_batch
         channel_instruction(ChannelsWithCard{j}) = {};
         channel_instruction_bare(ChannelsWithCard{j}) = {};
     end
-    
-    % t_start_all = [];
-    % t_stop_all = [];
 
     for i = 1:N_inst
         [time_aux, values_aux] = instruction_Into_Points(arguments_list{i});
@@ -322,8 +319,8 @@ keys_containers = sub_variable_containers.keys;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time window to look at
-t_start_plot = min(t_start_all);
-% t_start_plot = twodphysics_start_time;
+% t_start_plot = min(t_start_all);
+t_start_plot = twodphysics_start_time-100;
 % t_start_plot = ramp_end_time;
 % t_start_plot = lattice2_freeze_start_time-1;
 
@@ -339,6 +336,8 @@ save_figure = 0;
 ax = [];
 
 if plot_figure
+    c = linspace(0,1,N_batch+3);
+
     N_chan_tot = N_chan;
     figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.5, 0.97])
     tl = tiledlayout(N_chan_tot, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
@@ -347,7 +346,9 @@ if plot_figure
         ax(k) = nexttile;
         hold on
         for j = 1:N_batch
-            plot(time_list{j, k} ./ 1000, values_list{j, k}, 'Linewidth', 1.5)
+            % plot(time_list{j, k} ./ 1000, values_list{j, k}, 'Linewidth', 1.5)
+           patch([time_list{j, k} ./ 1000, NaN], [values_list{j, k}, NaN], c(j), ...
+               'EdgeColor', 'flat', 'EdgeAlpha', 0.5, 'Linewidth',1.5)
         end
         xlim([t_start_plot / 1000, t_stop_plot / 1000])
         ylabel(replace(channel_list{k}, '_', ' '))
@@ -364,8 +365,8 @@ if plot_figure
         xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')              
         xline(ramp_start_time/1000, '--b', 'DisplayName', 'ramp_start')
         xline(ramp_end_time/1000, '--b', 'DisplayName', 'ramp_end')
-        xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
-        xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
+        % xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
+        % xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
         % xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')    
         % xline(lattice2_freeze_start_time/1000, ':c', 'DisplayName', 'lattice2_freeze_start')
         % xline(lattice2_freeze_end_time/1000, ':c', 'DisplayName', 'lattice2_freeze_end')
