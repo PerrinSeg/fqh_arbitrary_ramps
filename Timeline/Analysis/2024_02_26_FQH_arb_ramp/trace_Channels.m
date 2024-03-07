@@ -1,11 +1,19 @@
 %% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
-% close all
+close all
 
 path_files = '';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 name_sequence = 'fqh_arb_ramp.vb';
+% name_sequence = 'fqh_arb_ramp_test_jtovolts.vb';
 batch_line = 2;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Where all the functions are defined
+% addpath('Z:\Timeline\Subs\') 
+addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
+% addpath('C:\Users\Perrin\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
 
 
 %% Some functions
@@ -18,11 +26,6 @@ findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput
 
 
 %% Import and read sequence line-by-line
-
-% Where all the functions are defined
-% addpath('Z:\Timeline\Subs\') 
-addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
-% addpath('C:\Users\Perrin\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
 
 [instruction_list, arguments_list, variable_list, arr_variable_list, sub_variable_containers, ExpConstants, LogExpParam] ...
     = read_Sequence(path_files, name_sequence, batch_line);
@@ -39,7 +42,7 @@ for i = 1:N_inst
     t_start_all = [t_start_all, min(time_aux)];
     t_stop_all = [t_stop_all, max(time_aux)];
 end
-
+disp(' ')
 
 %% Assign instruction to each channel
 
@@ -60,7 +63,6 @@ for i = 1:N_inst
     channel_instruction(channel) = [channel_instruction(channel), {arguments_list{i}}];
     channel_instruction_bare(channel) = [channel_instruction_bare(channel), {instruction_list{i}}];
 end
-
 
 
 %% Look at the values of some variables (use lower letters)
@@ -89,29 +91,26 @@ pinning_start_time = eval(variable_list{i}{2}); % in ms
 i = findIndex(variable_list, 'pinning_end_time');
 pinning_end_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'it');
-IT = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'last_time');
+% last_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'last_time');
-last_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'line_load_end_time');
-line_load_end_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'lattice2_freeze_start_time');
-lattice2_freeze_start_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'lattice2_freeze_end_time');
-lattice2_freeze_end_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'lattice1_freeze_start_time');
-lattice1_freeze_start_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'lattice1_freeze_end_time');
-lattice1_freeze_end_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'twod1_reload3_end_time');
-twod1_reload3_end_time = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'line_load_end_time');
+% line_load_end_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lattice2_freeze_start_time');
+% lattice2_freeze_start_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lattice2_freeze_end_time');
+% lattice2_freeze_end_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lattice1_freeze_start_time');
+% lattice1_freeze_start_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'lattice1_freeze_end_time');
+% lattice1_freeze_end_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'twod1_reload3_end_time');
+% twod1_reload3_end_time = eval(variable_list{i}{2}); % in ms
 
 i = findIndex(variable_list, 'ramp_start_time');
 ramp_start_time = eval(variable_list{i}{2}); % in ms
@@ -122,17 +121,23 @@ ramp_forward_end_time = eval(variable_list{i}{2}); % in ms
 i = findIndex(variable_list, 'ramp_end_time');
 ramp_end_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'n_times');
-n_times = eval(variable_list{i}{2});
+i = findIndex(variable_list, 'hold_start_time');
+hold_start_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'half_index');
-half_index = eval(variable_list{i}{2});
+i = findIndex(variable_list, 'hold_end_time');
+hold_end_time = eval(variable_list{i}{2}); % in ms
 
-i = findIndex(variable_list, 'berlin_wall_turnoff_start_time');
-berlin_wall_turnoff_start_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'berlin_wall_turnoff_end_time');
-berlin_wall_turnoff_end_time = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'n_times');
+% n_times = eval(variable_list{i}{2});
+% 
+% i = findIndex(variable_list, 'half_index');
+% half_index = eval(variable_list{i}{2});
+% 
+% i = findIndex(variable_list, 'berlin_wall_turnoff_start_time');
+% berlin_wall_turnoff_start_time = eval(variable_list{i}{2}); % in ms
+% 
+% i = findIndex(variable_list, 'berlin_wall_turnoff_end_time');
+% berlin_wall_turnoff_end_time = eval(variable_list{i}{2}); % in ms
 
 i = findIndex(variable_list, 'cleanup_start_time');
 cleanup_start_time = eval(variable_list{i}{2}); % in ms
@@ -146,7 +151,7 @@ full_counting_start_time = eval(variable_list{i}{2}); % in ms
 i = findIndex(variable_list, 'full_counting_end_time');
 full_counting_end_time = eval(variable_list{i}{2}); % in ms
 
-% i = findIndex(variable_list, 'n_times_return');
+% % i = findIndex(variable_list, 'n_times_return');
 % variable_list{:}
 % n_times_return = eval(variable_list{i}{2});
 %
@@ -155,14 +160,14 @@ full_counting_end_time = eval(variable_list{i}{2}); % in ms
 
 %%% If it's in the array list
 
-i = findIndex(arr_variable_list, 'ramp_t');
-cell_idx = 4;
-ramp_t_4 = eval(arr_variable_list{i}{3}{cell_idx+1});
-
-i = findIndex(arr_variable_list, 'ramp_t');
-cell_idx = half_index;
-ramp_t_half = eval(arr_variable_list{i}{3}{cell_idx+1});
-
+% i = findIndex(arr_variable_list, 'ramp_t');
+% cell_idx = 4;
+% ramp_t_4 = eval(arr_variable_list{i}{3}{cell_idx+1});
+% 
+% i = findIndex(arr_variable_list, 'ramp_t');
+% cell_idx = half_index;
+% ramp_t_half = eval(arr_variable_list{i}{3}{cell_idx+1});
+%
 % i = findIndex(arr_variable_list, 'ramp_t_return');
 % cell_idx = half_index_return;
 % ramp_t_half_return = eval(arr_variable_list{i}{3}{cell_idx+1});
@@ -216,31 +221,22 @@ keys_containers = sub_variable_containers.keys;
 
 t_start_min = min(t_start_all);
 t_stop_max = max(t_stop_all);
-
 N = 10^5;
 t_start_show = linspace(t_start_min, t_stop_max, N);
 something_happens = zeros([1, N]);
-
-for i = 1:N_inst
-    
-    [time_aux, values_aux] = instruction_Into_Points(arguments_list{i});
+for i = 1:N_inst    
     t_start_show = [t_start_show, [t_start_all(i), t_stop_all(i)]];
     something_happens = [something_happens, [1, 1]];
-
-    t_start_all = [t_start_all, min(time_aux)];
-    t_stop_all = [t_stop_all, max(time_aux)];
 end
 
 [t_start_show, good_index] = sort(t_start_show);
 something_happens = something_happens(good_index);
-
+%%%%%%%%%%%%%%%%%%
 plot_figure = 0;
-
+%%%%%%%%%%%%%%%%%%
 if plot_figure
-
     figure()
     plot(t_start_show, something_happens, '-', 'Linewidth', 0.5)
-
 end
 
 
@@ -253,13 +249,12 @@ if list_instructions
     t_before = t_event - 10;
     t_after = t_event + 10;
     
-    counter_instruction = 1;
-    
-    for i = 1:N_inst
-        
+    counter_instruction = 1;    
+    for i = 1:N_inst       
         [time_aux, values_aux] = instruction_Into_Points(arguments_list{i});
-        this_instruction_happens =  ( time_aux(1) <= time_aux(end) ) && ( ( (time_aux(1) >= t_before) && (time_aux(1) <= t_after) ) || ( (time_aux(end) >= t_before) && (time_aux(end) <= t_after) ) );
-            
+        this_instruction_happens = ( time_aux(1) <= time_aux(end) ) ...
+            && ( ( (time_aux(1) >= t_before) && (time_aux(1) <= t_after) ) ...
+            || ( (time_aux(end) >= t_before) && (time_aux(end) <= t_after) ) );            
         if this_instruction_happens
             disp( ['Number = ', num2str(counter_instruction)] )
             disp( ['    ', instruction_list{i}] )
@@ -336,7 +331,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 channel_list = {'lattice2d765_power', 'lattice2d765_power2', 'line_dmd_power', ...
-     'hor_dmd_power', 'gauge2_power', 'ps8_ao', 'ps5_ao','ps6_ao'};
+     'hor_dmd_power', 'gauge1_power', 'ps8_ao', 'ps5_ao'};
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 time_list = {};
@@ -353,8 +348,11 @@ t_start_plot = min(t_start_all);
 t_stop_plot = max(t_stop_all);
 % t_stop_plot = ramp_end_time+100;
 % t_stop_plot = berlin_wall_turnoff_end_time+1;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N_chan = numel(channel_list);
+time_list = cell(1,N_chan);
+values_list = cell(1,N_chan);
 
 for k = 1:N_chan
     
@@ -402,7 +400,7 @@ for k = 1:N_chan
                 values = [values, values_aux];                    
                 if overwrite_flag & (numel(time_end_seg) > 0)
                     if time_end_seg(1) > time(end)
-                        time = [time, time(end) + 10^(-6), time_end_seg(1) - 10^(-6)]; % Put something in between, the 1 nanosecond should not be visible
+                        time = [time, time(end) + 10^(-7), time_end_seg(1) - 10^(-7)]; % Put something in between, the 1 nanosecond should not be visible
                         values = [values, 0, 0];
                     end
                     time = [time,time_end_seg];
@@ -425,7 +423,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 1;
+save_figure = 0;
 plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ax = [];
@@ -449,27 +447,24 @@ if plot_figure
         % xline(evaporation_end_time/1000, '-.', 'Linewidth', 1.25, 'DisplayName', 'evap_end')
         % xline(twodphysics_start_time/1000, '--g', 'Linewidth', 1.25, 'DisplayName', '2d_phys_start')   
         xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
-        xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
-        xline(twodphysics_start_time/1000, ':c', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
-        xline(twodphysics_end_time/1000, ':c', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
+        % xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
+        % xline(twodphysics_start_time/1000, ':c', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
+        % xline(twodphysics_end_time/1000, ':c', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)       
+        % 
+        % xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')  
 
-        xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')              
-        xline(ramp_start_time/1000, '--b', 'DisplayName', 'ramp_start')
-        xline(ramp_end_time/1000, '--b', 'DisplayName', 'ramp_end')
-        xline(ramp_t_half/1000, ':b', 'DisplayName', 'ramp_t_half')
-        xline(ramp_forward_end_time/1000, '-.b', 'DisplayName', 'ramp_forward_end')
-        % xline(ramp_t_half_return/1000, '--b', 'DisplayName', 'ramp_t_half_return')    
-        % xline(lattice2_freeze_start_time/1000, ':c', 'DisplayName', 'lattice2_freeze_start')
-        % xline(lattice2_freeze_end_time/1000, ':c', 'DisplayName', 'lattice2_freeze_end')
-        xline(cleanup_start_time/1000, '--m', 'DisplayName', 'cleanup_start')
-        xline(cleanup_end_time/1000, '-.m', 'DisplayName', 'cleanup_end')
-        xline(full_counting_start_time/1000, '--g', 'DisplayName', 'full_counting_start')
-        xline(full_counting_end_time/1000, '-.g', 'DisplayName', 'full_counting_end')
-        % xline(berlin_wall_turnoff_start_time/1000, '--m', 'DisplayName', 'berlin_wall_turnoff_start')
-        % xline(berlin_wall_turnoff_end_time/1000, '-.m', 'DisplayName', 'berlin_wall_turnoff_end')
-        % xline(lattice1_freeze_start_time/1000, ':b', 'DisplayName', 'lattice1_freeze_start')
-        % xline(lattice1_freeze_end_time/1000, ':b', 'DisplayName', 'lattice1_freeze_end')
-        
+        xline(ramp_start_time/1000, '--b', 'Linewidth', 1.25, 'DisplayName', 'ramp_start')
+        xline(ramp_end_time/1000, '-.b', 'Linewidth', 1.25, 'DisplayName', 'ramp_end')
+        xline(ramp_forward_end_time/1000, ':b', 'DisplayName', 'ramp_forward_end')
+
+        xline(hold_start_time/1000, '--c', 'Linewidth', 1, 'DisplayName', 'hold_start')
+        xline(hold_end_time/1000, '-.c', 'Linewidth', 1, 'DisplayName', 'hold_end')
+
+        % xline(cleanup_start_time/1000, '--m', 'DisplayName', 'cleanup_start')
+        % xline(cleanup_end_time/1000, '-.m', 'DisplayName', 'cleanup_end')
+        % xline(full_counting_start_time/1000, '--g', 'DisplayName', 'full_counting_start')
+        % xline(full_counting_end_time/1000, '-.g', 'DisplayName', 'full_counting_end')
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         if ~(k==N_chan)

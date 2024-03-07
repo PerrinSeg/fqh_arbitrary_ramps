@@ -260,7 +260,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             variable{1} = strtrim(variable{1});
             variable{2} = erase(variable{2}," ");
             
-            [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*"]); 
+            [variable_split_aux, variable_split_idx_aux] = split(variable{2}, ["+", "-", "/", "*", "^"]); 
             % variable_split_aux
 
             for k = 1:numel(variable_split_aux)
@@ -333,7 +333,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                             i_cell_str = nextvar{j}(1:end-1);
                             var_idx = round(str2double(i_cell_str));
                             if isnan(var_idx)
-                                [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*", "/"]);
+                                [i_cell_split, i_cell_symbol] = split(i_cell_str, ["+", "-", "*", "/", "^"]);
                                 for jj = 1:numel(i_cell_split)
                                     i_cell_str = i_cell_split{jj};
                                     if isnan(str2double(i_cell_str)) % array size is set by a variable
@@ -382,14 +382,14 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             % variable{1}
             % variable{2}
            
-            variable_split = split(variable{2}, ["+", "-", "/", "*", "(", ")"]);
-            
+            variable_split = split(variable{2}, ["+", "-", "/", "*", "^", "(", ")"]);
+            % variable_split
             for k = 1:numel(variable_split)
 
                 % If one piece of the formula is a known variable, replace by its value
                 nextvar = strtrim(variable_split{k});
                 % disp("Next piece to process: ")
-                % disp(variable_split{k})
+                % disp(nextvar)
                 
                 if ~contains(nextvar, '"')
                     if findIndex(list_analytical_function, nextvar)

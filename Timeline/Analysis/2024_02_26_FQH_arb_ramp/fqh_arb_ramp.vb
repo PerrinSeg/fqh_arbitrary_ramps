@@ -143,7 +143,9 @@ Dim quic_ramp_v As Double() = ramp_variables(6)  ' 0th value is "quic_init"
 
 Dim lattice1_ramp_forward_v As Double = lattice1_ramp_v(n_times)
 Dim lattice2_ramp_forward_j As Double = lattice2_ramp_j(n_times)
+Dim lattice2_ramp_forward_v As Double = JToVolts(lattice2_ramp_forward_j, lattice2_JtoDepth_coeffs, nterms_2D2, lattice2_calib_depth, lattice2_calib_volt, lattice2_voltage_offset)
 Dim gauge_power_ramp_forward_j As Double = gauge_power_ramp_j(n_times)
+Dim gauge_power_ramp_forward_v As Double = GaugeJToVolts(gauge_power_ramp_forward_j, gauge_JtoDepth_coeffs, nterms_gauge, gauge_calib_depth, gauge_calib_volt)
 Dim gauge_freq_ramp_forward_v As Double = gauge_freq_ramp_v(n_times)
 Dim quad_ramp_forward_v As Double = quad_ramp_v(n_times)
 Dim quic_ramp_forward_v As Double = quic_ramp_v(n_times)
@@ -626,37 +628,37 @@ End If
 For index As Integer = 0 To n_times - 1
     analogdata.AddLogRamp(lattice1_ramp_v(index), lattice1_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), lattice2D765_power)
 Next
-analogdata.AddStep(lattice1_ramp_end_v, hold_start_time, hold_end_time, lattice2D765_power)
+analogdata.AddStep(lattice1_ramp_forward_v, hold_start_time, hold_end_time, lattice2D765_power)
 
 'gauge power
 For index As Integer = 0 To n_times - 1  
     analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power  
 Next
-analogdata2.AddStep(gauge_power_ramp_end_v, hold_start_time, hold_end_time, gauge1_power)
+analogdata2.AddStep(gauge_power_ramp_forward_v, hold_start_time, hold_end_time, gauge1_power)
 
 '2D2 lattice power
 For index As Integer = 0 To n_times - 1
     analogdata.AddTunnelRamp(lattice2_JtoDepth_coeffs, lattice2_ramp_j(index), lattice2_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), lattice2_voltage_offset, lattice2_calib_volt, lattice2_calib_depth, lattice2D765_power2)
 Next
-analogdata.AddStep(lattice2_ramp_end_v, hold_start_time, hold_end_time, lattice2D765_power2)
+analogdata.AddStep(lattice2_ramp_forward_v, hold_start_time, hold_end_time, lattice2D765_power2)
 
 'quic grad
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(quic_ramp_v(index) * ps5_scaler, quic_ramp_v(index + 1) * ps5_scaler, ramp_t(index), ramp_t(index + 1), ps5_ao) 'ps5_ao
 Next
-analogdata2.AddStep(quic_ramp_end_v, hold_start_time, hold_end_time, ps5_ao)
+analogdata2.AddStep(quic_ramp_forward_v * ps5_scaler, hold_start_time, hold_end_time, ps5_ao)
 
 'quad grad
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(quad_ramp_v(index), quad_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), ps8_ao) 'ps8_ao
 Next
-analogdata2.AddStep(quad_ramp_end_v, hold_start_time, hold_end_time, ps8_ao)
+analogdata2.AddStep(quad_ramp_forward_v, hold_start_time, hold_end_time, ps8_ao)
 
 'gauge detuning
 For index As Integer = 0 To n_times - 1
     analogdata2.AddRamp(gauge_freq_ramp_v(index), gauge_freq_ramp_v(index + 1), ramp_t(index), ramp_t(index + 1), gauge2_rf_fm)
 Next
-analogdata2.AddStep(gauge_freq_ramp_end_v, hold_start_time, hold_end_time, gauge2_rf_fm)
+analogdata2.AddStep(gauge_freq_ramp_forward_v, hold_start_time, hold_end_time, gauge2_rf_fm)
 
 If (is_return > 0) Then
     ' ramp backward for return
@@ -695,7 +697,7 @@ End If
 '----------------------------------------------------- Lattices II ----------------------------------------------------------------------------------------
 
 'Quench to deep lattice
-analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power2)
+'analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power2)
 analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power)
 analogdata.AddStep(lattice1_max_volt, lattice_quench_end_time, cleanup_start_time, lattice2D765_power)
 
@@ -727,7 +729,7 @@ End If
 analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_deepest_volt, lattice1_freeze_start_time, lattice1_freeze_end_time, lattice2D765_power)
 analogdata.AddStep(lattice1_deepest_volt, lattice1_freeze_end_time, pinning_ready_time, lattice2D765_power)
 'freeze 2D2 lattice
-analogdata.AddSmoothRamp(lattice2_max_volt, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
+analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
 analogdata.AddStep(lattice2_deepest_volt, lattice2_freeze_end_time, pinning_ready_time, lattice2D765_power2)
 
 

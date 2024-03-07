@@ -1,7 +1,7 @@
 %% 2024/02/05 - Plot the traces of the different channels, includes array capabilities
 
 clear
-close all
+% close all
 
 path_files = '';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,9 +25,8 @@ findIndex = @(list, element) find(strcmp(cellfun(firstCell, list, 'UniformOutput
 %% Set up some loop stuff
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-batch_lines = [1:5];
+batch_lines = [1,6,8];
 %%%%%%%%%%%%%%%%%%%%%%%%
-
 N_batch = numel(batch_lines);
 
 % Import the different channels' names
@@ -71,6 +70,8 @@ values_list = cell(N_batch,N_chan);
 t_start_all = [];
 t_stop_all = [];
 for line_idx = 1:N_batch
+    disp(['batch line: ' num2str(batch_lines(line_idx))])
+
     %% Import and read sequence line-by-line
     batch_line = batch_lines(line_idx);
 
@@ -101,7 +102,7 @@ for line_idx = 1:N_batch
 
     %% Read instructions into final values (time_list and values_list)
 
-    for k = 1:N_chan        
+    for k = 1:N_chan         
         channel = channel_list{k};
         list_instructions = channel_instruction(channel);
         % list_instructions_bare = channel_instruction_bare(channel);
@@ -120,6 +121,8 @@ for line_idx = 1:N_batch
             time_end_seg = [];
             int_aux = list_instructions(j);
             [time_aux, values_aux] = instruction_Into_Points(list_instructions{j});
+            % t_start_all = [t_start_all, min(time_aux)];
+            % t_stop_all = [t_stop_all, max(time_aux)];
             if numel(time_aux) > 0
                 t_start = min(time_aux);
                 t_stop_aux = max(time_aux);
@@ -333,11 +336,11 @@ t_stop_plot = max(t_stop_all);
 plot_figure = 1;
 save_figure = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ax = [];
+
 
 if plot_figure
     c = linspace(0,1,N_batch+3);
-
+    ax = [];
     N_chan_tot = N_chan;
     figure('Units','normalized', 'OuterPosition', [0.25, 0.03, 0.5, 0.97])
     tl = tiledlayout(N_chan_tot, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
