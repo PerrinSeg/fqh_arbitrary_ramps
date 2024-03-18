@@ -590,7 +590,7 @@ If (use_gauge > 0) Then
 	analogdata2.AddRamp(gauge2_pzY, 0, piezo_rampdown_time, piezo_end_time, gauge2_PZTy)
 
     digitaldata2.AddPulse(gauge_shutter, ramp_start_time - 5,  ramp_end_time + 10)
-    digitaldata2.AddPulse(gauge_ttl, ramp_start_time - 10, ramp_end_time)
+    'digitaldata2.AddPulse(gauge_ttl, ramp_start_time - 10, ramp_end_time)
 End If
 
 
@@ -633,8 +633,16 @@ analogdata.AddStep(lattice1_ramp_forward_v, hold_start_time, hold_end_time, latt
 'gauge power
 For index As Integer = 0 To n_times - 1  
     analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power  
+    If (gauge_power_ramp_j(index + 1) > 0) Then
+        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))
+    Else If (gauge_power_ramp_j(index) > 0) Then
+        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))  
+    End If
 Next
 analogdata2.AddStep(gauge_power_ramp_forward_v, hold_start_time, hold_end_time, gauge1_power)
+If gauge_power_ramp_end_j > 0 Then
+    digitaldata2.AddPulse(gauge_ttl, hold_start_time - 1, hold_end_time)
+End If
 
 '2D2 lattice power
 For index As Integer = 0 To n_times - 1
@@ -670,6 +678,11 @@ If (is_return > 0) Then
     'gauge power
     For index As Integer = 0 To n_times_return - 1            
         analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power)
+        If (gauge_power_ramp_j_return(index + 1) > 0) Then
+            digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))
+        Else If (gauge_power_ramp_j_return(index) > 0) Then
+            digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))  
+        End If
     Next
 
     '2D2 lattice power
