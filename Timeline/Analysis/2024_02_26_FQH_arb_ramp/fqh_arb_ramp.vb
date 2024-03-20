@@ -469,12 +469,6 @@ digitaldata.AddPulse(ta_shutter, transport_start_time, last_time) 'TA Shutter
 digitaldata.AddPulse(repump_shutter, transport_start_time, last_time) 'Repump Shutter
 
 
-'----------------------------------------------------- Lattice Depth Conversion to Volts ------------------------------------------------------------------
-
-'Dim lattice1_low_volt As Double = DepthToVolts(lattice1_low_depth, lattice1_calib_depth, lattice1_calib_volt, lattice1_voltage_offset)
-'Dim lattice2_low_volt As Double = DepthToVolts(lattice2_low_depth, lattice2_calib_depth, lattice2_calib_volt, lattice2_voltage_offset)
-
-
 '----------------------------------------------------- Hold Mott Insulator --------------------------------------------------------------------------------
 
 digitaldata.AddPulse(bias_enable, twodphysics_start_time, pinning_ready_time) 'Enables bias coils
@@ -635,13 +629,16 @@ For index As Integer = 0 To n_times - 1
     analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power  
     If (gauge_power_ramp_j(index + 1) > 0) Then
         digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))
+        analogdata2.AddStep(4.99, ramp_t(index) - 1, ramp_t(index + 1), gauge2_power) ' Is this needed?
     Else If (gauge_power_ramp_j(index) > 0) Then
-        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))  
+        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))
+        analogdata2.AddStep(4.99, ramp_t(index) - 1, ramp_t(index + 1), gauge2_power) ' Is this needed?
     End If
 Next
 analogdata2.AddStep(gauge_power_ramp_forward_v, hold_start_time, hold_end_time, gauge1_power)
 If gauge_power_ramp_end_j > 0 Then
     digitaldata2.AddPulse(gauge_ttl, hold_start_time - 1, hold_end_time)
+    analogdata2.AddStep(4.99, hold_start_time - 1, hold_end_time, gauge2_power) ' Is this needed?
 End If
 
 '2D2 lattice power
@@ -680,8 +677,10 @@ If (is_return > 0) Then
         analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power)
         If (gauge_power_ramp_j_return(index + 1) > 0) Then
             digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))
+            analogdata2.AddStep(4.99, ramp_t_return(index) - 1, ramp_t_return(index + 1), gauge2_power) ' Is this needed?
         Else If (gauge_power_ramp_j_return(index) > 0) Then
             digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))  
+            analogdata2.AddStep(4.99, ramp_t_return(index) - 1, ramp_t_return(index + 1), gauge2_power) ' Is this needed?
         End If
     Next
 
@@ -709,8 +708,11 @@ End If
 
 '----------------------------------------------------- Lattices II ----------------------------------------------------------------------------------------
 
-'Quench to deep lattice
-'analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power2)
+'freeze 2D2 lattice
+analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
+analogdata.AddStep(lattice2_deepest_volt, lattice2_freeze_end_time, pinning_ready_time, lattice2D765_power2)
+
+'Quench 2D1 to deep lattice
 analogdata.AddSmoothRamp(lattice1_ramp_end_v, lattice1_max_volt, ramp_end_time, lattice_quench_end_time, lattice2D765_power)
 analogdata.AddStep(lattice1_max_volt, lattice_quench_end_time, cleanup_start_time, lattice2D765_power)
 
@@ -732,18 +734,13 @@ If (is_counting > 0) Then
     analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_kick_volt, twod1_rampdown3_start_time, twod1_rampdown3_end_time, lattice2D765_power)
     analogdata.AddStep(lattice1_kick_volt, twod1_rampdown3_end_time, twod1_reload3_start_time, lattice2D765_power) 
     analogdata.AddSmoothRamp(lattice1_kick_volt, lattice1_max_volt, twod1_reload3_start_time, twod1_reload3_end_time, lattice2D765_power)
-    'analogdata.AddStep(lattice1_max_volt, twod1_reload3_end_time, lattice1_freeze_start_time, lattice2D765_power)
 Else
     analogdata.AddStep(lattice1_max_volt, full_counting_start_time, lattice1_freeze_start_time, lattice2D765_power)
 End If
 
-
 'freeze 2D1 lattice
 analogdata.AddSmoothRamp(lattice1_max_volt, lattice1_deepest_volt, lattice1_freeze_start_time, lattice1_freeze_end_time, lattice2D765_power)
 analogdata.AddStep(lattice1_deepest_volt, lattice1_freeze_end_time, pinning_ready_time, lattice2D765_power)
-'freeze 2D2 lattice
-analogdata.AddSmoothRamp(lattice2_ramp_end_v, lattice2_deepest_volt, lattice2_freeze_start_time, lattice2_freeze_end_time, lattice2D765_power2)
-analogdata.AddStep(lattice2_deepest_volt, lattice2_freeze_end_time, pinning_ready_time, lattice2D765_power2)
 
 
 '----------------------------------------------------- Magnetic Fields II ---------------------------------------------------------------------------------
