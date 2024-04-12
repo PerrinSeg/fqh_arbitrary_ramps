@@ -12,8 +12,8 @@ batch_line = 2;
 
 % Where all the functions are defined
 % addpath('Z:\Timeline\Subs\') 
-addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
-% addpath('C:\Users\Perrin\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
+% addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
+addpath('C:\Users\Perrin\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs\') 
 
 
 %% Some functions

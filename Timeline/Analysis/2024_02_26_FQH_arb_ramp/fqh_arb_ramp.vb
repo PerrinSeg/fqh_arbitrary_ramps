@@ -69,10 +69,16 @@ Dim lattice1_kick_volt As Double = 3.2 '3.2
 'Dim rampSegPath_return As String = "Z:\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_adiabatic.txt"
 'Dim lattice2_JtoDepth_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\j_to_depth_2d2lattice.txt"
 'Dim gauge_JtoVolt_coeff_path As String = "Z:\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\j_to_depth_gaugepower.txt"
-Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments.txt"
-Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments_adiabatic.txt"
-Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_2d2lattice.txt"
-Dim gauge_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_gaugepower.txt"
+
+'Dim rampSegPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments.txt"
+'Dim rampSegPath_return As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments_adiabatic.txt"
+'Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_2d2lattice.txt"
+'Dim gauge_JtoDepth_coeff_path As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_gaugepower.txt"
+
+Dim rampSegPath As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments.txt"
+Dim rampSegPath_return As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\ramp_segments_adiabatic.txt"
+Dim lattice2_JtoDepth_coeff_path As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_2d2lattice.txt"
+Dim gauge_JtoDepth_coeff_path As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_02_26_fqh_arb_ramp\\ramp_segments_files\\j_to_depth_gaugepower.txt"
 
 Dim n_variables As Integer = 6 ' number of channels used in the arbitrary ramp
 Dim half_index As Integer = 5 ' point at which y delocalization finishes and x delocalization starts
@@ -625,21 +631,17 @@ Next
 analogdata.AddStep(lattice1_ramp_forward_v, hold_start_time, hold_end_time, lattice2D765_power)
 
 'gauge power
+Dim gauge_start_flag As Integer = 0 ' turn on gauge TTL only when gauge beam power should be non-0
 For index As Integer = 0 To n_times - 1  
     analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j(index), gauge_power_ramp_j(index + 1), ramp_t(index), ramp_t(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power) 'gauge1_power  
-    If (gauge_power_ramp_j(index + 1) > 0) Then
-        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))
-        analogdata2.AddStep(4.99, ramp_t(index) - 1, ramp_t(index + 1), gauge2_power) ' Is this needed?
-    Else If (gauge_power_ramp_j(index) > 0) Then
-        digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, ramp_t(index + 1))
-        analogdata2.AddStep(4.99, ramp_t(index) - 1, ramp_t(index + 1), gauge2_power) ' Is this needed?
+    If (gauge_power_ramp_j(index + 1) > 0) Then ' gauge beam power is being ramped up to non-zero value
+        If (gauge_start_flag = 0) Then ' gauge beam power not already on
+            digitaldata2.AddPulse(gauge_ttl, ramp_t(index) - 1, hold_end_time) 'enable TTL until the end of the ramp
+            gauge_start_flag = 1
+        End If
     End If
 Next
 analogdata2.AddStep(gauge_power_ramp_forward_v, hold_start_time, hold_end_time, gauge1_power)
-If gauge_power_ramp_end_j > 0 Then
-    digitaldata2.AddPulse(gauge_ttl, hold_start_time - 1, hold_end_time)
-    analogdata2.AddStep(4.99, hold_start_time - 1, hold_end_time, gauge2_power) ' Is this needed?
-End If
 
 '2D2 lattice power
 For index As Integer = 0 To n_times - 1
@@ -675,12 +677,11 @@ If (is_return > 0) Then
     'gauge power
     For index As Integer = 0 To n_times_return - 1            
         analogdata2.AddTunnelGaugeRamp(gauge_JtoDepth_coeffs, gauge_power_ramp_j_return(index), gauge_power_ramp_j_return(index + 1), ramp_t_return(index), ramp_t_return(index + 1), gauge_calib_volt, gauge_calib_depth, gauge1_power)
-        If (gauge_power_ramp_j_return(index + 1) > 0) Then
-            digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))
-            analogdata2.AddStep(4.99, ramp_t_return(index) - 1, ramp_t_return(index + 1), gauge2_power) ' Is this needed?
-        Else If (gauge_power_ramp_j_return(index) > 0) Then
-            digitaldata2.AddPulse(gauge_ttl, ramp_t_return(index) - 1, ramp_t_return(index + 1))  
-            analogdata2.AddStep(4.99, ramp_t_return(index) - 1, ramp_t_return(index + 1), gauge2_power) ' Is this needed?
+        If (gauge_power_ramp_j_return(index + 1) = 0) Then
+            If (gauge_start_flag = 1) Then
+                digitaldata2.AddPulse(gauge_ttl, ramp_t_return(0), ramp_t_return(index + 1))
+                gauge_start_flag = 0
+            End If
         End If
     Next
 
