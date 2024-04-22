@@ -30,5 +30,6 @@ function logExpParam = import_logExpParam(path_files, batch_line)
         logExpParam{i} = {lower(logExpParam_aux{i}), lower(logExpParam_aux_2{i})};
 %         disp(logExpParam{i})
     end
-
+    
+    fclose(logExpParam_file);
 end

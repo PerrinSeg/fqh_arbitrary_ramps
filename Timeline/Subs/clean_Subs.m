@@ -2,6 +2,7 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
     
     % disp(' ')
     % disp("BEGIN CLEAN SUBS")
+    % disp(name_sub_sequence)
 
     % Some functions used below
     firstCell = @(x) x{1};
@@ -159,5 +160,6 @@ function [Sub_Sequence, sub_variable_list, sub_arr_variable_list] = clean_Subs(s
     Sub_Sequence = Sub_Sequence(~cellfun('isempty', Sub_Sequence));
     % Sub_Sequence
     % disp("END CLEAN SUBS")
+    fclose(Sub_Sequence_file);
 end
 

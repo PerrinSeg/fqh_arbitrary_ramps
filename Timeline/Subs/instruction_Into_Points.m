@@ -396,8 +396,8 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
         filename = [filename{:}];
 
         % File name in lower letters...
-        % filename = replace(filename, 'c:\\users\\greinerlab\\documents\\', 'z:\\temp\\'); 
-        filename = replace(filename, 'c:\\users\\greinerlab\\documents\\rbexpsoftware', 'C:\\Users\\Rb Lab\\Documents'); 
+        filename = replace(filename, 'c:\\users\\greinerlab\\documents\\', 'z:\\temp\\'); 
+        % filename = replace(filename, 'c:\\users\\greinerlab\\documents\\rbexpsoftware', 'C:\\Users\\Rb Lab\\Documents'); 
         filename = replace(filename, "_12.5mhz.bin", ".txt");
         % filename
         values = importdata(filename);

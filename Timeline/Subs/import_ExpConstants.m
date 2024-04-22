@@ -8,4 +8,5 @@ function ExpConstants = import_ExpConstants(path_files)
         ExpConstants{end+1} = lower(strrep(split(ExpConstants_aux, ["=", "'"]), ' ', ''));
         ExpConstants_aux = fgetl(ExpConstants_file);
     end
+    fclose(ExpConstants_file);
 end

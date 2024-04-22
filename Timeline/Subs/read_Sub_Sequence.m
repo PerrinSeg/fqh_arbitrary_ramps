@@ -150,5 +150,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
 
     % Store the variables computed in containers.Map
     sub_variable_containers(erase(name_sub_sequence_aux, lower("Me."))) = sub_variable_list;
+    % sub_variable_containers.keys
 
 end

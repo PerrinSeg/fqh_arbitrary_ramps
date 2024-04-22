@@ -39,7 +39,7 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
                 val = variable_list{i}{2}{:}; % gives whole array
             else
                 disp("If - Left - This variable is not defined...")
-                left_split{k}
+                disp(left_split{k})
             end
             left = replace(left, left_split{k}, val);
         end
@@ -99,7 +99,7 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
     Sequence{1} = {};
     i = 2; % Current line
     if condition_satisfied
-
+        % disp('CONDITION SATISFIED')
         nested_if = 0;
         while (nested_if > 0) || ( ~startsWith(Sequence{i}, "else") && ~startsWith(Sequence{i}, "end if"))
             if startsWith(Sequence{i}, "if")
@@ -124,15 +124,11 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
                 i = i + 1;
             end
         end
-
-        % disp('   ')
-        % disp(Sequence{i})
-        % disp('   ')
-
-        Sequence{i} = {};
+        Sequence{i} = {};     
 
     % Else keep only after Else if there is any
     else
+        % disp('CONDITION NOT SATISFIED')
         nested_if = 0;
         while (nested_if > 0) || (~startsWith(Sequence{i}, "else") && ~startsWith(Sequence{i}, "end if"))
             if startsWith(Sequence{i}, "if")
@@ -145,7 +141,11 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
         end
 
         nested_if = 0;
-        if startsWith(Sequence{i}, "else")
+        if startsWith(Sequence{i}, "else if")
+            % if there's an "Else If" statement, just delete the "else" and treat the rest like a new "If" statement
+            Sequence{i} = replace(Sequence{i}, 'else ', '');
+
+        elseif startsWith(Sequence{i}, "else") 
             Sequence{i} = {};
             i = i + 1;
             while (nested_if > 0) || ~startsWith(Sequence{i}, "end if")
@@ -156,10 +156,11 @@ function Sequence = simplify_If(Sequence, variable_list, arr_variable_list, logE
                 end
                 i = i + 1;
             end
-        end
+            Sequence{i} = {};
         
-        Sequence{i} = {};
-
+        else
+            Sequence{i} = {};
+        end 
     end
 
     % Remove all the lines that should be removed

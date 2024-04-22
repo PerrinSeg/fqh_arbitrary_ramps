@@ -13,7 +13,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
     % disp(' ')
     % disp("ENTERED READ SUB FUNCTION")
     % disp(variable)
-    % disp(name_sub_function)
+    % disp(name_sub_function_aux{1})
     
     % The arguments - We assume that no calculation is performed when passing the argument to the sub-sequence 
     arguments = split(variable{2}, "("); % TO DO: fix so that it doesn't get rid of indexed variables used as input!!!!!!
@@ -168,5 +168,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers] =
 
     % Store the variables computed in containers.Map
     sub_variable_containers(name_sub_function_aux{1}) = sub_variable_list;
+    % sub_variable_containers.keys
     % disp('END read_Sub_Function')
 end

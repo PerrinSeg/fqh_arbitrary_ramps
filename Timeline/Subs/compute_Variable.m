@@ -185,7 +185,7 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
             % disp("VARIABLE SET USING SUB SEQUENCE")
             [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = read_Sub_Sequence( ...
                 variable, path_files, Sequence, variable_list, arr_variable_list, sub_variable_containers, ...
-                instruction_list, arguments_list, logExpParam, ExpConstants);       
+                instruction_list, arguments_list, logExpParam, ExpConstants);
             % disp(variable{1})
             % disp(variable{2})
             % variable_list{findIndex(variable_list, variable{1})}{:}
@@ -348,8 +348,6 @@ function [Sequence, variable_list, arr_variable_list, sub_variable_containers, i
                                 i_cell_str = join(i_cell_split,i_cell_symbol);
                                 var_idx = round(str2sym(i_cell_str));
                             end
-                            % val
-                            % var_idx
                             val = val{var_idx + 1};
                         end                        
                         % disp(' extracted value:')

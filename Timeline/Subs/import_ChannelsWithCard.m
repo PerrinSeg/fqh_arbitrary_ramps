@@ -13,4 +13,5 @@ function ChannelsWithCard = import_ChannelsWithCard(path_files)
     % The other one:
     ChannelsWithCard{end+1} = 'clock_synch';
     ChannelsWithCard{end+1} = 'scope_trigger'; % Digital channel 64, see e.g. "digitaldata.AddPulse(64, scope_trigger, scope_trigger+10)"
+    fclose(ChannelsWithCard_line);
 end

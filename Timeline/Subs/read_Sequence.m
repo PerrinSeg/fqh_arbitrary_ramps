@@ -53,7 +53,7 @@ function [instruction_list, arguments_list, variable_list, arr_variable_list, su
         elseif contains(Sequence{1}, "=") || startsWith(Sequence{1}, "dim ")      
             [Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants] = compute_Variable( ...
                 Sequence, variable_list, arr_variable_list, sub_variable_containers, instruction_list, arguments_list, logExpParam, ExpConstants, path_files);
-                                 
+
         % Case C
         elseif contains(Sequence{1}, "analogdata") || contains(Sequence{1}, "digitaldata")
             [Sequence, instruction_list, arguments_list] = read_Instruction(Sequence, variable_list, arr_variable_list, instruction_list, arguments_list, logExpParam, ExpConstants);
