@@ -411,22 +411,22 @@ ramp_DVx_comb = [ramp_times_new', ramp_DVx_new'];
 % end
 % ramp_DVy_comb = [ramp_times_new', ramp_DVy_new'];
 % ramp_DVy_comb = [ramp_times_new', ramp_DVy'];
-ramp_start = ramp_DVy(1);
-ramp_end = ramp_DVy(end);
+ramp_start = ramp_DVx(1);
+ramp_end = ramp_DVx(end);
 if ramp_start >= ramp_end
-    ramp_DVy_new = (ramp_DVy - ramp_end) / (ramp_start - ramp_end);
+    ramp_DVx_new = (ramp_DVx - ramp_end) / (ramp_start - ramp_end);
 else
-    ramp_DVy_new = flip((ramp_DVy - ramp_start) / (ramp_end - ramp_start));
+    ramp_DVx_new = flip((ramp_DVx - ramp_start) / (ramp_end - ramp_start));
 end
-if min(ramp_DVy) == max(ramp_DVy) 
-    ramp_DVy_new = ones(size(ramp_DVy));
+if min(ramp_DVx) == max(ramp_DVx) 
+    ramp_DVx_new = ones(size(ramp_DVx));
 end
-ramp_DVy_comb = [ramp_times_new', ramp_DVy_new'];
+ramp_DVx_comb = [ramp_times_new', ramp_DVx_new'];
 
 % Plot
 %%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 %%%%%%%%%%%%%%%%%
 if plot_figure
     clear ax
@@ -458,40 +458,40 @@ if plot_figure
     end
 end
 
-% Plot
-%%%%%%%%%%%%%%%%%
-plot_figure = 1;
-save_figure = 1;
-%%%%%%%%%%%%%%%%%
-if plot_figure
-    clear ax
-    figure('Units','normalized', 'OuterPosition', [0.3, 0.05, 0.3, 0.95])
-    t = tiledlayout(4,1,'Tilespacing','compact', 'Padding','compact');
-
-    ax(1) = nexttile;
-    plot(ramp_KVx_comb(:,1), ramp_KVx_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
-    ylabel('Gauge voltage (V)')
-
-    ax(2) = nexttile;
-    plot(ramp_JVy_comb(:,1), ramp_JVy_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
-    ylabel('2D2 lattice voltage (V)')
-
-    ax(3) = nexttile;
-    plot(ramp_DVx_comb(:,1), ramp_DVx_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
-    ylabel('\Delta_{quad} PS8 voltage (V)')
-
-    ax(4) = nexttile;
-    plot(ramp_DVy_comb(:,1), ramp_DVy_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
-    ylabel('\Delta_{quic} PS5 voltage (V)')
-
-    xlabel(t, 'time (\tau)')
-    title(t, 'Final voltage ramp')
-    linkaxes(ax, 'x')
-
-    if save_figure
-        print('Ramp_final', '-dpng')
-    end
-end
+% % Plot
+% %%%%%%%%%%%%%%%%%
+% plot_figure = 1;
+% save_figure = 1;
+% %%%%%%%%%%%%%%%%%
+% if plot_figure
+%     clear ax
+%     figure('Units','normalized', 'OuterPosition', [0.3, 0.05, 0.3, 0.95])
+%     t = tiledlayout(4,1,'Tilespacing','compact', 'Padding','compact');
+% 
+%     ax(1) = nexttile;
+%     plot(ramp_KVx_comb(:,1), ramp_KVx_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
+%     ylabel('Gauge voltage (V)')
+% 
+%     ax(2) = nexttile;
+%     plot(ramp_JVy_comb(:,1), ramp_JVy_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
+%     ylabel('2D2 lattice voltage (V)')
+% 
+%     ax(3) = nexttile;
+%     plot(ramp_DVx_comb(:,1), ramp_DVx_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
+%     ylabel('\Delta_{quad} PS8 voltage (V)')
+% 
+%     ax(4) = nexttile;
+%     plot(ramp_DVy_comb(:,1), ramp_DVy_comb(:,2), '-', DisplayName = 'numeric', LineWidth=1.5)
+%     ylabel('\Delta_{quic} PS5 voltage (V)')
+% 
+%     xlabel(t, 'time (\tau)')
+%     title(t, 'Final voltage ramp')
+%     linkaxes(ax, 'x')
+% 
+%     if save_figure
+%         print('Ramp_final', '-dpng')
+%     end
+% end
 
 
 %% Check by converting back to J and Delta, and comparing with original ramp
