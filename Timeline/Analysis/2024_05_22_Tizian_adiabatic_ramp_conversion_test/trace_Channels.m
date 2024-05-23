@@ -4,14 +4,14 @@ close all
 
 path_files = '';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-name_sequence = 'FQH_Tizian_adiabatic_analog';
-% name_sequence = 'fqh_smooth_ramp_v6.vb';
+name_sequence = 'FQH_Tizian_adiabatic_analog.vb';
 batch_line = 2;
 plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Where all the functions are defined
-addpath('Z:\Timeline\Subs\') 
+addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs') 
+% addpath('Z:\Timeline\Subs\') 
 
 
 %% Some functions

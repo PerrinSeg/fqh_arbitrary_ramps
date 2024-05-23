@@ -1,13 +1,13 @@
-Public Function AddTransportSequence(ByVal t_start As Double, _
-                                     ByRef cp As clsControlParams, _
-                                     ByRef analogdata As SpectronClient, _
-                                     ByRef analogdata2 As SpectronClient, _
-                                     ByRef digitaldata As digitalDAQdata, _
-                                     ByRef digitaldata2 As digitalDAQdata, _
-                                     ByRef gpib As GPIBControl, _
-                                     ByRef Hermes As KeithleyControl, _
-                                     ByRef dds As AD9959Ev, _
-                                     ByVal transport_en As Boolean) As Double
+Public Function AddTransportSequenceUpgrade(ByVal t_start As Double, _
+    ByRef cp As clsControlParams, _
+    ByRef analogdata As SpectronClient, _
+    ByRef analogdata2 As SpectronClient, _
+    ByRef digitaldata As digitalDAQdata, _
+    ByRef digitaldata2 As digitalDAQdata, _
+    ByRef gpib As GPIBControl, _
+    ByRef Hermes As KeithleyControl, _
+    ByRef dds As AD9959Ev, _
+    ByVal transport_en As Boolean) As Double
 
     ' take care of time t = 0 in first few digitaldata pulses
 
@@ -17,6 +17,11 @@ Public Function AddTransportSequence(ByVal t_start As Double, _
     Dim transportSeqPath As String = "C:\\Users\\greinerlab\\Documents\\RbExpSoftware\\ExpControl\\mathematica\\"
 
     If transport_en = True Then
+	'=======INVERT SIGNALS FOR UPGRADE=====
+	digitaldata.AddPulse(mot_low_current, ST, ST + TT) 'MOT Current Supply
+        digitaldata.AddPulse(ta_shutter, ST, ST + TT) 'TA Shutter. starts to close early, so the shutter is closed ASAP after the blow away pulse.
+        digitaldata.AddPulse(repump_shutter, ST, ST + TT) 'Repump Shutter
+	'======================================
         digitaldata.AddPulse(push, ST, ST + t1) 'Push
         digitaldata.AddPulse(mot_high_current, ST, ST + t2) 'MOT
         digitaldata.AddPulse(transport_1 ,ST, ST + t3) 'T1

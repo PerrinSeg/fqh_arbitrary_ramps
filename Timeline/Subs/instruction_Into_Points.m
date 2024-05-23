@@ -586,6 +586,7 @@ Sine3RampPhaseReturnFun = @(t, lattice_depth_0, amp1_0, amp2_0, amp3_0, freq1_0,
             filename{i} = replace(filename{i}, '"', '');
         end
         filename = [filename{:}];
+        filename
         file_txt = importdata(filename);
         
         if t_start < t_stop
