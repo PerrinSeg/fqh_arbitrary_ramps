@@ -426,7 +426,7 @@ ramp_DVy_comb = [ramp_times_new', ramp_DVy_new'];
 % Plot
 %%%%%%%%%%%%%%%%%
 plot_figure = 1;
-save_figure = 0;
+save_figure = 1;
 %%%%%%%%%%%%%%%%%
 if plot_figure
     clear ax
@@ -450,7 +450,7 @@ if plot_figure
     ylabel('\Delta_{quic} PS5 voltage (V)')
 
     xlabel(t, 'time (\tau)')
-    title(t, 'Final voltage ramp')
+    title(t, 'Full final voltage ramps')
     linkaxes(ax, 'x')
 
     if save_figure
@@ -485,11 +485,11 @@ if plot_figure
     ylabel('\Delta_{quic} PS5 voltage (V)')
 
     xlabel(t, 'time (\tau)')
-    title(t, 'Final voltage ramp')
+    title(t, 'Normalized final voltage ramps')
     linkaxes(ax, 'x')
 
     if save_figure
-        print('Ramp_final', '-dpng')
+        print('Ramp_final_norm', '-dpng')
     end
 end
 
