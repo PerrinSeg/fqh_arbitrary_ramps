@@ -14,7 +14,7 @@ ramp_time_full = ramp(:, 1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mid_idx = 5;
-ramp_gauge = 0;
+ramp_gauge = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ramp_time = ramp(mid_idx:end, 1) - ramp(mid_idx);
 ramp_Jx = ramp(mid_idx:end, 2);
@@ -322,6 +322,7 @@ ramp_JVy(ramp_JVy <= 0) = 0;
 %     title(tl2, 'Voltage check quic')
 % end
 
+
 %% Check results
 
 Vy_aux = depthToVolty(linspace(4, 10, 10000));
@@ -356,7 +357,6 @@ end
 % end
 % ramp_KVx_comb = [ramp_times_new', ramp_KVx_new'];
 % ramp_KVx_comb = [ramp_times_new', ramp_KVx'];
-
 ramp_start = ramp_KVx(1);
 ramp_end = ramp_KVx(end);
 if ramp_start >= ramp_end
@@ -546,9 +546,16 @@ save_ramp = 1;
 %%%%%%%%%%%%%%%
 % save as txt file 
 if save_ramp
-    fid = fopen('KVx_ramp.txt', 'w');
-    fprintf(fid, '%f %f\r\n', ramp_KVx_comb');
-    fclose(fid);
+
+    if ramp_gauge 
+        fid = fopen('GaugeVx_ramp.txt', 'w');
+        fprintf(fid, '%f %f\r\n', ramp_KVx_comb');
+        fclose(fid);
+    else
+        fid = fopen('KVx_ramp.txt', 'w');
+        fprintf(fid, '%f %f\r\n', ramp_KVx_comb');
+        fclose(fid);
+    end
 
     fid = fopen('JVy_ramp.txt', 'w');
     fprintf(fid, '%f %f\r\n', ramp_JVy_comb');
