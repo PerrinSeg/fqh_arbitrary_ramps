@@ -10,8 +10,8 @@ plot_sth_happens = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Where all the functions are defined
-addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs') 
-% addpath('Z:\Timeline\Subs\') 
+% addpath('C:\Users\Rb Lab\Documents\GitHub\fqh_arbitrary_ramps\Timeline\Subs') 
+addpath('Z:\Timeline\Subs\') 
 
 
 %% Some functions
@@ -79,16 +79,16 @@ end
 
 i = findIndex(variable_list, 'twodphysics_start_time');
 twodphysics_start_time = eval(variable_list{i}{2}); % in ms
-i = findIndex(variable_list, 'twodphysics_end_time');
-twodphysics_end_time = eval(variable_list{i}{2}); % in ms
-
-i = findIndex(variable_list, 'pinning_start_time');
-pinning_start_time = eval(variable_list{i}{2}); % in ms
-i = findIndex(variable_list, 'pinning_ready_time');
-pinning_ready_time = eval(variable_list{i}{2}); % in ms
-i = findIndex(variable_list, 'pinning_end_time');
-pinning_end_time = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'twodphysics_end_time');
+% twodphysics_end_time = eval(variable_list{i}{2}); % in ms
 % 
+% i = findIndex(variable_list, 'pinning_start_time');
+% pinning_start_time = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'pinning_ready_time');
+% pinning_ready_time = eval(variable_list{i}{2}); % in ms
+% i = findIndex(variable_list, 'pinning_end_time');
+% pinning_end_time = eval(variable_list{i}{2}); % in ms
+% % 
 % i = findIndex(variable_list, 'last_time');
 % last_time = eval(variable_list{i}{2}); % in ms
 
@@ -259,11 +259,11 @@ values_list = {};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time window to look at
-% t_start_plot = min(t_start_all);
-t_start_plot = twodphysics_start_time-20;
+t_start_plot = min(t_start_all);
+% t_start_plot = twodphysics_start_time-20;
 
-t_stop_plot = pinning_start_time+20;
-% t_stop_plot = max(t_stop_all);
+% t_stop_plot = pinning_start_time+20;
+t_stop_plot = max(t_stop_all);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N_chan = numel(channel_list);
 time_list = cell(1,N_chan);
@@ -381,13 +381,13 @@ if plot_figure
         ylabel(replace(channel_list{k}, '_', ' '))
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % xline(mot_end_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'mot_end') 
-        % xline(evaporation_end_time/1000, '-.', 'Linewidth', 1.25, 'DisplayName', 'evap_end')
-        xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
-%         xline(pinning_ready_time/1000, '--', 'Linewidth', 1, 'DisplayName', 'pinning_start')
-        % xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
-        xline(twodphysics_start_time/1000, ':', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
-        xline(twodphysics_end_time/1000, ':', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)  
+%         % xline(mot_end_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'mot_end') 
+%         % xline(evaporation_end_time/1000, '-.', 'Linewidth', 1.25, 'DisplayName', 'evap_end')
+%         xline(pinning_start_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'pinning_start')
+% %         xline(pinning_ready_time/1000, '--', 'Linewidth', 1, 'DisplayName', 'pinning_start')
+%         % xline(last_time/1000, '-', 'Linewidth', 1.5, 'DisplayName', 'last_time')
+%         xline(twodphysics_start_time/1000, ':', 'DisplayName', 'twodphysics_start', 'Linewidth', 1.5)
+%         xline(twodphysics_end_time/1000, ':', 'DisplayName', 'twodphysics_end', 'Linewidth', 1.5)  
         
 %         xline(line_load_end_time/1000, '-.r', 'DisplayName', 'line_load_end')  
         

@@ -15,10 +15,14 @@ ramp_dur = 500
 '----------------------------------------------------- Arbitrary ramp constants --------------------------------------------------------------
 '---------------------------------------------------------------------------------------------------------------------------------------------
 
-Dim quicTiltRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVy_ramp.txt"
-Dim quadTiltRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVx_ramp.txt"
-Dim quadTunnelRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\KVx_ramp.txt"
-Dim quicTunnelRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\JVy_ramp.txt"
+'Dim quicTiltRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVy_ramp.txt"
+'Dim quadTiltRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVx_ramp.txt"
+'Dim quadTunnelRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\KVx_ramp.txt"
+'Dim quicTunnelRampPath As String = "C:\\Users\\Rb Lab\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\JVy_ramp.txt"
+Dim quicTiltRampPath As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVy_ramp.txt"
+Dim quadTiltRampPath As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\DVx_ramp.txt"
+Dim quadTunnelRampPath As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\KVx_ramp.txt"
+Dim quicTunnelRampPath As String = "C:\\Users\\Perrin\\Documents\\GitHub\\fqh_arbitrary_ramps\\Timeline\\Analysis\\2024_05_22_Tizian_adiabatic_ramp_conversion_test\\convert_ramp_files\\JVy_ramp.txt"
 
 Dim lattice1_max As Double = 45
 Dim lattice2_max As Double = 45
